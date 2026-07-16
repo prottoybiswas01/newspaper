@@ -63,22 +63,41 @@ const keys = [
   "AQ.Ab8RN6LdqZN2VcmlsfXvIJL799sOXafaxmvpY4bsASEMtol-0w",
   "AQ.Ab8RN6IYeK0uFhk8i99AzckDsgjn1WR4EoPcIf3abEjcyViS5Q",
   "AQ.Ab8RN6LjyIwKBSqneGlXnUneIso7mWz4RqbwNIcS0ngJbWQQIQ",
-  "AQ.Ab8RN6IdPA_qSXtHVRXI-OATTRyOjaaPQbqdrluyQn2qpSFsdQ",
-  "AQ.Ab8RN6KMEVH4M1VbZ8c2zmCfo8JscCmjWU10fp-Scqg_9wGKqg",
   "AQ.Ab8RN6KhecwxQDa5AVm16pz7z9aTuB2F_UmVbOX1lwcktx9_lg",
   "AQ.Ab8RN6JMHaLXsXfAf3vB3GWfsuzE8QNx_i9vWZIrIQqM6mtEYA",
   "AQ.Ab8RN6KEplM2c-Ltsj6nRNzwkQau28-N61Cl68WYY-HojXIWLw",
   "AQ.Ab8RN6JbML6pgNcf_ZYmafcFtQcLAO9njah8qe5-iX3Vl3btiA"
 ];
 
+async function getActiveKeys() {
+  try {
+    const Setting = require('../models/Setting');
+    const dbSetting = await Setting.findOne({ key: 'gemini_api_keys' });
+    if (dbSetting && dbSetting.value && dbSetting.value.trim().length > 0) {
+      const parsedKeys = dbSetting.value
+        .split(/[\n,]+/)
+        .map(k => k.trim())
+        .filter(k => k.length > 0);
+      if (parsedKeys.length > 0) {
+        return parsedKeys;
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch API keys from DB settings, falling back to hardcoded list.", err);
+  }
+  return keys;
+}
+
 // Rotating helper to query Gemini
 async function queryGemini(payload) {
-  // Random start index to distribute load
-  const startIdx = Math.floor(Math.random() * keys.length);
+  const activeKeys = await getActiveKeys();
+  const startIdx = Math.floor(Math.random() * activeKeys.length);
+  let lastErrorText = 'No response';
+  let lastStatus = 0;
   
-  for (let i = 0; i < keys.length; i++) {
-    const idx = (startIdx + i) % keys.length;
-    const key = keys[idx];
+  for (let i = 0; i < activeKeys.length; i++) {
+    const idx = (startIdx + i) % activeKeys.length;
+    const key = activeKeys[idx];
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
     
     try {
@@ -94,21 +113,26 @@ async function queryGemini(payload) {
       if (status === 200) {
         const data = await response.json();
         return data;
-      } else if (status === 429 || status === 401) {
-        console.warn(`Gemini API key at index ${idx} returned status ${status}. Retrying with next key...`);
-        continue;
-      } else {
-        const errorText = await response.text();
-        console.error(`Gemini API error at index ${idx}: status ${status}`, errorText);
-        continue;
       }
+      
+      lastStatus = status;
+      const responseText = await response.text();
+      lastErrorText = responseText;
+      try {
+        const parsedErr = JSON.parse(responseText);
+        if (parsedErr?.error?.message) {
+          lastErrorText = parsedErr.error.message;
+        }
+      } catch (pe) {}
+      
+      console.warn(`Gemini API key at index ${idx} returned status ${status}: ${lastErrorText}. Retrying...`);
     } catch (err) {
+      lastErrorText = err.message;
       console.error(`Gemini connection error at index ${idx}:`, err);
-      continue;
     }
   }
   
-  throw new Error("All Gemini API keys are rate-limited or exhausted.");
+  throw new Error(`All Gemini API keys are exhausted. Last error (Status ${lastStatus}): ${lastErrorText}. Please enter new valid keys in the Admin review panel.`);
 }
 
 async function researchAndWriteArticle() {
@@ -151,7 +175,6 @@ Provide the response in raw JSON format. Do not wrap in markdown \`\`\`json bloc
   const responseData = await queryGemini(payload);
   const jsonText = responseData.candidates[0].content.parts[0].text;
   
-  // Parse and return the JSON
   try {
     return JSON.parse(jsonText);
   } catch (err) {

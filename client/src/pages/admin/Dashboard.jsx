@@ -101,6 +101,8 @@ const Dashboard = () => {
   // AI News States
   const [aiArticles, setAiArticles] = useState([]);
   const [triggeringAi, setTriggeringAi] = useState(false);
+  const [geminiKeysText, setGeminiKeysText] = useState('');
+  const [savingKeys, setSavingKeys] = useState(false);
 
   // User Manager States
   const [users, setUsers] = useState([]);
@@ -145,6 +147,7 @@ const Dashboard = () => {
       loadTaxonomies();
     } else if (activeTab === 'aiDrafts') {
       loadAiArticles();
+      loadGeminiKeys();
     }
   }, [activeTab]);
 
@@ -566,6 +569,35 @@ const Dashboard = () => {
       }
     } catch (err) {
       console.error('Failed to load pending AI drafts:', err);
+    }
+  };
+
+  const loadGeminiKeys = async () => {
+    try {
+      const res = await api.get('/settings/gemini_api_keys');
+      if (res.success) {
+        setGeminiKeysText(res.value || '');
+      }
+    } catch (err) {
+      console.log('Gemini API keys setting not initialized in DB yet.');
+    }
+  };
+
+  const handleSaveGeminiKeys = async (e) => {
+    e.preventDefault();
+    setSavingKeys(true);
+    try {
+      const res = await api.post('/settings/gemini_api_keys', { value: geminiKeysText });
+      if (res.success) {
+        alert('জেমিনি এপিআই কী সফলভাবে সংরক্ষণ করা হয়েছে!');
+      } else {
+        alert(res.message || 'কী সংরক্ষণ করতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save API keys.');
+    } finally {
+      setSavingKeys(false);
     }
   };
 
@@ -1666,89 +1698,102 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        )}
+             </div>
 
-        {/* TAB 8: AI DRAFTS REVIEW PANEL */}
-        {activeTab === 'aiDrafts' && hasPermission(['Super Admin', 'Admin', 'Editor']) && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div>
-                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
-                  <ShieldAlert className="h-7 w-7 text-indigo-655 animate-pulse" />
-                  <span>AI-Generated News Review Dashboard</span>
-                </h1>
-                <p className="text-xs text-slate-500 mt-1">Review, edit, add images/videos, and approve or reject news researched by the AI Reporter.</p>
-              </div>
-              
-              <button
-                onClick={handleTriggerAiResearch}
-                disabled={triggeringAi}
-                className="px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black tracking-wide transition-all disabled:opacity-50 flex items-center space-x-2 shadow-lg shadow-indigo-600/10"
-              >
-                <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
-                <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
-              </button>
-            </div>
-
-            {aiArticles.length === 0 ? (
-              <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
-                <ShieldAlert className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">কোনো মুলতুবি এআই ড্রাফট পাওয়া যায়নি।</h3>
-                <p className="text-xs text-slate-400 mt-1">নতুন ব্রেকিং নিউজ এনালাইসিস করতে উপরের বাটনে ক্লিক করুন।</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {aiArticles.map(art => (
-                  <div key={art._id} className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-5 rounded-2xl shadow-xs flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400">
-                          {art.category}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-semibold">
-                          {new Date(art.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <h3 className="text-base font-bold text-slate-800 dark:text-white leading-snug line-clamp-2">
-                        {art.title}
-                      </h3>
-                      {art.subtitle && (
-                        <h4 className="text-xs text-slate-450 font-medium line-clamp-1">
-                          {art.subtitle}
-                        </h4>
-                      )}
-                      <p className="text-xs text-slate-500 dark:text-slate-450 line-clamp-3 leading-relaxed">
-                        {art.summary}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3 gap-2">
-                      <button
-                        onClick={() => handleReviewAiArticle(art)}
-                        className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-950 rounded-xl text-xs font-bold transition-all text-center"
-                      >
-                        পড়ুন ও সম্পাদনা
-                      </button>
-                      <button
-                        onClick={() => handleApproveAiArticle(art._id)}
-                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all"
-                      >
-                        অনুমোদন
-                      </button>
-                      <button
-                        onClick={() => handleRejectAiArticle(art._id)}
-                        className="p-2 bg-red-50 hover:bg-red-100 text-red-650 dark:bg-red-950/20 dark:text-red-400 rounded-xl transition-all"
-                        title="Reject and Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column (2/3): Pending drafts list */}
+              <div className="lg:col-span-2 space-y-6">
+                {aiArticles.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
+                    <ShieldAlert className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">কোনো মুলতুবি এআই ড্রাফট পাওয়া যায়নি।</h3>
+                    <p className="text-xs text-slate-400 mt-1">নতুন ব্রেকিং নিউজ এনালাইসিস করতে উপরের বাটনে ক্লিক করুন।</p>
                   </div>
-                ))}
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {aiArticles.map(art => (
+                      <div key={art._id} className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-5 rounded-2xl shadow-xs flex flex-col justify-between space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400">
+                              {art.category}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-semibold">
+                              {new Date(art.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h3 className="text-base font-bold text-slate-800 dark:text-white leading-snug line-clamp-2">
+                            {art.title}
+                          </h3>
+                          {art.subtitle && (
+                            <h4 className="text-xs text-slate-450 font-medium line-clamp-1">
+                              {art.subtitle}
+                            </h4>
+                          )}
+                          <p className="text-xs text-slate-500 dark:text-slate-450 line-clamp-3 leading-relaxed">
+                            {art.summary}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3 gap-2">
+                          <button
+                            onClick={() => handleReviewAiArticle(art)}
+                            className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-950 rounded-xl text-xs font-bold transition-all text-center"
+                          >
+                            পড়ুন ও সম্পাদনা
+                          </button>
+                          <button
+                            onClick={() => handleApproveAiArticle(art._id)}
+                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all"
+                          >
+                            অনুমোদন
+                          </button>
+                          <button
+                            onClick={() => handleRejectAiArticle(art._id)}
+                            className="p-2 bg-red-50 hover:bg-red-100 text-red-650 dark:bg-red-950/20 dark:text-red-400 rounded-xl transition-all"
+                            title="Reject and Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Right Column (1/3): API Keys Configurator form */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs space-y-4 h-fit">
+                <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white flex items-center space-x-1.5">
+                  <Cpu className="h-4 w-4 text-indigo-500" />
+                  <span>Gemini API Keys Settings</span>
+                </h3>
+                <p className="text-[11px] text-slate-450 leading-relaxed">
+                  Enter your Google AI Studio / Gemini API keys (one per line). If left blank, the portal automatically uses the default list of keys. If a key is rate-limited, it automatically rotates to the next key!
+                </p>
+
+                <form onSubmit={handleSaveGeminiKeys} className="space-y-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-black text-slate-600 dark:text-slate-400 block mb-1">Active API Keys</label>
+                    <textarea
+                      value={geminiKeysText}
+                      onChange={(e) => setGeminiKeysText(e.target.value)}
+                      placeholder="Paste keys here (one key per line)..."
+                      rows={10}
+                      className="w-full px-3 py-2 border bg-slate-550 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-mono focus:outline-none leading-relaxed"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={savingKeys}
+                    className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  >
+                    {savingKeys ? 'সেভ হচ্ছে...' : 'Save API Keys'}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         )}
 
