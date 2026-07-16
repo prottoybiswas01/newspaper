@@ -47,17 +47,17 @@ const Header = () => {
           {new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
         </div>
         
-        <Link to="/" className="flex items-center space-x-2 text-2xl font-black tracking-tight text-blue-600 dark:text-blue-500">
-          <Newspaper className="h-8 w-8 stroke-[2.5]" />
+        <Link to="/" className="flex items-center space-x-1.5 text-lg sm:text-2xl font-black tracking-tight text-blue-600 dark:text-blue-500 whitespace-nowrap">
+          <Newspaper className="h-6 w-6 sm:h-8 sm:w-8 stroke-[2.5] shrink-0" />
           <span className="font-sans bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-400 bg-clip-text text-transparent">
             {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
           </span>
-          <span className="text-[10px] uppercase font-bold tracking-widest bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 px-1.5 py-0.5 rounded ml-2">
+          <span className="hidden sm:inline-block text-[9px] uppercase font-bold tracking-widest bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 px-1.5 py-0.5 rounded ml-1">
             Mirror News
           </span>
         </Link>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme} 
@@ -108,10 +108,11 @@ const Header = () => {
           ) : (
             <Link 
               to="/login" 
-              className="flex items-center space-x-1 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-100 dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all font-semibold text-xs tracking-wide"
+              className="flex items-center justify-center p-2 sm:px-4 sm:py-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-100 dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all font-semibold text-xs tracking-wide shrink-0"
+              title={t('signIn')}
             >
-              <User className="h-4 w-4" />
-              <span>{t('signIn')}</span>
+              <User className="h-4.5 w-4.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline-block sm:ml-1">{t('signIn')}</span>
             </Link>
           )}
 
