@@ -27,7 +27,8 @@ const Dashboard = () => {
     { id: 'taxonomy', name: 'Categories & Tags', icon: Tags, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
     { id: 'comments', name: 'Moderate Comments', icon: MessageSquare, roles: ['Super Admin', 'Admin', 'Editor', 'Moderator'] },
     { id: 'ads', name: 'Manage Ads', icon: Megaphone, roles: ['Super Admin', 'Admin'] },
-    { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] }
+    { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] },
+    { id: 'layout', name: 'Homepage Layout', icon: Settings, roles: ['Super Admin', 'Admin', 'Editor'] }
   ];
 
   const allowedTabs = tabs.filter(tab => hasPermission(tab.roles));
@@ -91,6 +92,11 @@ const Dashboard = () => {
   const [newAdScriptCode, setNewAdScriptCode] = useState('');
   const [newAdType, setNewAdType] = useState('image');
 
+  // Homepage Layout States
+  const [homepageSections, setHomepageSections] = useState([]);
+  const [newSectionCategory, setNewSectionCategory] = useState('');
+  const [newSectionLayout, setNewSectionLayout] = useState('grid');
+
   // User Manager States
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -129,6 +135,9 @@ const Dashboard = () => {
       loadAds();
     } else if (activeTab === 'roles') {
       loadUsers();
+    } else if (activeTab === 'layout') {
+      loadHomepageLayout();
+      loadTaxonomies();
     }
   }, [activeTab]);
 
@@ -479,6 +488,66 @@ const Dashboard = () => {
       alert('Translation request failed.');
     } finally {
       setTranslating(false);
+    }
+  };
+
+  const loadHomepageLayout = async () => {
+    try {
+      const res = await api.get('/settings/homepage_layout');
+      if (res.success && Array.isArray(res.value)) {
+        setHomepageSections(res.value);
+      } else {
+        setHomepageSections([
+          { category: 'Politics', layout: 'grid' },
+          { category: 'Technology', layout: 'grid' },
+          { category: 'Sports', layout: 'grid' },
+          { category: 'Opinion', layout: 'list' }
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to load layout settings:', err);
+    }
+  };
+
+  const handleAddLayoutSection = (e) => {
+    e.preventDefault();
+    if (!newSectionCategory) {
+      alert('Please select a category first.');
+      return;
+    }
+    if (homepageSections.some(s => s.category.toLowerCase() === newSectionCategory.toLowerCase())) {
+      alert('This category is already added to the homepage layout.');
+      return;
+    }
+    setHomepageSections(prev => [...prev, { category: newSectionCategory, layout: newSectionLayout }]);
+    setNewSectionCategory('');
+  };
+
+  const handleRemoveLayoutSection = (idx) => {
+    setHomepageSections(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleMoveLayoutSection = (idx, direction) => {
+    const nextSections = [...homepageSections];
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= nextSections.length) return;
+    const temp = nextSections[idx];
+    nextSections[idx] = nextSections[targetIdx];
+    nextSections[targetIdx] = temp;
+    setHomepageSections(nextSections);
+  };
+
+  const handleSaveLayoutSettings = async () => {
+    try {
+      const res = await api.post('/settings/homepage_layout', { value: homepageSections });
+      if (res.success) {
+        alert('হোমপেজ লেআউট সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!');
+      } else {
+        alert(res.message || 'সংরক্ষণ ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save settings.');
     }
   };
 
@@ -1394,6 +1463,124 @@ const Dashboard = () => {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB 7: HOMEPAGE LAYOUT SETTINGS */}
+        {activeTab === 'layout' && hasPermission(['Super Admin', 'Admin', 'Editor']) && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-4">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Homepage Category Layout Configurator</h1>
+                <p className="text-xs text-slate-505 mt-1">Configure which news categories are displayed on the home page, their layout style, and ordering.</p>
+              </div>
+              <button
+                onClick={handleSaveLayoutSettings}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center space-x-1.5"
+              >
+                <Save className="h-4 w-4" />
+                <span>Save Homepage Layout</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Form to add new section (1/3 columns) */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs space-y-4 h-fit">
+                <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white">Add Section</h3>
+                
+                <form onSubmit={handleAddLayoutSection} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Select Category</label>
+                    <select
+                      value={newSectionCategory}
+                      onChange={(e) => setNewSectionCategory(e.target.value)}
+                      className="w-full px-3 py-2 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
+                    >
+                      <option value="">-- Choose Category --</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat.name}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">Select Layout Style</label>
+                    <select
+                      value={newSectionLayout}
+                      onChange={(e) => setNewSectionLayout(e.target.value)}
+                      className="w-full px-3 py-2 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
+                    >
+                      <option value="grid">Grid (৪টি সংবাদ কার্ড)</option>
+                      <option value="list">List (৫টি সংবাদ তালিকা)</option>
+                      <option value="hero">Hero (১টি বড় সংবাদ + ৩টি ছোট লিংক)</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2 bg-slate-905 text-white dark:bg-slate-100 dark:text-slate-950 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity"
+                  >
+                    Add to Homepage Layout
+                  </button>
+                </form>
+              </div>
+
+              {/* Layout Order Manager list (2/3 columns) */}
+              <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs">
+                <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white mb-4">Homepage Row Order</h3>
+                
+                {homepageSections.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">No homepage categories configured. Default presets will be rendered.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {homepageSections.map((sec, index) => (
+                      <div key={`${sec.category}-${index}`} className="p-4 border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/20">
+                        <div className="flex-grow space-y-1">
+                          <span className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400">
+                            Row #{index + 1}
+                          </span>
+                          <h4 className="text-sm font-extrabold text-slate-800 dark:text-white mt-1">
+                            {sec.category}
+                          </h4>
+                          <span className="text-[10px] text-slate-400 block capitalize">
+                            Style: {sec.layout === 'grid' ? 'Grid (৪টি কার্ড)' : (sec.layout === 'list' ? 'List (তালিকা)' : 'Hero (하이লাইটেড)')}
+                          </span>
+                        </div>
+
+                        {/* Reordering Controls */}
+                        <div className="flex items-center space-x-2 shrink-0">
+                          <button
+                            onClick={() => handleMoveLayoutSection(index, -1)}
+                            disabled={index === 0}
+                            className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            title="Move Up"
+                          >
+                            ▲
+                          </button>
+                          <button
+                            onClick={() => handleMoveLayoutSection(index, 1)}
+                            disabled={index === homepageSections.length - 1}
+                            className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            title="Move Down"
+                          >
+                            ▼
+                          </button>
+                          
+                          {/* Remove button */}
+                          <button
+                            onClick={() => handleRemoveLayoutSection(index)}
+                            className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                            title="Remove Section"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
