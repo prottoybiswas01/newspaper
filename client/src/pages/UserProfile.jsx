@@ -80,7 +80,7 @@ const UserProfile = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <h2 className="text-xl font-bold text-slate-700">প্রোফাইল দেখতে লগইন করুন।</h2>
-        <Link to="/login" className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-bold">লগইন করুন</Link>
+        <Link to="/login-admin" className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg font-bold">লগইন করুন</Link>
       </div>
     );
   }

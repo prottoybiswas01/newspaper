@@ -99,7 +99,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (loading) return;
     if (!hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator'])) {
-      navigate('/login');
+      navigate('/login-admin');
     }
   }, [user, loading]);
 
