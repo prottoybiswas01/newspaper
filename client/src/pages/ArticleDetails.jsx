@@ -1,0 +1,373 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { api } from '../utils/api';
+import AdPlacement from '../components/AdPlacement';
+import { 
+  Calendar, Eye, Heart, Share2, Printer, 
+  ZoomIn, ZoomOut, RotateCcw, Clock, User, MessageSquare 
+} from 'lucide-react';
+
+const ArticleDetails = () => {
+  const { slug } = useParams();
+  const [article, setArticle] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fontSize, setFontSize] = useState(16); // Base size in px
+
+  // Guest comment state
+  const [commentName, setCommentName] = useState('');
+  const [commentEmail, setCommentEmail] = useState('');
+  const [commentContent, setCommentContent] = useState('');
+  const [commentSuccess, setCommentSuccess] = useState('');
+  const [commentError, setCommentError] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
+  useEffect(() => {
+    const fetchArticleData = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/articles/slug/${slug}`);
+        if (res.success && res.article) {
+          setArticle(res.article);
+          setLikeCount(res.article.likes || 0);
+          
+          // Log analytics view for this article
+          await api.post('/analytics/log', {
+            path: `/article/${slug}`,
+            articleId: res.article._id,
+            device: window.innerWidth < 768 ? 'Mobile' : 'Desktop'
+          });
+
+          // Fetch comments
+          const commentsRes = await api.get(`/comments/article/${res.article._id}`);
+          if (commentsRes.success) {
+            setComments(commentsRes.comments);
+          }
+
+          // Fetch related articles
+          const relatedRes = await api.get(`/articles?category=${res.article.category}&limit=3`);
+          if (relatedRes.success) {
+            // Exclude current article
+            const filtered = relatedRes.articles.filter(a => a._id !== res.article._id);
+            setRelated(filtered);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load article details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticleData();
+    // Reset like state on route change
+    setIsLiked(false);
+  }, [slug]);
+
+  const handleLike = async () => {
+    if (isLiked || !article) return;
+    try {
+      const res = await api.post(`/articles/${article._id}/like`);
+      if (res.success) {
+        setLikeCount(res.likes);
+        setIsLiked(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!article) return;
+    try {
+      await api.post(`/articles/${article._id}/share`);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('আর্টিকেল লিংক ক্লিপবোর্ডে কপি করা হয়েছে!');
+      } else {
+        alert(window.location.href);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!article || !commentName || !commentEmail || !commentContent) return;
+
+    setCommentSuccess('');
+    setCommentError('');
+    try {
+      const res = await api.post('/comments', {
+        articleId: article._id,
+        authorName: commentName,
+        authorEmail: commentEmail,
+        content: commentContent
+      });
+
+      if (res.success) {
+        setCommentSuccess('আপনার মন্তব্য সফলভাবে জমা হয়েছে এবং এটি মডারেটরের অনুমোদনের অপেক্ষায় আছে।');
+        setCommentContent('');
+      } else {
+        setCommentError(res.message || 'মন্তব্য প্রকাশে সমস্যা হয়েছে।');
+      }
+    } catch (err) {
+      setCommentError('নেটওয়ার্ক সংযোগ ত্রুটি।');
+    }
+  };
+
+  const triggerPrint = () => {
+    window.print();
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4 mx-auto mb-6" />
+        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2 mx-auto mb-10" />
+        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full mb-6" />
+        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full mb-3" />
+        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-5/6 mb-3" />
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-xl font-bold text-slate-700">দুঃখিত, সংবাদটি খুঁজে পাওয়া যায়নি!</h2>
+        <Link to="/" className="mt-4 inline-block text-blue-600 hover:underline">হোমপেজে ফিরে যান</Link>
+      </div>
+    );
+  }
+
+  return (
+    <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print-container">
+      {/* Header Info */}
+      <header className="mb-6">
+        <div className="flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wider no-print">
+          <Link to={`/category/${article.category.toLowerCase()}`} className="hover:underline">
+            {article.category}
+          </Link>
+        </div>
+
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-4">
+          {article.title}
+        </h1>
+
+        {article.subtitle && (
+          <h2 className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-medium mb-6 leading-relaxed">
+            {article.subtitle}
+          </h2>
+        )}
+
+        {/* Action Controls & Reporter Card */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-y border-slate-200/60 dark:border-slate-800/40 py-4 gap-4 no-print">
+          
+          {/* Author/Reporter info */}
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-100 dark:bg-slate-800 rounded-full p-2 text-blue-600 dark:text-blue-400">
+              <User className="h-5 w-5" />
+            </div>
+            <div>
+              <Link to={`/reporter/${article.authorId}`} className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600">
+                {article.author}
+              </Link>
+              <div className="flex items-center text-xs text-slate-400 space-x-2 mt-0.5">
+                <span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(article.publishDate || article.createdAt).toLocaleDateString('bn-BD')}</span>
+                <span className="flex items-center"><Clock className="h-3.5 w-3.5 mr-1" /> {article.readingTime} মিনিট পাঠ</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls: Zoom, Print, Share, Like */}
+          <div className="flex items-center flex-wrap gap-2 text-slate-500 dark:text-slate-400">
+            {/* Font Zoom Controls */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 mr-2">
+              <button 
+                onClick={() => setFontSize(prev => Math.min(prev + 2, 24))} 
+                className="p-1.5 hover:text-slate-800 dark:hover:text-slate-100" 
+                title="Zoom In"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setFontSize(prev => Math.max(prev - 2, 12))} 
+                className="p-1.5 hover:text-slate-800 dark:hover:text-slate-100" 
+                title="Zoom Out"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={() => setFontSize(16)} 
+                className="p-1.5 hover:text-slate-800 dark:hover:text-slate-100" 
+                title="Reset Size"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Like */}
+            <button 
+              onClick={handleLike} 
+              disabled={isLiked}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                isLiked 
+                  ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:border-red-900/50' 
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800'
+              }`}
+            >
+              <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-600 text-red-600' : ''}`} />
+              <span>{likeCount}</span>
+            </button>
+
+            {/* Share */}
+            <button 
+              onClick={handleShare}
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              title="Copy link to share"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+
+            {/* Print */}
+            <button 
+              onClick={triggerPrint}
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              title="Print article"
+            >
+              <Printer className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Featured Image */}
+      {article.featuredImage && (
+        <div className="rounded-2xl overflow-hidden mb-8 border border-slate-200/50 dark:border-slate-800/50 shadow-xs">
+          <img 
+            src={article.featuredImage} 
+            alt={article.title} 
+            className="w-full h-auto max-h-[500px] object-cover" 
+          />
+        </div>
+      )}
+
+      {/* Article Body Content */}
+      <div 
+        className="prose dark:prose-invert max-w-none mb-10 leading-relaxed font-sans"
+        style={{ fontSize: `${fontSize}px` }}
+        dangerouslySetInnerHTML={{ __html: article.content }}
+      />
+
+      {/* Article Inline Advertisement */}
+      <AdPlacement placement="article" />
+
+      {/* Comments Section */}
+      <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
+        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2 mb-6">
+          <MessageSquare className="h-5 w-5 text-blue-600" />
+          <span>পাঠক মন্তব্য ({comments.length})</span>
+        </h3>
+
+        {/* List of comments */}
+        <div className="space-y-4 mb-8">
+          {comments.length === 0 ? (
+            <p className="text-sm text-slate-400 italic">এই সংবাদের প্রথম মন্তব্যকারী হোন।</p>
+          ) : (
+            comments.map((comm) => (
+              <div key={comm._id} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 p-4 rounded-xl flex items-start space-x-3">
+                <img 
+                  src={comm.authorAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${comm.authorName}`} 
+                  alt={comm.authorName} 
+                  className="h-9 w-9 rounded-full bg-slate-100" 
+                />
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{comm.authorName}</span>
+                    <span className="text-[10px] text-slate-450">{new Date(comm.createdAt).toLocaleDateString('bn-BD')}</span>
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-350 mt-1">{comm.content}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Add Comment Form */}
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">আপনার মন্তব্য প্রকাশ করুন</h4>
+          
+          {commentSuccess && <p className="text-sm text-green-600 mb-4 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">{commentSuccess}</p>}
+          {commentError && <p className="text-sm text-red-500 mb-4 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">{commentError}</p>}
+
+          <form onSubmit={handleCommentSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">নাম *</label>
+                <input 
+                  type="text" 
+                  value={commentName} 
+                  onChange={(e) => setCommentName(e.target.value)} 
+                  required
+                  placeholder="আপনার নাম..."
+                  className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">ইমেইল ঠিকানা *</label>
+                <input 
+                  type="email" 
+                  value={commentEmail} 
+                  onChange={(e) => setCommentEmail(e.target.value)} 
+                  required
+                  placeholder="name@example.com"
+                  className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">মন্তব্য *</label>
+              <textarea 
+                rows="4" 
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                required
+                placeholder="এখানে আপনার মন্তব্য লিখুন..."
+                className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <button 
+              type="submit"
+              className="px-6 py-2.5 bg-blue-650 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
+            >
+              মন্তব্য জমা দিন
+            </button>
+          </form>
+        </div>
+      </section>
+
+      {/* Related News */}
+      {related.length > 0 && (
+        <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
+          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">সম্পর্কিত সংবাদ (Related News)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {related.map(art => (
+              <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-3 hover:shadow-md transition-shadow">
+                <Link to={`/article/${art.slug}`}>
+                  <img src={art.featuredImage} alt={art.title} className="w-full h-36 object-cover rounded-lg mb-3" />
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 leading-snug transition-colors line-clamp-2">{art.title}</h4>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </article>
+  );
+};
+
+export default ArticleDetails;

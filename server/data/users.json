@@ -1,0 +1,57 @@
+[
+  {
+    "_id": "cce058b77f6804c55ee64958",
+    "name": "Super Admin",
+    "email": "superadmin@news.com",
+    "password": "$2a$10$0THTGmuguDE51QkRIhgX3uI9mfeZ45MmECg5Caz6iIqcLVJZtzmPa",
+    "role": "Super Admin",
+    "bio": "Chief Executive and System Owner of Professional News Portal.",
+    "avatar": "https://api.dicebear.com/7.x/adventurer/svg?seed=superadmin",
+    "createdAt": "2026-07-16T14:19:45.127Z",
+    "updatedAt": "2026-07-16T14:19:45.127Z"
+  },
+  {
+    "_id": "37a810b026f034564e97bcde",
+    "name": "Sadia Jahan",
+    "email": "editor@news.com",
+    "password": "$2a$10$0THTGmuguDE51QkRIhgX3uI9mfeZ45MmECg5Caz6iIqcLVJZtzmPa",
+    "role": "Editor",
+    "bio": "Chief Editor of News Portal. Veteran journalist with 15+ years experience.",
+    "avatar": "https://api.dicebear.com/7.x/adventurer/svg?seed=sadia",
+    "createdAt": "2026-07-16T14:19:45.128Z",
+    "updatedAt": "2026-07-16T14:19:45.128Z"
+  },
+  {
+    "_id": "5d2d51f6a594f0523129f6e3",
+    "name": "Tanvir Rahman",
+    "email": "reporter@news.com",
+    "password": "$2a$10$0THTGmuguDE51QkRIhgX3uI9mfeZ45MmECg5Caz6iIqcLVJZtzmPa",
+    "role": "Reporter",
+    "bio": "Lead political reporter based in Dhaka. Cover sports and international affairs too.",
+    "avatar": "https://api.dicebear.com/7.x/adventurer/svg?seed=tanvir",
+    "createdAt": "2026-07-16T14:19:45.129Z",
+    "updatedAt": "2026-07-16T14:19:45.129Z"
+  },
+  {
+    "_id": "9d604e04299de83b815f0eb8",
+    "name": "Moderator Kamal",
+    "email": "moderator@news.com",
+    "password": "$2a$10$0THTGmuguDE51QkRIhgX3uI9mfeZ45MmECg5Caz6iIqcLVJZtzmPa",
+    "role": "Moderator",
+    "bio": "Content Moderator.",
+    "avatar": "https://api.dicebear.com/7.x/adventurer/svg?seed=kamal",
+    "createdAt": "2026-07-16T14:19:45.131Z",
+    "updatedAt": "2026-07-16T14:19:45.131Z"
+  },
+  {
+    "_id": "41ee9a17b1e75e4408e0e8b7",
+    "name": "SEO Manager Fahim",
+    "email": "seo@news.com",
+    "password": "$2a$10$0THTGmuguDE51QkRIhgX3uI9mfeZ45MmECg5Caz6iIqcLVJZtzmPa",
+    "role": "SEO Manager",
+    "bio": "Search Engine Optimization Manager.",
+    "avatar": "https://api.dicebear.com/7.x/adventurer/svg?seed=fahim",
+    "createdAt": "2026-07-16T14:19:45.132Z",
+    "updatedAt": "2026-07-16T14:19:45.132Z"
+  }
+]

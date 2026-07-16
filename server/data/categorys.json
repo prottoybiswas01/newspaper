@@ -1,0 +1,106 @@
+[
+  {
+    "_id": "27511f0d103fc508d28e751f",
+    "name": "Bangladesh",
+    "slug": "bangladesh",
+    "order": 1,
+    "createdAt": "2026-07-16T14:19:45.132Z",
+    "updatedAt": "2026-07-16T14:19:45.132Z"
+  },
+  {
+    "_id": "68d3a36b343735a95b6354bc",
+    "name": "International",
+    "slug": "international",
+    "order": 2,
+    "createdAt": "2026-07-16T14:19:45.133Z",
+    "updatedAt": "2026-07-16T14:19:45.133Z"
+  },
+  {
+    "_id": "0d68ab24d4651efc2ebb2a14",
+    "name": "Politics",
+    "slug": "politics",
+    "order": 3,
+    "createdAt": "2026-07-16T14:19:45.134Z",
+    "updatedAt": "2026-07-16T14:19:45.134Z"
+  },
+  {
+    "_id": "0c356216d071f5104913d9c5",
+    "name": "Economy",
+    "slug": "economy",
+    "order": 4,
+    "createdAt": "2026-07-16T14:19:45.134Z",
+    "updatedAt": "2026-07-16T14:19:45.134Z"
+  },
+  {
+    "_id": "4bbfc7f4c4055213d107a790",
+    "name": "Sports",
+    "slug": "sports",
+    "order": 5,
+    "createdAt": "2026-07-16T14:19:45.135Z",
+    "updatedAt": "2026-07-16T14:19:45.135Z"
+  },
+  {
+    "_id": "1a45727ab5943487cd56d961",
+    "name": "Entertainment",
+    "slug": "entertainment",
+    "order": 6,
+    "createdAt": "2026-07-16T14:19:45.135Z",
+    "updatedAt": "2026-07-16T14:19:45.135Z"
+  },
+  {
+    "_id": "bd0ba2c9583852e88765db2e",
+    "name": "Technology",
+    "slug": "technology",
+    "order": 7,
+    "createdAt": "2026-07-16T14:19:45.136Z",
+    "updatedAt": "2026-07-16T14:19:45.136Z"
+  },
+  {
+    "_id": "f29d8ad81254d212e9b8d09a",
+    "name": "Education",
+    "slug": "education",
+    "order": 8,
+    "createdAt": "2026-07-16T14:19:45.137Z",
+    "updatedAt": "2026-07-16T14:19:45.137Z"
+  },
+  {
+    "_id": "7468b2b8fad1ecd61e866c04",
+    "name": "Jobs",
+    "slug": "jobs",
+    "order": 9,
+    "createdAt": "2026-07-16T14:19:45.138Z",
+    "updatedAt": "2026-07-16T14:19:45.138Z"
+  },
+  {
+    "_id": "c03f0f8ce410415316b94ff2",
+    "name": "Lifestyle",
+    "slug": "lifestyle",
+    "order": 10,
+    "createdAt": "2026-07-16T14:19:45.138Z",
+    "updatedAt": "2026-07-16T14:19:45.138Z"
+  },
+  {
+    "_id": "006f5f478d91c52735b6966d",
+    "name": "Opinion",
+    "slug": "opinion",
+    "order": 11,
+    "createdAt": "2026-07-16T14:19:45.139Z",
+    "updatedAt": "2026-07-16T14:19:45.139Z"
+  },
+  {
+    "_id": "7be2672b7da98214d519b729",
+    "name": "Videos",
+    "slug": "videos",
+    "order": 12,
+    "createdAt": "2026-07-16T14:19:45.140Z",
+    "updatedAt": "2026-07-16T14:19:45.140Z"
+  },
+  {
+    "_id": "f6e4f9abc5b341f765b86867",
+    "name": "Photo Gallery",
+    "slug": "photo-gallery",
+    "order": 13,
+    "createdAt": "2026-07-16T14:19:45.140Z",
+    "updatedAt": "2026-07-16T14:19:45.140Z"
+  }
+]

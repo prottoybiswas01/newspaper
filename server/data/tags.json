@@ -1,0 +1,51 @@
+[
+  {
+    "_id": "b5d3cbf528373c4dd70dc0c6",
+    "name": "Dhaka",
+    "slug": "dhaka",
+    "createdAt": "2026-07-16T14:19:45.141Z",
+    "updatedAt": "2026-07-16T14:19:45.141Z"
+  },
+  {
+    "_id": "f45ffcd87ee5f025b1fd7575",
+    "name": "Cricket",
+    "slug": "cricket",
+    "createdAt": "2026-07-16T14:19:45.141Z",
+    "updatedAt": "2026-07-16T14:19:45.141Z"
+  },
+  {
+    "_id": "a16f51f10481a8d9f65255dc",
+    "name": "AI",
+    "slug": "ai",
+    "createdAt": "2026-07-16T14:19:45.142Z",
+    "updatedAt": "2026-07-16T14:19:45.142Z"
+  },
+  {
+    "_id": "7818c6222962e292b7001e9a",
+    "name": "Politics",
+    "slug": "politics",
+    "createdAt": "2026-07-16T14:19:45.142Z",
+    "updatedAt": "2026-07-16T14:19:45.142Z"
+  },
+  {
+    "_id": "ebfcfd2eb6edaa49e0516e55",
+    "name": "Economy",
+    "slug": "economy",
+    "createdAt": "2026-07-16T14:19:45.143Z",
+    "updatedAt": "2026-07-16T14:19:45.143Z"
+  },
+  {
+    "_id": "346cffbd00a42b07185db8ac",
+    "name": "Tech",
+    "slug": "tech",
+    "createdAt": "2026-07-16T14:19:45.144Z",
+    "updatedAt": "2026-07-16T14:19:45.144Z"
+  },
+  {
+    "_id": "83cf55a128e1b3506f1efc12",
+    "name": "Cinema",
+    "slug": "cinema",
+    "createdAt": "2026-07-16T14:19:45.145Z",
+    "updatedAt": "2026-07-16T14:19:45.145Z"
+  }
+]

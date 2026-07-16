@@ -1,0 +1,41 @@
+[
+  {
+    "_id": "3b0b651e42579ec2c8e5aad7",
+    "title": "Header Banner Ad",
+    "placement": "header",
+    "type": "image",
+    "imageUrl": "https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=1200&h=200&fit=crop",
+    "linkUrl": "https://www.google.com",
+    "active": true,
+    "impressions": 130,
+    "clicks": 8,
+    "createdAt": "2026-07-16T14:19:45.152Z",
+    "updatedAt": "2026-07-16T14:29:37.100Z"
+  },
+  {
+    "_id": "d5d47dbfdffa2fcdef16b41c",
+    "title": "Sidebar Premium Ad",
+    "placement": "sidebar",
+    "type": "image",
+    "imageUrl": "https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=400&h=600&fit=crop",
+    "linkUrl": "https://www.google.com",
+    "active": true,
+    "impressions": 257,
+    "clicks": 14,
+    "createdAt": "2026-07-16T14:19:45.152Z",
+    "updatedAt": "2026-07-16T14:29:37.104Z"
+  },
+  {
+    "_id": "fb14941653654a4663db4f88",
+    "title": "Popup Newsletter Ad",
+    "placement": "popup",
+    "type": "image",
+    "imageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop",
+    "linkUrl": "https://www.google.com",
+    "active": false,
+    "impressions": 0,
+    "clicks": 0,
+    "createdAt": "2026-07-16T14:19:45.153Z",
+    "updatedAt": "2026-07-16T14:19:45.153Z"
+  }
+]
