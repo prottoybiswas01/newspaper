@@ -1698,7 +1698,32 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-             </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 8: AI DRAFTS REVIEW PANEL */}
+        {activeTab === 'aiDrafts' && hasPermission(['Super Admin', 'Admin', 'Editor']) && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                  <ShieldAlert className="h-7 w-7 text-indigo-655 animate-pulse" />
+                  <span>AI-Generated News Review Dashboard</span>
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">Review, edit, add images/videos, and approve or reject news researched by the AI Reporter.</p>
+              </div>
+              
+              <button
+                onClick={handleTriggerAiResearch}
+                disabled={triggeringAi}
+                className="px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black tracking-wide transition-all disabled:opacity-50 flex items-center space-x-2 shadow-lg shadow-indigo-600/10"
+                id="ai-trigger-btn"
+              >
+                <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
+                <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
+              </button>
+            </div>
 
             <div className="space-y-6">
               {aiArticles.length === 0 ? (
