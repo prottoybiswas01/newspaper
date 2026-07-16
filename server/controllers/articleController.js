@@ -68,6 +68,25 @@ const createArticle = async (req, res) => {
     }
 
     const article = await Article.create(articleData);
+
+    // Automatically register tags in Taxonomy Tag collection
+    if (tags && tags.length > 0) {
+      try {
+        const Tag = require('../models/Tag');
+        for (const tName of tags) {
+          const tSlug = tName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          if (tSlug) {
+            const exists = await Tag.findOne({ slug: tSlug });
+            if (!exists) {
+              await Tag.create({ name: tName, slug: tSlug });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to auto-seed taxonomy tags:", err);
+      }
+    }
+
     res.status(201).json({ success: true, article });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -207,6 +226,25 @@ const updateArticle = async (req, res) => {
     }
 
     const updated = await Article.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
+
+    // Automatically register tags in Taxonomy Tag collection
+    if (tags && tags.length > 0) {
+      try {
+        const Tag = require('../models/Tag');
+        for (const tName of tags) {
+          const tSlug = tName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          if (tSlug) {
+            const exists = await Tag.findOne({ slug: tSlug });
+            if (!exists) {
+              await Tag.create({ name: tName, slug: tSlug });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to auto-seed taxonomy tags on update:", err);
+      }
+    }
+
     res.json({ success: true, article: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -385,15 +423,41 @@ const triggerAiResearch = async (req, res) => {
 // @route   PUT /api/articles/ai/:id/approve
 const approveAiArticle = async (req, res) => {
   try {
-    const article = await Article.findById(req.params.id);
-    if (!article) {
+    const updated = await Article.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          aiStatus: 'approved',
+          status: 'published',
+          publishDate: new Date()
+        }
+      },
+      { new: true }
+    );
+
+    if (!updated) {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }
-    article.aiStatus = 'approved';
-    article.status = 'published';
-    article.publishDate = new Date();
-    await article.save();
-    res.json({ success: true, article });
+
+    // Automatically register tags in Taxonomy Tag collection for approved AI article
+    if (updated.tags && updated.tags.length > 0) {
+      try {
+        const Tag = require('../models/Tag');
+        for (const tName of updated.tags) {
+          const tSlug = tName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+          if (tSlug) {
+            const exists = await Tag.findOne({ slug: tSlug });
+            if (!exists) {
+              await Tag.create({ name: tName, slug: tSlug });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to auto-seed taxonomy tags on AI approval:", err);
+      }
+    }
+
+    res.json({ success: true, article: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

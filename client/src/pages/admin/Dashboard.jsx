@@ -22,6 +22,7 @@ const Dashboard = () => {
   // Define tab properties dynamically with role validation arrays
   const tabs = [
     { id: 'overview', name: 'Overview Analytics', icon: BarChart3, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
+    { id: 'articlesList', name: 'Manage Articles', icon: FileText, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'editor', name: 'Write Article', icon: Plus, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'media', name: 'Media Library', icon: ImageIcon, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'taxonomy', name: 'Categories & Tags', icon: Tags, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
@@ -68,6 +69,13 @@ const Dashboard = () => {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
   const [articlesList, setArticlesList] = useState([]);
   const [articlesLoading, setArticlesLoading] = useState(false);
+  const [articleSearchQuery, setArticleSearchQuery] = useState('');
+
+  const filteredArticles = articlesList.filter(art => 
+    (art.title || '').toLowerCase().includes(articleSearchQuery.toLowerCase()) ||
+    (art.author || '').toLowerCase().includes(articleSearchQuery.toLowerCase()) ||
+    (art.category || '').toLowerCase().includes(articleSearchQuery.toLowerCase())
+  );
 
   // Category Manager States
   const [categories, setCategories] = useState([]);
@@ -148,6 +156,8 @@ const Dashboard = () => {
     } else if (activeTab === 'aiDrafts') {
       loadAiArticles();
       loadGeminiKeys();
+    } else if (activeTab === 'articlesList') {
+      fetchArticlesList();
     }
   }, [activeTab]);
 
@@ -204,10 +214,13 @@ const Dashboard = () => {
   const fetchArticlesList = async () => {
     setArticlesLoading(true);
     try {
+      const isStaff = ['Super Admin', 'Admin', 'Editor'].includes(user?.role);
+      const authorQuery = isStaff ? '' : `&authorId=${user?.id}`;
+
       // Query articles with all statuses
-      const res = await api.get('/articles?status=draft&limit=100');
-      const resPub = await api.get('/articles?status=published&limit=100');
-      const resSched = await api.get('/articles?status=scheduled&limit=100');
+      const res = await api.get(`/articles?status=draft&limit=100${authorQuery}`);
+      const resPub = await api.get(`/articles?status=published&limit=100${authorQuery}`);
+      const resSched = await api.get(`/articles?status=scheduled&limit=100${authorQuery}`);
       
       let all = [];
       if (res.success) all = [...all, ...res.articles];
@@ -882,60 +895,109 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* TAB: ARTICLES LIST (SUB VIEW OF OVERVIEW) */}
+        {/* TAB: ARTICLES LIST */}
         {activeTab === 'articlesList' && (
           <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <button onClick={() => setActiveTab('overview')} className="text-xs text-blue-600 font-bold hover:underline">← Back to Overview</button>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                  {language === 'bn' ? 'সংবাদ তালিকা ও সম্পাদনা' : 'Articles Management Console'}
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">
+                  {language === 'bn' 
+                    ? 'আপনার প্রকাশিত ও খসড়া সংবাদসমূহ ট্র্যাক, এডিট এবং ডিলিট করুন।' 
+                    : 'Track, edit and manage your published, draft and scheduled news reports.'}
+                </p>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  placeholder={language === 'bn' ? 'সংবাদ অনুসন্ধান করুন...' : 'Search articles...'}
+                  value={articleSearchQuery}
+                  onChange={(e) => setArticleSearchQuery(e.target.value)}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-semibold focus:outline-none w-64 shadow-sm"
+                />
+                
+                <button
+                  onClick={() => { resetEditorForm(); setActiveTab('editor'); }}
+                  className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-xs font-black rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center space-x-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>{language === 'bn' ? 'নতুন সংবাদ' : 'Write News'}</span>
+                </button>
+              </div>
             </div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">Articles Management Console</h1>
             
             {articlesLoading ? (
-              <div className="animate-pulse bg-white p-6 h-60 rounded-xl" />
+              <div className="animate-pulse space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="bg-white dark:bg-slate-900 h-16 rounded-xl border border-slate-200/50 dark:border-slate-800/50" />
+                ))}
+              </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden">
-                <table className="w-full text-left text-xs font-semibold text-slate-650">
-                  <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
-                    <tr>
-                      <th className="p-3">Title</th>
-                      <th className="p-3">Author</th>
-                      <th className="p-3">Status</th>
-                      <th className="p-3">Views</th>
-                      <th className="p-3 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {articlesList.map(art => (
-                      <tr key={art._id} className="hover:bg-slate-55 dark:hover:bg-slate-800/10 text-slate-755 dark:text-slate-300">
-                        <td className="p-3 truncate max-w-sm font-bold">{art.title}</td>
-                        <td className="p-3">{art.author}</td>
-                        <td className="p-3">
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
-                            art.status === 'published' ? 'bg-green-100 text-green-700' : 
-                            (art.status === 'scheduled' ? 'bg-amber-100 text-amber-700' : 'bg-slate-200 text-slate-700')
-                          }`}>
-                            {art.status}
-                          </span>
-                        </td>
-                        <td className="p-3">{art.views}</td>
-                        <td className="p-3 text-right flex justify-end space-x-1.5">
-                          <button 
-                            onClick={() => handleEditArticle(art)}
-                            className="px-2.5 py-1 text-[10px] font-bold bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteArticle(art._id)}
-                            className="p-1 text-[10px] font-bold bg-red-50 text-red-650 rounded-md hover:bg-red-100"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-850 overflow-hidden shadow-xs">
+                {filteredArticles.length === 0 ? (
+                  <div className="text-center py-16">
+                    <FileText className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400">কোনো সংবাদ পাওয়া যায়নি।</h3>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-semibold text-slate-650">
+                      <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black border-b border-slate-100 dark:border-slate-800">
+                        <tr>
+                          <th className="p-4">{language === 'bn' ? 'শিরোনাম' : 'Title'}</th>
+                          <th className="p-4">{language === 'bn' ? 'বিভাগ' : 'Category'}</th>
+                          <th className="p-4">{language === 'bn' ? 'লেখক' : 'Author'}</th>
+                          <th className="p-4">{language === 'bn' ? 'অবস্থা' : 'Status'}</th>
+                          <th className="p-4">{language === 'bn' ? 'ভিউস' : 'Views'}</th>
+                          <th className="p-4 text-right">{language === 'bn' ? 'অ্যাকশন' : 'Actions'}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {filteredArticles.map(art => (
+                          <tr key={art._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350 transition-colors">
+                            <td className="p-4 font-bold text-slate-800 dark:text-white max-w-sm truncate">
+                              {art.title}
+                            </td>
+                            <td className="p-4">
+                              <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                {art.category}
+                              </span>
+                            </td>
+                            <td className="p-4 font-medium">{art.author}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+                                art.status === 'published' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' : 
+                                (art.status === 'scheduled' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400')
+                              }`}>
+                                {art.status}
+                              </span>
+                            </td>
+                            <td className="p-4 font-black">{art.views}</td>
+                            <td className="p-4 text-right">
+                              <div className="flex justify-end items-center space-x-2">
+                                <button 
+                                  onClick={() => handleEditArticle(art)}
+                                  className="px-3 py-1.5 text-[10px] font-black bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg hover:opacity-80 transition-opacity"
+                                >
+                                  {language === 'bn' ? 'সম্পাদনা' : 'Edit'}
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteArticle(art._id)}
+                                  className="p-1.5 bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400 rounded-lg hover:opacity-80 transition-opacity"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>

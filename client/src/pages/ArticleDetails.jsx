@@ -5,7 +5,7 @@ import AdPlacement from '../components/AdPlacement';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Calendar, Eye, Heart, Share2, Printer, 
-  ZoomIn, ZoomOut, RotateCcw, Clock, User, MessageSquare 
+  ZoomIn, ZoomOut, RotateCcw, Clock, User, MessageSquare, Tags
 } from 'lucide-react';
 
 const ArticleDetails = () => {
@@ -301,6 +301,25 @@ const ArticleDetails = () => {
         style={{ fontSize: `${fontSize}px` }}
         dangerouslySetInnerHTML={{ __html: displayArticle.content }}
       />
+
+      {/* Article Tags */}
+      {displayArticle.tags && displayArticle.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8 pt-4 border-t border-slate-100 dark:border-slate-800/60 no-print">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 mr-2 flex items-center">
+            <Tags className="h-4 w-4 mr-1 text-slate-400" />
+            {language === 'bn' ? 'ট্যাগসমূহ:' : 'Tags:'}
+          </span>
+          {displayArticle.tags.map((tag, idx) => (
+            <Link 
+              key={idx} 
+              to={`/search?q=${encodeURIComponent(tag)}`}
+              className="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 rounded-full text-[11px] font-semibold transition-all"
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Article Inline Advertisement */}
       <AdPlacement placement="article" />
