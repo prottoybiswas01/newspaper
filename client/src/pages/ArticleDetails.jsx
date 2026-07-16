@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   Calendar, Eye, Heart, Share2, Printer, 
   ZoomIn, ZoomOut, RotateCcw, Clock, User, MessageSquare 
@@ -9,7 +10,10 @@ import {
 
 const ArticleDetails = () => {
   const { slug } = useParams();
+  const { language, t } = useLanguage();
   const [article, setArticle] = useState(null);
+  const [translatedArticle, setTranslatedArticle] = useState(null);
+  const [translating, setTranslating] = useState(false);
   const [comments, setComments] = useState([]);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +66,45 @@ const ArticleDetails = () => {
     };
 
     fetchArticleData();
-    // Reset like state on route change
     setIsLiked(false);
   }, [slug]);
+
+  // Translation hook: translates article to English if language === 'en'
+  useEffect(() => {
+    if (!article) return;
+    if (language === 'en') {
+      const translate = async () => {
+        setTranslating(true);
+        try {
+          const res = await api.post('/articles/translate', {
+            title: article.title,
+            subtitle: article.subtitle,
+            summary: article.summary,
+            content: article.content,
+            targetLang: 'en'
+          });
+          if (res.success) {
+            setTranslatedArticle({
+              ...article,
+              title: res.translated.title,
+              subtitle: res.translated.subtitle,
+              summary: res.translated.summary,
+              content: res.translated.content
+            });
+          }
+        } catch (err) {
+          console.error('Translation error:', err);
+        } finally {
+          setTranslating(false);
+        }
+      };
+      translate();
+    } else {
+      setTranslatedArticle(null);
+    }
+  }, [language, article]);
+
+  const displayArticle = translatedArticle || article;
 
   const handleLike = async () => {
     if (isLiked || !article) return;
@@ -123,7 +163,7 @@ const ArticleDetails = () => {
     window.print();
   };
 
-  if (loading) {
+  if (loading || translating) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center animate-pulse">
         <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4 mx-auto mb-6" />
@@ -135,11 +175,11 @@ const ArticleDetails = () => {
     );
   }
 
-  if (!article) {
+  if (!displayArticle) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-700">দুঃখিত, সংবাদটি খুঁজে পাওয়া যায়নি!</h2>
-        <Link to="/" className="mt-4 inline-block text-blue-600 hover:underline">হোমপেজে ফিরে যান</Link>
+        <h2 className="text-xl font-bold text-slate-700">{t('noArticles')}</h2>
+        <Link to="/" className="mt-4 inline-block text-blue-600 hover:underline">{t('back')}</Link>
       </div>
     );
   }
@@ -149,18 +189,18 @@ const ArticleDetails = () => {
       {/* Header Info */}
       <header className="mb-6">
         <div className="flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wider no-print">
-          <Link to={`/category/${article.category.toLowerCase()}`} className="hover:underline">
-            {article.category}
+          <Link to={`/category/${displayArticle.category.toLowerCase()}`} className="hover:underline">
+            {t(displayArticle.category.toLowerCase())}
           </Link>
         </div>
 
         <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-4">
-          {article.title}
+          {displayArticle.title}
         </h1>
 
-        {article.subtitle && (
+        {displayArticle.subtitle && (
           <h2 className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-medium mb-6 leading-relaxed">
-            {article.subtitle}
+            {displayArticle.subtitle}
           </h2>
         )}
 
@@ -173,12 +213,12 @@ const ArticleDetails = () => {
               <User className="h-5 w-5" />
             </div>
             <div>
-              <Link to={`/reporter/${article.authorId}`} className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600">
-                {article.author}
+              <Link to={`/reporter/${displayArticle.authorId}`} className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600">
+                {displayArticle.author}
               </Link>
               <div className="flex items-center text-xs text-slate-400 space-x-2 mt-0.5">
-                <span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(article.publishDate || article.createdAt).toLocaleDateString('bn-BD')}</span>
-                <span className="flex items-center"><Clock className="h-3.5 w-3.5 mr-1" /> {article.readingTime} মিনিট পাঠ</span>
+                <span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(displayArticle.publishDate || displayArticle.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}</span>
+                <span className="flex items-center"><Clock className="h-3.5 w-3.5 mr-1" /> {displayArticle.readingTime || 3} {language === 'bn' ? 'মিনিট পাঠ' : 'min read'}</span>
               </div>
             </div>
           </div>
@@ -245,12 +285,11 @@ const ArticleDetails = () => {
         </div>
       </header>
 
-      {/* Featured Image */}
-      {article.featuredImage && (
+      {displayArticle.featuredImage && (
         <div className="rounded-2xl overflow-hidden mb-8 border border-slate-200/50 dark:border-slate-800/50 shadow-xs">
           <img 
-            src={article.featuredImage} 
-            alt={article.title} 
+            src={displayArticle.featuredImage} 
+            alt={displayArticle.title} 
             className="w-full h-auto max-h-[500px] object-cover" 
           />
         </div>
@@ -260,7 +299,7 @@ const ArticleDetails = () => {
       <div 
         className="prose dark:prose-invert max-w-none mb-10 leading-relaxed font-sans"
         style={{ fontSize: `${fontSize}px` }}
-        dangerouslySetInnerHTML={{ __html: article.content }}
+        dangerouslySetInnerHTML={{ __html: displayArticle.content }}
       />
 
       {/* Article Inline Advertisement */}
@@ -270,13 +309,13 @@ const ArticleDetails = () => {
       <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
         <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2 mb-6">
           <MessageSquare className="h-5 w-5 text-blue-600" />
-          <span>পাঠক মন্তব্য ({comments.length})</span>
+          <span>{t('comments')} ({comments.length})</span>
         </h3>
 
         {/* List of comments */}
         <div className="space-y-4 mb-8">
           {comments.length === 0 ? (
-            <p className="text-sm text-slate-400 italic">এই সংবাদের প্রথম মন্তব্যকারী হোন।</p>
+            <p className="text-sm text-slate-400 italic">{language === 'bn' ? 'এই সংবাদের প্রথম মন্তব্যকারী হোন।' : 'Be the first to comment on this article.'}</p>
           ) : (
             comments.map((comm) => (
               <div key={comm._id} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 p-4 rounded-xl flex items-start space-x-3">
@@ -288,7 +327,7 @@ const ArticleDetails = () => {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{comm.authorName}</span>
-                    <span className="text-[10px] text-slate-450">{new Date(comm.createdAt).toLocaleDateString('bn-BD')}</span>
+                    <span className="text-[10px] text-slate-450">{new Date(comm.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}</span>
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-350 mt-1">{comm.content}</p>
                 </div>
@@ -299,7 +338,7 @@ const ArticleDetails = () => {
 
         {/* Add Comment Form */}
         <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
-          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">আপনার মন্তব্য প্রকাশ করুন</h4>
+          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">{language === 'bn' ? 'আপনার মন্তব্য প্রকাশ করুন' : 'Leave a Comment'}</h4>
           
           {commentSuccess && <p className="text-sm text-green-600 mb-4 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">{commentSuccess}</p>}
           {commentError && <p className="text-sm text-red-500 mb-4 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">{commentError}</p>}
@@ -307,18 +346,18 @@ const ArticleDetails = () => {
           <form onSubmit={handleCommentSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">নাম *</label>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input 
                   type="text" 
                   value={commentName} 
                   onChange={(e) => setCommentName(e.target.value)} 
                   required
-                  placeholder="আপনার নাম..."
+                  placeholder={language === 'bn' ? 'আপনার নাম...' : 'Your name...'}
                   className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">ইমেইল ঠিকানা *</label>
+                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'ইমেইল ঠিকানা *' : 'Email Address *'}</label>
                 <input 
                   type="email" 
                   value={commentEmail} 
@@ -330,21 +369,21 @@ const ArticleDetails = () => {
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">মন্তব্য *</label>
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'মন্তব্য *' : 'Comment *'}</label>
               <textarea 
                 rows="4" 
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 required
-                placeholder="এখানে আপনার মন্তব্য লিখুন..."
+                placeholder={language === 'bn' ? 'এখানে আপনার মন্তব্য লিখুন...' : 'Write your comment here...'}
                 className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
             <button 
               type="submit"
-              className="px-6 py-2.5 bg-blue-650 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
+              className="px-6 py-2.5 bg-blue-655 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
             >
-              মন্তব্য জমা দিন
+              {language === 'bn' ? 'মন্তব্য জমা দিন' : 'Submit Comment'}
             </button>
           </form>
         </div>
@@ -353,7 +392,7 @@ const ArticleDetails = () => {
       {/* Related News */}
       {related.length > 0 && (
         <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
-          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">সম্পর্কিত সংবাদ (Related News)</h3>
+          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">{language === 'bn' ? 'সম্পর্কিত সংবাদ' : 'Related News'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {related.map(art => (
               <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-3 hover:shadow-md transition-shadow">

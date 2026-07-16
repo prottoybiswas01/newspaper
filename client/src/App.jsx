@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BreakingTicker from './components/BreakingTicker';
@@ -20,8 +21,9 @@ import Dashboard from './pages/admin/Dashboard';
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Router>
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
           <div className="flex flex-col min-h-screen transition-colors duration-300">
             <Header />
             <BreakingTicker />
@@ -43,6 +45,7 @@ function App() {
           </div>
         </Router>
       </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
