@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe } from 'lucide-react';
 
 const Header = () => {
   const { user, logout, hasPermission } = useAuth();
@@ -40,117 +40,127 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass shadow-sm transition-all duration-300 no-print">
-      {/* Topmost bar for date and brand logo */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-slate-200/50 dark:border-slate-800/50 py-3 flex items-center justify-between">
-        <div className="hidden sm:block text-xs font-semibold text-slate-500 dark:text-slate-400">
-          {new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-        </div>
-        
-        <Link to="/" className="flex items-center space-x-1.5 text-lg sm:text-2xl font-black tracking-tight text-blue-600 dark:text-blue-500 whitespace-nowrap">
-          <Newspaper className="h-6 w-6 sm:h-8 sm:w-8 stroke-[2.5] shrink-0" />
+    <header className="sticky top-0 z-50 bg-white dark:bg-[#0b0f19] border-b border-slate-100 dark:border-slate-800 shadow-xs transition-all duration-300 no-print">
+      
+      {/* Row 1: Logo & Top controls (Search, divider, Login) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        {/* Left: Brand Logo & Title */}
+        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
+          <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-blue-600 dark:text-blue-500 shrink-0" />
           <span className="font-sans bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-400 bg-clip-text text-transparent">
             {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
           </span>
-          <span className="hidden sm:inline-block text-[9px] uppercase font-bold tracking-widest bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400 px-1.5 py-0.5 rounded ml-1">
-            Mirror News
-          </span>
         </Link>
 
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Theme Toggle */}
-          <button 
-            onClick={toggleTheme} 
-            className="hidden sm:block p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
-            title="Toggle Theme"
-          >
-            {isDark ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-600" />}
-          </button>
-
-          {/* Language Switcher */}
-          <button 
-            onClick={toggleLanguage} 
-            className="hidden sm:block px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 transition-colors"
-            title="Switch Language"
-          >
-            {language === 'bn' ? 'EN' : 'বাং'}
-          </button>
-
+        {/* Right: Search, Divider, and Login Link */}
+        <div className="flex items-center space-x-3 text-slate-500 dark:text-slate-400">
           {/* Search Button Toggle */}
           <button 
             onClick={() => setSearchOpen(!searchOpen)} 
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+            className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+            title="Search"
           >
             <Search className="h-5 w-5" />
           </button>
 
-          {/* Auth buttons */}
+          {/* Vertical Divider */}
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-850"></div>
+
+          {/* Profile / Auth Button */}
           {user ? (
             <div className="flex items-center space-x-2">
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
-                  className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors"
+                  className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-55 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors animate-pulse"
                 >
                   <Shield className="h-3.5 w-3.5" />
                   <span>{t('dashboard')}</span>
                 </Link>
               )}
-              <Link to="/profile" className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <Link to="/profile" className="flex items-center space-x-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <img 
                   src={user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`} 
                   alt={user.name} 
-                  className="h-7 w-7 rounded-full border border-slate-300 dark:border-slate-700 bg-white" 
+                  className="h-6 w-6 rounded-full border border-slate-300 dark:border-slate-700 bg-white" 
                 />
-                <span className="hidden lg:block text-xs font-semibold text-slate-700 dark:text-slate-300">{user.name}</span>
+                <span className="hidden sm:inline-block text-xs font-bold text-slate-700 dark:text-slate-300">{user.name.split(' ')[0]}</span>
               </Link>
             </div>
           ) : (
             <Link 
               to="/login" 
-              className="flex items-center justify-center p-2 sm:px-4 sm:py-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-100 dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all font-semibold text-xs tracking-wide shrink-0"
-              title={t('signIn')}
+              className="flex items-center space-x-1 text-blue-600 dark:text-blue-500 hover:text-blue-700 font-bold text-sm transition-colors"
             >
-              <User className="h-4.5 w-4.5 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline-block sm:ml-1">{t('signIn')}</span>
+              <User className="h-4 w-4" />
+              <span>{language === 'bn' ? 'লগইন' : 'Login'}</span>
             </Link>
           )}
-
-          {/* Mobile Menu Toggle */}
-          <button 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
       </div>
 
-      {/* Main Categories Navigation Bar (Desktop) */}
-      <nav className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b border-slate-200/50 dark:border-slate-800/50">
-        <ul className="flex space-x-6 py-2 overflow-x-auto scrollbar-none">
-          <li>
-            <Link to="/" className="text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('home')}
-            </Link>
-          </li>
-          {categories.map((cat) => (
-            <li key={cat.slug}>
-              <Link 
-                to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
-                className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap"
-              >
-                {t(cat.slug.replace(/-([a-z])/g, g => g[1].toUpperCase()))}
-              </Link>
-            </li>
-          ))}
-          <li>
-            <Link to="/archive" className="text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
-              {t('archive')}
-            </Link>
-          </li>
-        </ul>
-      </nav>
+      {/* Row 2: Category Scroll Bar + Theme/Language Toggles (Visible on all screens) */}
+      <div className="border-t border-b border-slate-100 dark:border-slate-850/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-4">
+          
+          {/* Scrollable Categories List */}
+          <nav className="flex-1 overflow-x-auto scrollbar-none py-1.5">
+            <ul className="flex space-x-5 text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+              <li>
+                <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  {t('home')}
+                </Link>
+              </li>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link 
+                    to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    {t(cat.slug.replace(/-([a-z])/g, g => g[1].toUpperCase()))}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link to="/archive" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  {t('archive')}
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
+          {/* Right: Theme Toggle, Language button, Hamburger toggle */}
+          <div className="flex items-center space-x-2 shrink-0 border-l border-slate-200 dark:border-slate-800 pl-3 py-1">
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme} 
+              className="p-1.5 rounded-lg hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-555 dark:text-slate-400 transition-colors"
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-indigo-650" />}
+            </button>
+
+            {/* Language Switcher */}
+            <button 
+              onClick={toggleLanguage} 
+              className="flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-250 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+              title="Switch Language"
+            >
+              <Globe className="h-3.5 w-3.5 text-slate-400" />
+              <span className="text-[10px] uppercase font-bold">{language === 'bn' ? 'Eng' : 'বাং'}</span>
+            </button>
+
+            {/* Mobile Drawer Toggle */}
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+
+        </div>
+      </div>
 
       {/* Search Input Bar (Dropdown) */}
       {searchOpen && (
@@ -176,30 +186,12 @@ const Header = () => {
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[60px] z-40 bg-slate-950/20 backdrop-blur-sm animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
+        <div className="md:hidden fixed inset-0 top-[100px] z-40 bg-slate-950/20 backdrop-blur-sm animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
           <div 
             className="w-4/5 max-w-sm h-full bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-right duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col space-y-4">
-              {/* Preferences (Theme & Language Toggle) for Mobile Users */}
-              <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800/60 mb-2">
-                <span className="text-xs font-bold text-slate-550 dark:text-slate-400">Site Settings</span>
-                <div className="flex items-center space-x-2.5">
-                  <button 
-                    onClick={toggleTheme} 
-                    className="p-1.5 rounded-full bg-white dark:bg-slate-850 shadow-xs border border-slate-200/50 dark:border-slate-800/50 text-slate-500 dark:text-slate-400"
-                  >
-                    {isDark ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-650" />}
-                  </button>
-                  <button 
-                    onClick={toggleLanguage} 
-                    className="px-2.5 py-1 text-[10px] font-black bg-white dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800/50 rounded-lg text-blue-600 dark:text-blue-400 shadow-xs"
-                  >
-                    {language === 'bn' ? 'ENGLISH' : 'বাংলা'}
-                  </button>
-                </div>
-              </div>
               {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
