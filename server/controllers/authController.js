@@ -254,6 +254,33 @@ const updateUserRole = async (req, res) => {
   }
 };
 
+// @desc    Delete user
+// @route   DELETE /api/auth/users/:id
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    if (userId === req.user.id) {
+      return res.status(400).json({ success: false, message: 'You cannot delete yourself' });
+    }
+
+    const userToDelete = await User.findById(userId);
+    if (!userToDelete) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Cascade delete user's articles
+    await Article.deleteMany({ authorId: userId });
+
+    // Delete user
+    await User.findByIdAndDelete(userId);
+
+    res.json({ success: true, message: 'User and their articles deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -262,5 +289,6 @@ module.exports = {
   getReporters,
   getReporterById,
   getAllUsers,
-  updateUserRole
+  updateUserRole,
+  deleteUser
 };

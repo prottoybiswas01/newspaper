@@ -10,11 +10,13 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const root = window.document.body;
+    const root = window.document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
+      window.document.body.classList.add('dark');
     } else {
       root.classList.remove('dark');
+      window.document.body.classList.remove('dark');
     }
     localStorage.setItem('theme', theme);
   }, [theme]);

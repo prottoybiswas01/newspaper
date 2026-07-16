@@ -263,6 +263,68 @@ const shareArticle = async (req, res) => {
   }
 };
 
+// Helper function to call unofficial Google Translate API
+const translateText = async (text, targetLang) => {
+  if (!text || text.trim() === '') return '';
+  try {
+    const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+    if (!response.ok) {
+      throw new Error('Google Translate API failed');
+    }
+    const data = await response.json();
+    if (data && data[0]) {
+      const translatedString = data[0].map(x => x[0]).join('');
+      return translatedString;
+    }
+    return text;
+  } catch (err) {
+    console.error('Translation error:', err.message);
+    return text;
+  }
+};
+
+// @desc    Translate article fields
+// @route   POST /api/articles/translate
+const translateArticle = async (req, res) => {
+  try {
+    const { title, subtitle, summary, content, targetLang } = req.body;
+    
+    if (!targetLang) {
+      return res.status(400).json({ success: false, message: 'Target language is required' });
+    }
+
+    const cleanHtml = (html) => {
+      if (!html) return '';
+      return html
+        .replace(/<\/\s+([a-zA-Z0-9]+)>/g, '</$1>')
+        .replace(/<\s+([a-zA-Z0-9]+)>/g, '<$1>')
+        .replace(/&nbsp;/g, ' ');
+    };
+
+    const translatedTitle = await translateText(title, targetLang);
+    const translatedSubtitle = await translateText(subtitle, targetLang);
+    const translatedSummary = await translateText(summary, targetLang);
+    
+    let translatedContent = '';
+    if (content) {
+      translatedContent = await translateText(content, targetLang);
+      translatedContent = cleanHtml(translatedContent);
+    }
+
+    res.json({
+      success: true,
+      translated: {
+        title: translatedTitle,
+        subtitle: translatedSubtitle,
+        summary: translatedSummary,
+        content: translatedContent
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createArticle,
   getArticles,
@@ -270,5 +332,6 @@ module.exports = {
   updateArticle,
   deleteArticle,
   likeArticle,
-  shareArticle
+  shareArticle,
+  translateArticle
 };

@@ -434,6 +434,54 @@ const Dashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (userId) => {
+    if (!confirm('Are you sure you want to delete this user? This will also delete all articles written by them.')) return;
+    try {
+      const res = await api.delete(`/auth/users/${userId}`);
+      if (res.success) {
+        setUsers(prev => prev.filter(u => u._id !== userId));
+        alert('User and their articles deleted successfully.');
+      } else {
+        alert(res.message || 'Failed to delete user.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred.');
+    }
+  };
+
+  const [translating, setTranslating] = useState(false);
+
+  const handleTranslate = async (targetLang) => {
+    if (!articleTitle && !articleContent) {
+      alert('অনুবাদ করার জন্য অনুগ্রহ করে আগে শিরোনাম বা বিষয়বস্তু লিখুন।');
+      return;
+    }
+    setTranslating(true);
+    try {
+      const res = await api.post('/articles/translate', {
+        title: articleTitle,
+        subtitle: articleSubtitle,
+        summary: articleSummary,
+        content: articleContent,
+        targetLang
+      });
+      if (res.success) {
+        setArticleTitle(res.translated.title || '');
+        setArticleSubtitle(res.translated.subtitle || '');
+        setArticleSummary(res.translated.summary || '');
+        setArticleContent(res.translated.content || '');
+      } else {
+        alert(res.message || 'Translation failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Translation request failed.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -709,9 +757,29 @@ const Dashboard = () => {
         {/* TAB 1: NEWS EDITOR */}
         {activeTab === 'editor' && (
           <div className="space-y-6">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-              {editingArticleId ? 'সংবাদ সম্পাদনা (Edit Article)' : 'নতুন সংবাদ লিখুন (Write Article)'}
-            </h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+                {editingArticleId ? 'সংবাদ সম্পাদনা (Edit Article)' : 'নতুন সংবাদ লিখুন (Write Article)'}
+              </h1>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => handleTranslate('bn')}
+                  disabled={translating}
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                >
+                  <span>{translating ? 'অনুবাদ হচ্ছে...' : 'বাংলায় অনুবাদ (Translate to BN)'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTranslate('en')}
+                  disabled={translating}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                >
+                  <span>{translating ? 'Translating...' : 'Translate to EN (ইংরেজি)'}</span>
+                </button>
+              </div>
+            </div>
 
             <form onSubmit={handleSaveArticle} className="space-y-6">
               
@@ -1279,7 +1347,7 @@ const Dashboard = () => {
                       <th className="p-3">Name</th>
                       <th className="p-3">Email Address</th>
                       <th className="p-3">Active Role</th>
-                      <th className="p-3 text-right">Assign Authority Role</th>
+                      <th className="p-3 text-right">Assign Role & Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1295,7 +1363,7 @@ const Dashboard = () => {
                             {u.role}
                           </span>
                         </td>
-                        <td className="p-3 text-right flex justify-end">
+                        <td className="p-3 text-right flex justify-end items-center space-x-2">
                           <select
                             value={u.role}
                             disabled={user.id === u._id} // Prevent self role-demoting
@@ -1310,6 +1378,15 @@ const Dashboard = () => {
                             <option value="Admin">Admin (প্রশাসক)</option>
                             <option value="Super Admin">Super Admin (মাস্টার)</option>
                           </select>
+                          {user.id !== u._id && (
+                            <button
+                              onClick={() => handleDeleteUser(u._id)}
+                              className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                              title="Delete User"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}

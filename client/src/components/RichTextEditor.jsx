@@ -4,12 +4,15 @@ import { Bold, Italic, Underline, List, ListOrdered, Heading1, Heading2, Quote, 
 const RichTextEditor = ({ value, onChange }) => {
   const editorRef = useRef(null);
 
-  // Sync initial value (only once to avoid cursor resetting on keystrokes)
+  // Sync value from parent if it changed from outside (e.g., translation)
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || '<p><br></p>';
+    if (editorRef.current) {
+      const isFocused = document.activeElement === editorRef.current;
+      if (!isFocused && editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value || '<p><br></p>';
+      }
     }
-  }, []);
+  }, [value]);
 
   const handleInput = () => {
     if (editorRef.current) {

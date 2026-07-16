@@ -7,12 +7,14 @@ const {
   updateArticle,
   deleteArticle,
   likeArticle,
-  shareArticle
+  shareArticle,
+  translateArticle
 } = require('../controllers/articleController');
 const { protect, authorize } = require('../middleware/auth');
 
 router.get('/', getArticles);
 router.get('/slug/:slug', getArticleBySlug);
+router.post('/translate', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), translateArticle);
 router.post('/', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), createArticle);
 router.put('/:id', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), updateArticle);
 router.delete('/:id', protect, authorize('Editor', 'Admin', 'Super Admin'), deleteArticle);

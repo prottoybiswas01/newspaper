@@ -35,8 +35,11 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Rate Limiting
 app.use('/api', apiLimiter);
 
-// Serve uploads statically
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+// Serve uploads statically (use /tmp/uploads on Vercel)
+const uploadsStaticPath = process.env.VERCEL 
+  ? '/tmp/uploads' 
+  : path.join(__dirname, 'public', 'uploads');
+app.use('/uploads', express.static(uploadsStaticPath));
 
 // API Routes
 app.use('/api/auth', authRoutes);
