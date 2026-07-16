@@ -135,6 +135,31 @@ async function queryGemini(payload) {
   throw new Error(`সকল Gemini API কী ব্যবহার সীমা শেষ (Status ${lastStatus}). Admin Panel থেকে নতুন API কী যোগ করুন।`);
 }
 
+async function queryOpenAiGateway(prompt) {
+  const OpenAI = require('openai');
+  const apiKey = process.env.AI_GATEWAY_API_KEY || "vck_3EOrYhxEMgdCHIaaIv8WKSmOnYBqIM0xgrbJOEBzXRLAgOtDLl3G07Nd";
+  const openai = new OpenAI({
+    apiKey: apiKey,
+    baseURL: 'https://ai-gateway.vercel.sh/v1',
+  });
+
+  let model = 'openai/gpt-5.5';
+  try {
+    const response = await openai.chat.completions.create({
+      model: model,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    return response.choices[0].message.content;
+  } catch (err) {
+    console.warn(`GPT-5.5 failed: ${err.message}. Trying GPT-4o fallback...`);
+    const response = await openai.chat.completions.create({
+      model: 'openai/gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+    });
+    return response.choices[0].message.content;
+  }
+}
+
 async function researchAndWriteArticle() {
   const prompt = `
 You are a highly professional, independent investigative journalist reporting on the latest news in Bangladesh.
@@ -172,14 +197,27 @@ Provide the response in raw JSON format. Do not wrap in markdown \`\`\`json bloc
     }
   };
 
-  const responseData = await queryGemini(payload);
-  const jsonText = responseData.candidates[0].content.parts[0].text;
+  let jsonText = '';
+  try {
+    const responseData = await queryGemini(payload);
+    jsonText = responseData.candidates[0].content.parts[0].text;
+  } catch (geminiError) {
+    console.warn('Gemini query failed, falling back to Vercel AI Gateway (OpenAI)... Error:', geminiError.message);
+    try {
+      jsonText = await queryOpenAiGateway(prompt);
+      // Clean markdown code blocks if the model wrapped it in ```json ... ```
+      jsonText = jsonText.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+    } catch (openaiError) {
+      console.error('OpenAI Gateway fallback failed too:', openaiError.message);
+      throw new Error(`AI Research failed: Gemini is exhausted (${geminiError.message}) and Vercel AI Gateway failed (${openaiError.message})`);
+    }
+  }
   
   try {
     return JSON.parse(jsonText);
   } catch (err) {
-    console.error("Failed to parse Gemini JSON output:", jsonText);
-    throw new Error("Invalid JSON returned from Gemini API");
+    console.error("Failed to parse AI JSON output:", jsonText);
+    throw new Error("Invalid JSON returned from AI generation API");
   }
 }
 
