@@ -113,6 +113,9 @@ const Dashboard = () => {
   const [triggeringAi, setTriggeringAi] = useState(false);
   const [geminiKeysText, setGeminiKeysText] = useState('');
   const [savingKeys, setSavingKeys] = useState(false);
+  const [testingKeys, setTestingKeys] = useState(false);
+  const [keyStatuses, setKeyStatuses] = useState([]);
+  const [showKeyManager, setShowKeyManager] = useState(false);
 
   // User Manager States
   const [users, setUsers] = useState([]);
@@ -614,6 +617,50 @@ const Dashboard = () => {
     } finally {
       setSavingKeys(false);
     }
+  };
+
+  const handleTestKeys = async () => {
+    setTestingKeys(true);
+    setKeyStatuses([]);
+    
+    const parsed = geminiKeysText
+      .split(/[\n,]+/)
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+      
+    if (parsed.length === 0) {
+      toast.warning('কোনো API কী পাওয়া যায়নি। প্রথমে কী যোগ করুন।');
+      setTestingKeys(false);
+      return;
+    }
+    
+    const results = [];
+    for (let i = 0; i < parsed.length; i++) {
+      const key = parsed[i];
+      const masked = key.length > 10 ? `${key.substring(0, 6)}...${key.substring(key.length - 4)}` : 'Key';
+      
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: 'a' }] }] })
+        });
+        
+        const data = await res.json();
+        if (res.status === 200) {
+          results.push({ key: masked, status: 'Active', message: 'কাজ করছে (Active)' });
+        } else {
+          const errMsg = data?.error?.message || 'Error';
+          const shortMsg = errMsg.includes('Quota exceeded') ? 'কোটা শেষ (Quota Exceeded)' : 'অবৈধ কী (Invalid Key)';
+          results.push({ key: masked, status: 'Error', message: shortMsg });
+        }
+      } catch (err) {
+        results.push({ key: masked, status: 'Error', message: 'নেটওয়ার্ক সমস্যা (Network Error)' });
+      }
+    }
+    
+    setKeyStatuses(results);
+    setTestingKeys(false);
   };
 
   const handleTriggerAiResearch = async () => {
@@ -1787,6 +1834,81 @@ const Dashboard = () => {
                 <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
                 <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
               </button>
+            </div>
+
+            {/* 🔑 Gemini API Keys Manager (Premium Collapsible Card) */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl overflow-hidden shadow-xs">
+              <button
+                onClick={() => setShowKeyManager(!showKeyManager)}
+                className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <div className="flex items-center space-x-2">
+                  <Settings className="h-5 w-5 text-indigo-655" />
+                  <span className="text-sm font-bold text-slate-800 dark:text-slate-100">জেমিনি এপিআই কী ম্যানেজার (Gemini API Keys Manager)</span>
+                </div>
+                <span className="text-xs font-bold text-slate-400">
+                  {showKeyManager ? 'লুকান ▲' : 'কী তালিকা ও পরীক্ষা করুন ▼'}
+                </span>
+              </button>
+
+              {showKeyManager && (
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800/80 space-y-4">
+                  <form onSubmit={handleSaveGeminiKeys} className="space-y-4">
+                    <div>
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">
+                        Gemini API কী সমূহ (প্রতি লাইনে একটি করে কী লিখুন বা পেস্ট করুন):
+                      </label>
+                      <textarea
+                        rows="5"
+                        placeholder="AIzaSy...\nAIzaSy..."
+                        value={geminiKeysText}
+                        onChange={(e) => setGeminiKeysText(e.target.value)}
+                        className="w-full px-3 py-2 border dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl text-xs font-bold font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        disabled={savingKeys}
+                        className="px-4 py-2 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-lg text-xs font-bold hover:opacity-95 transition-opacity disabled:opacity-50"
+                      >
+                        {savingKeys ? 'সংরক্ষণ হচ্ছে...' : 'কী সংরক্ষণ করুন (Save)'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleTestKeys}
+                        disabled={testingKeys}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                      >
+                        {testingKeys ? 'টেস্টিং হচ্ছে...' : 'সব কী পরীক্ষা করুন (Test Keys)'}
+                      </button>
+                    </div>
+                  </form>
+
+                  {keyStatuses.length > 0 && (
+                    <div className="pt-4 border-t border-slate-100 dark:border-slate-850">
+                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Live কী স্ট্যাটাস:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {keyStatuses.map((k, index) => (
+                          <div
+                            key={index}
+                            className={`p-3 border rounded-xl flex items-center justify-between text-xs font-semibold ${
+                              k.status === 'Active'
+                                ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/10 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400'
+                                : 'bg-red-50/50 border-red-200 dark:bg-red-950/10 dark:border-red-900/50 text-red-700 dark:text-red-400'
+                            }`}
+                          >
+                            <span className="font-mono">{k.key}</span>
+                            <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white dark:bg-slate-900 shadow-xs">
+                              {k.message}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
