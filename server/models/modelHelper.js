@@ -21,7 +21,13 @@ function createModel(modelName, schemaDefinition) {
   };
 
   const target = {
-    fallbackModel: new db.JSONModel(collectionName),
+    _fallbackModel: null,
+    get fallbackModel() {
+      if (!this._fallbackModel) {
+        this._fallbackModel = new db.JSONModel(collectionName);
+      }
+      return this._fallbackModel;
+    },
     mongooseModel: () => {
       if (mongoose.models[modelName]) {
         return mongoose.models[modelName];

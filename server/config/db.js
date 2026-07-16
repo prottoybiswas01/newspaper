@@ -5,10 +5,7 @@ const path = require('path');
 let isJSONFallback = false;
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
-// Ensure data directory exists for JSON fallback
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+// Data directory for JSON fallback (lazy creation)
 
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI;
@@ -41,6 +38,9 @@ const generateId = () => {
 // JSON Mock Model Class to replicate Mongoose behavior
 class JSONModel {
   constructor(collectionName) {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
     this.filePath = path.join(DATA_DIR, `${collectionName}.json`);
     if (!fs.existsSync(this.filePath)) {
       fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
