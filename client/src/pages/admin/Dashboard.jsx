@@ -12,7 +12,7 @@ import {
   BarChart3, FileText, Image as ImageIcon, Tags, 
   MessageSquare, Megaphone, Users, ShieldAlert, 
   ChevronRight, LogOut, Globe, Plus, Trash2, Check, X,
-  Calendar, Eye, HelpCircle, Save, Settings
+  Calendar, Eye, HelpCircle, Save, Settings, Cpu
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -28,7 +28,8 @@ const Dashboard = () => {
     { id: 'comments', name: 'Moderate Comments', icon: MessageSquare, roles: ['Super Admin', 'Admin', 'Editor', 'Moderator'] },
     { id: 'ads', name: 'Manage Ads', icon: Megaphone, roles: ['Super Admin', 'Admin'] },
     { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] },
-    { id: 'layout', name: 'Homepage Layout', icon: Settings, roles: ['Super Admin', 'Admin', 'Editor'] }
+    { id: 'layout', name: 'Homepage Layout', icon: Settings, roles: ['Super Admin', 'Admin', 'Editor'] },
+    { id: 'aiDrafts', name: 'AI Drafts Review', icon: ShieldAlert, roles: ['Super Admin', 'Admin', 'Editor'] }
   ];
 
   const allowedTabs = tabs.filter(tab => hasPermission(tab.roles));
@@ -97,6 +98,10 @@ const Dashboard = () => {
   const [newSectionCategory, setNewSectionCategory] = useState('');
   const [newSectionLayout, setNewSectionLayout] = useState('grid');
 
+  // AI News States
+  const [aiArticles, setAiArticles] = useState([]);
+  const [triggeringAi, setTriggeringAi] = useState(false);
+
   // User Manager States
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -138,6 +143,8 @@ const Dashboard = () => {
     } else if (activeTab === 'layout') {
       loadHomepageLayout();
       loadTaxonomies();
+    } else if (activeTab === 'aiDrafts') {
+      loadAiArticles();
     }
   }, [activeTab]);
 
@@ -548,6 +555,85 @@ const Dashboard = () => {
     } catch (err) {
       console.error(err);
       alert('Failed to save settings.');
+    }
+  };
+
+  const loadAiArticles = async () => {
+    try {
+      const res = await api.get('/articles/ai/pending');
+      if (res.success) {
+        setAiArticles(res.articles);
+      }
+    } catch (err) {
+      console.error('Failed to load pending AI drafts:', err);
+    }
+  };
+
+  const handleTriggerAiResearch = async () => {
+    setTriggeringAi(true);
+    try {
+      const res = await api.post('/articles/ai/trigger');
+      if (res.success) {
+        alert('এআই রিপোর্টার সফলভাবে নতুন সংবাদ রিসার্চ ও ড্রাফট তৈরি করেছে!');
+        loadAiArticles();
+      } else {
+        alert(res.message || 'AI news research failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Research request failed.');
+    } finally {
+      setTriggeringAi(false);
+    }
+  };
+
+  const handleReviewAiArticle = (art) => {
+    // Load into editor states
+    setEditingArticleId(art._id);
+    setArticleTitle(art.title);
+    setArticleSubtitle(art.subtitle || '');
+    setArticleContent(art.content);
+    setArticleSummary(art.summary || '');
+    setArticleCategory(art.category);
+    setArticleTags((art.tags || []).join(', '));
+    setArticleStatus(art.status);
+    setArticleFeaturedImage(art.featuredImage || '');
+    setArticleVideoUrl(art.videoUrl || '');
+    setArticleScheduledDate(art.scheduledDate ? art.scheduledDate.substring(0, 16) : '');
+    setArticleSeoTitle(art.seo?.metaTitle || '');
+    setArticleSeoDesc(art.seo?.metaDescription || '');
+    setArticleSeoKeywords(art.seo?.keywords || '');
+    
+    // Switch to editor
+    setActiveTab('editor');
+  };
+
+  const handleApproveAiArticle = async (id) => {
+    try {
+      const res = await api.put(`/articles/ai/${id}/approve`);
+      if (res.success) {
+        alert('সংবাদটি অনুমোদন ও প্রকাশ করা হয়েছে!');
+        loadAiArticles();
+      } else {
+        alert(res.message || 'Approval failed.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRejectAiArticle = async (id) => {
+    if (!confirm('Are you sure you want to reject and delete this AI draft?')) return;
+    try {
+      const res = await api.delete(`/articles/ai/${id}/reject`);
+      if (res.success) {
+        alert('এআই ড্রাফটটি বাতিল ও মুছে ফেলা হয়েছে।');
+        loadAiArticles();
+      } else {
+        alert(res.message || 'Rejection failed.');
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -1581,6 +1667,88 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 8: AI DRAFTS REVIEW PANEL */}
+        {activeTab === 'aiDrafts' && hasPermission(['Super Admin', 'Admin', 'Editor']) && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                  <ShieldAlert className="h-7 w-7 text-indigo-655 animate-pulse" />
+                  <span>AI-Generated News Review Dashboard</span>
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">Review, edit, add images/videos, and approve or reject news researched by the AI Reporter.</p>
+              </div>
+              
+              <button
+                onClick={handleTriggerAiResearch}
+                disabled={triggeringAi}
+                className="px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black tracking-wide transition-all disabled:opacity-50 flex items-center space-x-2 shadow-lg shadow-indigo-600/10"
+              >
+                <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
+                <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
+              </button>
+            </div>
+
+            {aiArticles.length === 0 ? (
+              <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
+                <ShieldAlert className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">কোনো মুলতুবি এআই ড্রাফট পাওয়া যায়নি।</h3>
+                <p className="text-xs text-slate-400 mt-1">নতুন ব্রেকিং নিউজ এনালাইসিস করতে উপরের বাটনে ক্লিক করুন।</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {aiArticles.map(art => (
+                  <div key={art._id} className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800/40 p-5 rounded-2xl shadow-xs flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/20 dark:text-indigo-400">
+                          {art.category}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-semibold">
+                          {new Date(art.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-slate-800 dark:text-white leading-snug line-clamp-2">
+                        {art.title}
+                      </h3>
+                      {art.subtitle && (
+                        <h4 className="text-xs text-slate-450 font-medium line-clamp-1">
+                          {art.subtitle}
+                        </h4>
+                      )}
+                      <p className="text-xs text-slate-500 dark:text-slate-450 line-clamp-3 leading-relaxed">
+                        {art.summary}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3 gap-2">
+                      <button
+                        onClick={() => handleReviewAiArticle(art)}
+                        className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-950 rounded-xl text-xs font-bold transition-all text-center"
+                      >
+                        পড়ুন ও সম্পাদনা
+                      </button>
+                      <button
+                        onClick={() => handleApproveAiArticle(art._id)}
+                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all"
+                      >
+                        অনুমোদন
+                      </button>
+                      <button
+                        onClick={() => handleRejectAiArticle(art._id)}
+                        className="p-2 bg-red-50 hover:bg-red-100 text-red-650 dark:bg-red-950/20 dark:text-red-400 rounded-xl transition-all"
+                        title="Reject and Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
