@@ -9,7 +9,13 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI;
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+
   if (!mongoURI) {
+    if (isProduction) {
+      console.error('\n❌ Error: MONGODB_URI is required in production.');
+      return;
+    }
     console.warn('\n⚠️  No MONGODB_URI provided in .env. Falling back to local JSON database.');
     isJSONFallback = true;
     return;
@@ -18,11 +24,15 @@ const connectDB = async () => {
   try {
     // Attempt Mongoose connection with short timeout to avoid hanging
     await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 3000
+      serverSelectionTimeoutMS: 5000
     });
     console.log('\n✅ Connected to MongoDB successfully.');
   } catch (error) {
     console.error('\n❌ MongoDB connection failed:', error.message);
+    if (isProduction) {
+      // In production, do not fall back to JSON database, let queries fail with connection error
+      return;
+    }
     console.warn('⚠️  Falling back to local JSON database.');
     isJSONFallback = true;
   }
