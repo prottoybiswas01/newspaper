@@ -132,7 +132,7 @@ async function queryGemini(payload) {
     }
   }
   
-  throw new Error(`All Gemini API keys are exhausted. Last error (Status ${lastStatus}): ${lastErrorText}. Please enter new valid keys in the Admin review panel.`);
+  throw new Error(`সকল Gemini API কী ব্যবহার সীমা শেষ (Status ${lastStatus}). Admin Panel থেকে নতুন API কী যোগ করুন।`);
 }
 
 async function researchAndWriteArticle() {
