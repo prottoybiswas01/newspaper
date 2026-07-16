@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -44,6 +45,7 @@ function App() {
             </div>
             <Footer />
           </div>
+          <SpeedInsights />
         </Router>
       </AuthProvider>
       </LanguageProvider>
