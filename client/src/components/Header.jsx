@@ -61,7 +61,7 @@ const Header = () => {
           {/* Theme Toggle */}
           <button 
             onClick={toggleTheme} 
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+            className="hidden sm:block p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
             title="Toggle Theme"
           >
             {isDark ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5 text-indigo-600" />}
@@ -70,7 +70,7 @@ const Header = () => {
           {/* Language Switcher */}
           <button 
             onClick={toggleLanguage} 
-            className="px-2 py-1 text-[10px] font-black uppercase rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 transition-colors"
+            className="hidden sm:block px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 dark:text-blue-400 transition-colors"
             title="Switch Language"
           >
             {language === 'bn' ? 'EN' : 'বাং'}
@@ -108,7 +108,7 @@ const Header = () => {
           ) : (
             <Link 
               to="/login" 
-              className="flex items-center space-x-1 px-4 py-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-100 dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all font-semibold text-xs tracking-wide"
+              className="flex items-center space-x-1 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-100 dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all font-semibold text-xs tracking-wide"
             >
               <User className="h-4 w-4" />
               <span>{t('signIn')}</span>
@@ -181,6 +181,24 @@ const Header = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col space-y-4">
+              {/* Preferences (Theme & Language Toggle) for Mobile Users */}
+              <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-150 dark:border-slate-800/60 mb-2">
+                <span className="text-xs font-bold text-slate-550 dark:text-slate-400">Site Settings</span>
+                <div className="flex items-center space-x-2.5">
+                  <button 
+                    onClick={toggleTheme} 
+                    className="p-1.5 rounded-full bg-white dark:bg-slate-850 shadow-xs border border-slate-200/50 dark:border-slate-800/50 text-slate-500 dark:text-slate-400"
+                  >
+                    {isDark ? <Sun className="h-4.5 w-4.5 text-amber-500" /> : <Moon className="h-4.5 w-4.5 text-indigo-650" />}
+                  </button>
+                  <button 
+                    onClick={toggleLanguage} 
+                    className="px-2.5 py-1 text-[10px] font-black bg-white dark:bg-slate-850 border border-slate-200/50 dark:border-slate-800/50 rounded-lg text-blue-600 dark:text-blue-400 shadow-xs"
+                  >
+                    {language === 'bn' ? 'ENGLISH' : 'বাংলা'}
+                  </button>
+                </div>
+              </div>
               {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
