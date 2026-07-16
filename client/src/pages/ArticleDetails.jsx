@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,6 +10,7 @@ import {
 } from 'lucide-react';
 
 const ArticleDetails = () => {
+  const toast = useToast();
   const { slug } = useParams();
   const { language, t } = useLanguage();
   const [article, setArticle] = useState(null);
@@ -127,7 +129,7 @@ const ArticleDetails = () => {
         await navigator.clipboard.writeText(window.location.href);
         alert('আর্টিকেল লিংক ক্লিপবোর্ডে কপি করা হয়েছে!');
       } else {
-        alert(window.location.href);
+        toast.info(window.location.href);
       }
     } catch (err) {
       console.error(err);
@@ -429,3 +431,4 @@ const ArticleDetails = () => {
 };
 
 export default ArticleDetails;
+

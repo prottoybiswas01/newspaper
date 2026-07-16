@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
+import { useToast } from '../components/Toast';
 import { User, Mail, Save, Clock, Bookmark, BookOpen, Facebook, Twitter, Linkedin } from 'lucide-react';
 
 const UserProfile = () => {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -66,8 +68,9 @@ const UserProfile = () => {
 
       if (res.success) {
         setSuccessMsg('আপনার প্রোফাইল সফলভাবে আপডেট করা হয়েছে!');
+        toast.success('প্রোফাইল আপডেট সফলহয়েছে!');
       } else {
-        alert(res.message || 'Update failed');
+        toast.error(res.message || 'Update failed');
       }
     } catch (err) {
       console.error(err);

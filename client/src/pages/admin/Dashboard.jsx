@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../utils/api';
+import { useToast } from '../../components/Toast';
 import RichTextEditor from '../../components/RichTextEditor';
 import MediaLibrary from '../../components/MediaLibrary';
 import { 
@@ -18,6 +19,7 @@ import {
 const Dashboard = () => {
   const { user, loading, logout, hasPermission } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Define tab properties dynamically with role validation arrays
   const tabs = [
@@ -239,7 +241,7 @@ const Dashboard = () => {
   const handleSaveArticle = async (e) => {
     e.preventDefault();
     if (!articleTitle || !articleContent || !articleCategory) {
-      alert('Title, category, and content are required');
+      toast.warning('à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦®, à¦¬à¦¿à¦­à¦¾à¦— à¦à¦¬à¦‚ à¦¬à¦¿à¦·à¦¯à¦¼à¦¬à¦¸à§à¦¤à§ à¦†à¦¬à¦¶à§à¦¯à¦•à¥¤');
       return;
     }
 
@@ -270,11 +272,11 @@ const Dashboard = () => {
       }
 
       if (res.success) {
-        alert(editingArticleId ? 'সংবাদটি সফলভাবে আপডেট করা হয়েছে!' : 'সংবাদটি সফলভাবে তৈরি করা হয়েছে!');
+        toast.success(editingArticleId ? 'সংবাদটি সফলভাবে আপডেট করা হয়েছে!' : 'সংবাদটি সফলভাবে তৈরি করা হয়েছে!');
         resetEditorForm();
         setActiveTab('overview');
       } else {
-        alert(res.message || 'সংবাদটি সংরক্ষণ করতে ব্যর্থ হয়েছে।');
+        toast.error(res.message || 'সংবাদটি সংরক্ষণ করতে ব্যর্থ হয়েছে।');
       }
     } catch (err) {
       console.error(err);
@@ -301,12 +303,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteArticle = async (id) => {
-    if (!confirm('Are you sure you want to delete this article?')) return;
+    if (!window.confirm('Are you sure you want to delete this article?')) return;
     try {
       const res = await api.delete(`/articles/${id}`);
       if (res.success) {
         setArticlesList(prev => prev.filter(a => a._id !== id));
-        alert('আর্টিকেল সফলভাবে মুছে ফেলা হয়েছে।');
+        alert('à¦†à¦°à§à¦Ÿà¦¿à¦•à§‡à¦² à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤');
         fetchArticlesList();
       }
     } catch (err) {
@@ -348,11 +350,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteCategory = async (id) => {
-    if (!confirm('Delete category?')) return;
+    if (!window.confirm('Delete category?')) return;
     try {
       const res = await api.delete(`/taxonomy/categories/${id}`);
       if (res.success) {
         setCategories(prev => prev.filter(c => c._id !== id));
+        toast.success('à¦¬à¦¿à¦­à¦¾à¦—à¦Ÿà¦¿ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
@@ -392,11 +395,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteComment = async (id) => {
-    if (!confirm('Delete comment?')) return;
+    if (!window.confirm('Delete comment?')) return;
     try {
       const res = await api.delete(`/comments/${id}`);
       if (res.success) {
         setComments(prev => prev.filter(c => c._id !== id));
+        toast.success('à¦®à¦¨à§à¦¤à¦¬à§à¦¯à¦Ÿà¦¿ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
@@ -440,11 +444,12 @@ const Dashboard = () => {
   };
 
   const handleDeleteAd = async (id) => {
-    if (!confirm('Delete Ad?')) return;
+    if (!window.confirm('Delete Ad?')) return;
     try {
       const res = await api.delete(`/ads/${id}`);
       if (res.success) {
         setAds(prev => prev.filter(a => a._id !== id));
+        toast.success('à¦¬à¦¿à¦œà§à¦žà¦¾à¦ªà¦¨à¦Ÿà¦¿ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
@@ -457,9 +462,9 @@ const Dashboard = () => {
       const res = await api.put(`/auth/users/${userId}/role`, { role });
       if (res.success) {
         setUsers(prev => prev.map(u => u._id === userId ? { ...u, role } : u));
-        alert('User role updated successfully.');
+        toast.success('à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦°à¦•à¦¾à¦°à§€à¦° à¦­à§‚à¦®à¦¿à¦•à¦¾ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦•à¦°à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       } else {
-        alert(res.message);
+        toast.error(res.message);
       }
     } catch (err) {
       console.error(err);
@@ -467,18 +472,18 @@ const Dashboard = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user? This will also delete all articles written by them.')) return;
+    if (!window.confirm('Are you sure you want to delete this user? This will also delete all articles written by them.')) return;
     try {
       const res = await api.delete(`/auth/users/${userId}`);
       if (res.success) {
         setUsers(prev => prev.filter(u => u._id !== userId));
-        alert('User and their articles deleted successfully.');
+        toast.success('à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦°à¦•à¦¾à¦°à§€ à¦à¦¬à¦‚ à¦¤à¦¾à¦° à¦¸à¦‚à¦¬à¦¾à¦¦à¦¸à¦®à§‚à¦¹ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       } else {
-        alert(res.message || 'Failed to delete user.');
+        toast.error(res.message || 'à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦°à¦•à¦¾à¦°à§€ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¤à§‡ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
-      alert('An error occurred.');
+      toast.error('à¦à¦•à¦Ÿà¦¿ à¦¤à§à¦°à§à¦Ÿà¦¿ à¦˜à¦Ÿà§‡à¦›à§‡à¥¤');
     }
   };
 
@@ -486,7 +491,7 @@ const Dashboard = () => {
 
   const handleTranslate = async (targetLang) => {
     if (!articleTitle && !articleContent) {
-      alert('অনুবাদ করার জন্য অনুগ্রহ করে আগে শিরোনাম বা বিষয়বস্তু লিখুন।');
+      alert('à¦…à¦¨à§à¦¬à¦¾à¦¦ à¦•à¦°à¦¾à¦° à¦œà¦¨à§à¦¯ à¦…à¦¨à§à¦—à§à¦°à¦¹ à¦•à¦°à§‡ à¦†à¦—à§‡ à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® à¦¬à¦¾ à¦¬à¦¿à¦·à§Ÿà¦¬à¦¸à§à¦¤à§ à¦²à¦¿à¦–à§à¦¨à¥¤');
       return;
     }
     setTranslating(true);
@@ -504,11 +509,11 @@ const Dashboard = () => {
         setArticleSummary(res.translated.summary || '');
         setArticleContent(res.translated.content || '');
       } else {
-        alert(res.message || 'Translation failed.');
+        toast.error(res.message || 'অনুবাদ ব্যর্থ হয়েছে। Gemini API সমস্যা।');
       }
     } catch (err) {
       console.error(err);
-      alert('Translation request failed.');
+      toast.error('অনুবাদ অনুরোধ ব্যর্থ হয়েছে।');
     } finally {
       setTranslating(false);
     }
@@ -535,11 +540,11 @@ const Dashboard = () => {
   const handleAddLayoutSection = (e) => {
     e.preventDefault();
     if (!newSectionCategory) {
-      alert('Please select a category first.');
+      toast.warning('à¦…à¦¨à§à¦—à§à¦°à¦¹ à¦•à¦°à§‡ à¦ªà§à¦°à¦¥à¦®à§‡ à¦à¦•à¦Ÿà¦¿ à¦¬à¦¿à¦­à¦¾à¦— à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤');
       return;
     }
     if (homepageSections.some(s => s.category.toLowerCase() === newSectionCategory.toLowerCase())) {
-      alert('This category is already added to the homepage layout.');
+      toast.warning('à¦à¦‡ à¦¬à¦¿à¦­à¦¾à¦—à¦Ÿà¦¿ à¦‡à¦¤à¦¿à¦®à¦§à§à¦¯à§‡ à¦¹à§‹à¦®à¦ªà§‡à¦œ à¦²à§‡à¦†à¦‰à¦Ÿà§‡ à¦¯à§à¦•à§à¦¤ à¦†à¦›à§‡à¥¤');
       return;
     }
     setHomepageSections(prev => [...prev, { category: newSectionCategory, layout: newSectionLayout }]);
@@ -564,13 +569,13 @@ const Dashboard = () => {
     try {
       const res = await api.post('/settings/homepage_layout', { value: homepageSections });
       if (res.success) {
-        alert('হোমপেজ লেআউট সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!');
+        alert('à¦¹à§‹à¦®à¦ªà§‡à¦œ à¦²à§‡à¦†à¦‰à¦Ÿ à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡!');
       } else {
-        alert(res.message || 'সংরক্ষণ ব্যর্থ হয়েছে।');
+        alert(res.message || 'à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save settings.');
+      toast.error('সেটিংস সংরক্ষণ করতে ব্যর্থ হয়েছে।');
     }
   };
 
@@ -602,13 +607,13 @@ const Dashboard = () => {
     try {
       const res = await api.post('/settings/gemini_api_keys', { value: geminiKeysText });
       if (res.success) {
-        alert('জেমিনি এপিআই কী সফলভাবে সংরক্ষণ করা হয়েছে!');
+        alert('à¦œà§‡à¦®à¦¿à¦¨à¦¿ à¦à¦ªà¦¿à¦†à¦‡ à¦•à§€ à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡!');
       } else {
-        alert(res.message || 'কী সংরক্ষণ করতে ব্যর্থ হয়েছে।');
+        alert(res.message || 'à¦•à§€ à¦¸à¦‚à¦°à¦•à§à¦·à¦£ à¦•à¦°à¦¤à§‡ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à§Ÿà§‡à¦›à§‡à¥¤');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save API keys.');
+      toast.error('API কী সংরক্ষণ করতে ব্যর্থ হয়েছে।');
     } finally {
       setSavingKeys(false);
     }
@@ -619,14 +624,14 @@ const Dashboard = () => {
     try {
       const res = await api.post('/articles/ai/trigger');
       if (res.success) {
-        alert('এআই রিপোর্টার সফলভাবে নতুন সংবাদ রিসার্চ ও ড্রাফট তৈরি করেছে!');
+        toast.success('à¦à¦†à¦‡ à¦°à¦¿à¦ªà§‹à¦°à§à¦Ÿà¦¾à¦° à¦¸à¦«à¦²à¦­à¦¾à¦¬à§‡ à¦¨à¦¤à§à¦¨ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦°à¦¿à¦¸à¦¾à¦°à§à¦š à¦“ à¦¡à§à¦°à¦¾à¦«à¦Ÿ à¦¤à§ˆà¦°à¦¿ à¦•à¦°à§‡à¦›à§‡!');
         loadAiArticles();
       } else {
-        alert(res.message || 'AI news research failed.');
+        toast.error(res.message || 'AI à¦¨à¦¿à¦‰à¦œ à¦°à¦¿à¦¸à¦¾à¦°à§à¦š à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤ Gemini API à¦•à§€ à¦¯à¦¾à¦šà¦¾à¦‡ à¦•à¦°à§à¦¨à¥¤');
       }
     } catch (err) {
       console.error(err);
-      alert('Research request failed.');
+      toast.error('à¦°à¦¿à¦¸à¦¾à¦°à§à¦š à¦…à¦¨à§à¦°à§‹à¦§ à¦¬à§à¦¯à¦°à§à¦¥ à¦¹à¦¯à¦¼à§‡à¦›à§‡à¥¤');
     } finally {
       setTriggeringAi(false);
     }
@@ -657,10 +662,10 @@ const Dashboard = () => {
     try {
       const res = await api.put(`/articles/ai/${id}/approve`);
       if (res.success) {
-        alert('সংবাদটি অনুমোদন ও প্রকাশ করা হয়েছে!');
+        alert('à¦¸à¦‚à¦¬à¦¾à¦¦à¦Ÿà¦¿ à¦…à¦¨à§à¦®à§‹à¦¦à¦¨ à¦“ à¦ªà§à¦°à¦•à¦¾à¦¶ à¦•à¦°à¦¾ à¦¹à§Ÿà§‡à¦›à§‡!');
         loadAiArticles();
       } else {
-        alert(res.message || 'Approval failed.');
+        toast.error(res.message || 'Approval failed.');
       }
     } catch (err) {
       console.error(err);
@@ -668,14 +673,14 @@ const Dashboard = () => {
   };
 
   const handleRejectAiArticle = async (id) => {
-    if (!confirm('Are you sure you want to reject and delete this AI draft?')) return;
+    if (!window.confirm('Are you sure you want to reject and delete this AI draft?')) return;
     try {
       const res = await api.delete(`/articles/ai/${id}/reject`);
       if (res.success) {
-        alert('এআই ড্রাফটটি বাতিল ও মুছে ফেলা হয়েছে।');
+        alert('à¦à¦†à¦‡ à¦¡à§à¦°à¦¾à¦«à¦Ÿà¦Ÿà¦¿ à¦¬à¦¾à¦¤à¦¿à¦² à¦“ à¦®à§à¦›à§‡ à¦«à§‡à¦²à¦¾ à¦¹à§Ÿà§‡à¦›à§‡à¥¤');
         loadAiArticles();
       } else {
-        alert(res.message || 'Rejection failed.');
+        toast.error(res.message || 'Rejection failed.');
       }
     } catch (err) {
       console.error(err);
@@ -697,7 +702,7 @@ const Dashboard = () => {
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 text-white font-black text-lg">
             <Globe className="h-5 w-5 text-blue-500" />
-            <span>দৈনিক দর্পণ</span>
+            <span>à¦¦à§ˆà¦¨à¦¿à¦• à¦¦à¦°à§à¦ªà¦£</span>
           </Link>
           <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-900 text-blue-300">
             CMS
@@ -766,7 +771,7 @@ const Dashboard = () => {
                 onClick={() => { fetchArticlesList(); setActiveTab('articlesList'); }}
                 className="px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 text-xs font-bold rounded-lg transition-colors"
               >
-                Manage Published Articles ➔
+                Manage Published Articles âž”
               </button>
             </div>
 
@@ -901,11 +906,11 @@ const Dashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                  {language === 'bn' ? 'সংবাদ তালিকা ও সম্পাদনা' : 'Articles Management Console'}
+                  {language === 'bn' ? 'à¦¸à¦‚à¦¬à¦¾à¦¦ à¦¤à¦¾à¦²à¦¿à¦•à¦¾ à¦“ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Articles Management Console'}
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
                   {language === 'bn' 
-                    ? 'আপনার প্রকাশিত ও খসড়া সংবাদসমূহ ট্র্যাক, এডিট এবং ডিলিট করুন।' 
+                    ? 'à¦†à¦ªà¦¨à¦¾à¦° à¦ªà§à¦°à¦•à¦¾à¦¶à¦¿à¦¤ à¦“ à¦–à¦¸à§œà¦¾ à¦¸à¦‚à¦¬à¦¾à¦¦à¦¸à¦®à§‚à¦¹ à¦Ÿà§à¦°à§à¦¯à¦¾à¦•, à¦à¦¡à¦¿à¦Ÿ à¦à¦¬à¦‚ à¦¡à¦¿à¦²à¦¿à¦Ÿ à¦•à¦°à§à¦¨à¥¤' 
                     : 'Track, edit and manage your published, draft and scheduled news reports.'}
                 </p>
               </div>
@@ -913,7 +918,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-3">
                 <input
                   type="text"
-                  placeholder={language === 'bn' ? 'সংবাদ অনুসন্ধান করুন...' : 'Search articles...'}
+                  placeholder={language === 'bn' ? 'à¦¸à¦‚à¦¬à¦¾à¦¦ à¦…à¦¨à§à¦¸à¦¨à§à¦§à¦¾à¦¨ à¦•à¦°à§à¦¨...' : 'Search articles...'}
                   value={articleSearchQuery}
                   onChange={(e) => setArticleSearchQuery(e.target.value)}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-semibold focus:outline-none w-64 shadow-sm"
@@ -924,7 +929,7 @@ const Dashboard = () => {
                   className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-xs font-black rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center space-x-1.5"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>{language === 'bn' ? 'নতুন সংবাদ' : 'Write News'}</span>
+                  <span>{language === 'bn' ? 'à¦¨à¦¤à§à¦¨ à¦¸à¦‚à¦¬à¦¾à¦¦' : 'Write News'}</span>
                 </button>
               </div>
             </div>
@@ -940,19 +945,19 @@ const Dashboard = () => {
                 {filteredArticles.length === 0 ? (
                   <div className="text-center py-16">
                     <FileText className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400">কোনো সংবাদ পাওয়া যায়নি।</h3>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400">à¦•à§‹à¦¨à§‹ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿à¥¤</h3>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs font-semibold text-slate-650">
                       <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black border-b border-slate-100 dark:border-slate-800">
                         <tr>
-                          <th className="p-4">{language === 'bn' ? 'শিরোনাম' : 'Title'}</th>
-                          <th className="p-4">{language === 'bn' ? 'বিভাগ' : 'Category'}</th>
-                          <th className="p-4">{language === 'bn' ? 'লেখক' : 'Author'}</th>
-                          <th className="p-4">{language === 'bn' ? 'অবস্থা' : 'Status'}</th>
-                          <th className="p-4">{language === 'bn' ? 'ভিউস' : 'Views'}</th>
-                          <th className="p-4 text-right">{language === 'bn' ? 'অ্যাকশন' : 'Actions'}</th>
+                          <th className="p-4">{language === 'bn' ? 'à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦®' : 'Title'}</th>
+                          <th className="p-4">{language === 'bn' ? 'à¦¬à¦¿à¦­à¦¾à¦—' : 'Category'}</th>
+                          <th className="p-4">{language === 'bn' ? 'à¦²à§‡à¦–à¦•' : 'Author'}</th>
+                          <th className="p-4">{language === 'bn' ? 'à¦…à¦¬à¦¸à§à¦¥à¦¾' : 'Status'}</th>
+                          <th className="p-4">{language === 'bn' ? 'à¦­à¦¿à¦‰à¦¸' : 'Views'}</th>
+                          <th className="p-4 text-right">{language === 'bn' ? 'à¦…à§à¦¯à¦¾à¦•à¦¶à¦¨' : 'Actions'}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -982,7 +987,7 @@ const Dashboard = () => {
                                   onClick={() => handleEditArticle(art)}
                                   className="px-3 py-1.5 text-[10px] font-black bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg hover:opacity-80 transition-opacity"
                                 >
-                                  {language === 'bn' ? 'সম্পাদনা' : 'Edit'}
+                                  {language === 'bn' ? 'à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾' : 'Edit'}
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteArticle(art._id)}
@@ -1008,7 +1013,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                {editingArticleId ? 'সংবাদ সম্পাদনা (Edit Article)' : 'নতুন সংবাদ লিখুন (Write Article)'}
+                {editingArticleId ? 'à¦¸à¦‚à¦¬à¦¾à¦¦ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾ (Edit Article)' : 'à¦¨à¦¤à§à¦¨ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦²à¦¿à¦–à§à¦¨ (Write Article)'}
               </h1>
               <div className="flex items-center space-x-2">
                 <button
@@ -1017,7 +1022,7 @@ const Dashboard = () => {
                   disabled={translating}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
                 >
-                  <span>{translating ? 'অনুবাদ হচ্ছে...' : 'বাংলায় অনুবাদ (Translate to BN)'}</span>
+                  <span>{translating ? 'à¦…à¦¨à§à¦¬à¦¾à¦¦ à¦¹à¦šà§à¦›à§‡...' : 'à¦¬à¦¾à¦‚à¦²à¦¾à§Ÿ à¦…à¦¨à§à¦¬à¦¾à¦¦ (Translate to BN)'}</span>
                 </button>
                 <button
                   type="button"
@@ -1025,7 +1030,7 @@ const Dashboard = () => {
                   disabled={translating}
                   className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
                 >
-                  <span>{translating ? 'Translating...' : 'Translate to EN (ইংরেজি)'}</span>
+                  <span>{translating ? 'Translating...' : 'Translate to EN (à¦‡à¦‚à¦°à§‡à¦œà¦¿)'}</span>
                 </button>
               </div>
             </div>
@@ -1038,43 +1043,43 @@ const Dashboard = () => {
                 <div className="lg:col-span-2 space-y-4">
                   {/* Title */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংবাদের শিরোনাম (Title) *</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">à¦¸à¦‚à¦¬à¦¾à¦¦à§‡à¦° à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® (Title) *</label>
                     <input 
                       type="text" 
                       value={articleTitle} 
                       onChange={(e) => setArticleTitle(e.target.value)} 
                       required
-                      placeholder="শিরোনাম লিখুন..."
+                      placeholder="à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
 
                   {/* Subtitle */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">উপ-শিরোনাম (Subtitle)</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">à¦‰à¦ª-à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® (Subtitle)</label>
                     <input 
                       type="text" 
                       value={articleSubtitle} 
                       onChange={(e) => setArticleSubtitle(e.target.value)}
-                      placeholder="উপ-শিরোনাম লিখুন..."
+                      placeholder="à¦‰à¦ª-à¦¶à¦¿à¦°à§‹à¦¨à¦¾à¦® à¦²à¦¿à¦–à§à¦¨..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
 
                   {/* HTML Body Editor Custom Component */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">মূল সংবাদ (Content Body) *</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">à¦®à§‚à¦² à¦¸à¦‚à¦¬à¦¾à¦¦ (Content Body) *</label>
                     <RichTextEditor value={articleContent} onChange={setArticleContent} />
                   </div>
 
                   {/* Short Summary */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংক্ষিপ্ত সারসংক্ষেপ (Short Summary)</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">à¦¸à¦‚à¦•à§à¦·à¦¿à¦ªà§à¦¤ à¦¸à¦¾à¦°à¦¸à¦‚à¦•à§à¦·à§‡à¦ª (Short Summary)</label>
                     <textarea 
                       rows="3" 
                       value={articleSummary} 
                       onChange={(e) => setArticleSummary(e.target.value)}
-                      placeholder="খবরের একটি ২-৩ লাইনের সারসংক্ষেপ লিখুন..."
+                      placeholder="à¦–à¦¬à¦°à§‡à¦° à¦à¦•à¦Ÿà¦¿ à§¨-à§© à¦²à¦¾à¦‡à¦¨à§‡à¦° à¦¸à¦¾à¦°à¦¸à¦‚à¦•à§à¦·à§‡à¦ª à¦²à¦¿à¦–à§à¦¨..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
@@ -1089,7 +1094,7 @@ const Dashboard = () => {
                     
                     {/* Category Selector */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">বিভাগ (Category) *</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">à¦¬à¦¿à¦­à¦¾à¦— (Category) *</label>
                       <select 
                         value={articleCategory}
                         onChange={(e) => setArticleCategory(e.target.value)}
@@ -1108,22 +1113,22 @@ const Dashboard = () => {
 
                     {/* Status */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">অবস্থা (Status)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">à¦…à¦¬à¦¸à§à¦¥à¦¾ (Status)</label>
                       <select 
                         value={articleStatus}
                         onChange={(e) => setArticleStatus(e.target.value)}
                         className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                       >
-                        <option value="draft">Draft (খসড়া)</option>
-                        <option value="published">Publish Immediately (প্রকাশিত)</option>
-                        <option value="scheduled">Schedule Publish (সময়সূচী)</option>
+                        <option value="draft">Draft (à¦–à¦¸à§œà¦¾)</option>
+                        <option value="published">Publish Immediately (à¦ªà§à¦°à¦•à¦¾à¦¶à¦¿à¦¤)</option>
+                        <option value="scheduled">Schedule Publish (à¦¸à¦®à§Ÿà¦¸à§‚à¦šà§€)</option>
                       </select>
                     </div>
 
                     {/* Date Scheduling */}
                     {articleStatus === 'scheduled' && (
                       <div>
-                        <label className="text-xs font-bold text-slate-605 block mb-1">তারিখ ও সময় (Publish Date)</label>
+                        <label className="text-xs font-bold text-slate-605 block mb-1">à¦¤à¦¾à¦°à¦¿à¦– à¦“ à¦¸à¦®à§Ÿ (Publish Date)</label>
                         <input 
                           type="datetime-local" 
                           value={articleScheduledDate}
@@ -1135,19 +1140,19 @@ const Dashboard = () => {
 
                     {/* Tags input */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">ট্যাগসমূহ (Tags - comma separated)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">à¦Ÿà§à¦¯à¦¾à¦—à¦¸à¦®à§‚à¦¹ (Tags - comma separated)</label>
                       <input 
                         type="text" 
                         value={articleTags} 
                         onChange={(e) => setArticleTags(e.target.value)}
-                        placeholder="রাজনীতি, নির্বাচন, ঢাকা"
+                        placeholder="à¦°à¦¾à¦œà¦¨à§€à¦¤à¦¿, à¦¨à¦¿à¦°à§à¦¬à¦¾à¦šà¦¨, à¦¢à¦¾à¦•à¦¾"
                         className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
                       />
                     </div>
 
                     {/* Featured Image Picker */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">ফিচার ইমেজ লিংক (Featured Image URL)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">à¦«à¦¿à¦šà¦¾à¦° à¦‡à¦®à§‡à¦œ à¦²à¦¿à¦‚à¦• (Featured Image URL)</label>
                       <div className="flex space-x-1">
                         <input 
                           type="text" 
@@ -1232,7 +1237,7 @@ const Dashboard = () => {
                     onClick={() => setShowMediaPicker(false)}
                     className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold"
                   >
-                    ✕
+                    âœ•
                   </button>
                   <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Select Featured Image</h3>
                   <MediaLibrary 
@@ -1619,13 +1624,13 @@ const Dashboard = () => {
                             onChange={(e) => handleRoleChange(u._id, e.target.value)}
                             className="px-2.5 py-1.5 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                           >
-                            <option value="Reader">Reader (সাধারণ রিডার)</option>
-                            <option value="Reporter">Reporter (সংবাদদাতা)</option>
-                            <option value="Editor">Editor (সম্পাদক)</option>
-                            <option value="Moderator">Moderator (মডারেটর)</option>
-                            <option value="SEO Manager">SEO Manager (এসইও ম্যানেজার)</option>
-                            <option value="Admin">Admin (প্রশাসক)</option>
-                            <option value="Super Admin">Super Admin (মাস্টার)</option>
+                            <option value="Reader">Reader (à¦¸à¦¾à¦§à¦¾à¦°à¦£ à¦°à¦¿à¦¡à¦¾à¦°)</option>
+                            <option value="Reporter">Reporter (à¦¸à¦‚à¦¬à¦¾à¦¦à¦¦à¦¾à¦¤à¦¾)</option>
+                            <option value="Editor">Editor (à¦¸à¦®à§à¦ªà¦¾à¦¦à¦•)</option>
+                            <option value="Moderator">Moderator (à¦®à¦¡à¦¾à¦°à§‡à¦Ÿà¦°)</option>
+                            <option value="SEO Manager">SEO Manager (à¦à¦¸à¦‡à¦“ à¦®à§à¦¯à¦¾à¦¨à§‡à¦œà¦¾à¦°)</option>
+                            <option value="Admin">Admin (à¦ªà§à¦°à¦¶à¦¾à¦¸à¦•)</option>
+                            <option value="Super Admin">Super Admin (à¦®à¦¾à¦¸à§à¦Ÿà¦¾à¦°)</option>
                           </select>
                           {user.id !== u._id && (
                             <button
@@ -1690,9 +1695,9 @@ const Dashboard = () => {
                       onChange={(e) => setNewSectionLayout(e.target.value)}
                       className="w-full px-3 py-2 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                     >
-                      <option value="grid">Grid (৪টি সংবাদ কার্ড)</option>
-                      <option value="list">List (৫টি সংবাদ তালিকা)</option>
-                      <option value="hero">Hero (১টি বড় সংবাদ + ৩টি ছোট লিংক)</option>
+                      <option value="grid">Grid (à§ªà¦Ÿà¦¿ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦•à¦¾à¦°à§à¦¡)</option>
+                      <option value="list">List (à§«à¦Ÿà¦¿ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦¤à¦¾à¦²à¦¿à¦•à¦¾)</option>
+                      <option value="hero">Hero (à§§à¦Ÿà¦¿ à¦¬à§œ à¦¸à¦‚à¦¬à¦¾à¦¦ + à§©à¦Ÿà¦¿ à¦›à§‹à¦Ÿ à¦²à¦¿à¦‚à¦•)</option>
                     </select>
                   </div>
 
@@ -1723,7 +1728,7 @@ const Dashboard = () => {
                             {sec.category}
                           </h4>
                           <span className="text-[10px] text-slate-400 block capitalize">
-                            Style: {sec.layout === 'grid' ? 'Grid (৪টি কার্ড)' : (sec.layout === 'list' ? 'List (তালিকা)' : 'Hero (하이লাইটেড)')}
+                            Style: {sec.layout === 'grid' ? 'Grid (à§ªà¦Ÿà¦¿ à¦•à¦¾à¦°à§à¦¡)' : (sec.layout === 'list' ? 'List (à¦¤à¦¾à¦²à¦¿à¦•à¦¾)' : 'Hero (í•˜ì´à¦²à¦¾à¦‡à¦Ÿà§‡à¦¡)')}
                           </span>
                         </div>
 
@@ -1735,7 +1740,7 @@ const Dashboard = () => {
                             className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Move Up"
                           >
-                            ▲
+                            â–²
                           </button>
                           <button
                             onClick={() => handleMoveLayoutSection(index, 1)}
@@ -1743,7 +1748,7 @@ const Dashboard = () => {
                             className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Move Down"
                           >
-                            ▼
+                            â–¼
                           </button>
                           
                           {/* Remove button */}
@@ -1783,7 +1788,7 @@ const Dashboard = () => {
                 id="ai-trigger-btn"
               >
                 <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
-                <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
+                <span>{triggeringAi ? 'à¦°à¦¿à¦¸à¦¾à¦°à§à¦š à¦“ à¦°à¦¾à¦‡à¦Ÿà¦¿à¦‚ à¦¹à¦šà§à¦›à§‡...' : 'à¦à¦†à¦‡ à¦¨à¦¤à§à¦¨ à¦¸à¦‚à¦¬à¦¾à¦¦ à¦°à¦¿à¦¸à¦¾à¦°à§à¦š à¦•à¦°à§à¦¨'}</span>
               </button>
             </div>
 
@@ -1791,8 +1796,8 @@ const Dashboard = () => {
               {aiArticles.length === 0 ? (
                 <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
                   <ShieldAlert className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">কোনো মুলতুবি এআই ড্রাফট পাওয়া যায়নি।</h3>
-                  <p className="text-xs text-slate-400 mt-1">নতুন ব্রেকিং নিউজ এনালাইসিস করতে উপরের বাটনে ক্লিক করুন।</p>
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">à¦•à§‹à¦¨à§‹ à¦®à§à¦²à¦¤à§à¦¬à¦¿ à¦à¦†à¦‡ à¦¡à§à¦°à¦¾à¦«à¦Ÿ à¦ªà¦¾à¦“à§Ÿà¦¾ à¦¯à¦¾à§Ÿà¦¨à¦¿à¥¤</h3>
+                  <p className="text-xs text-slate-400 mt-1">à¦¨à¦¤à§à¦¨ à¦¬à§à¦°à§‡à¦•à¦¿à¦‚ à¦¨à¦¿à¦‰à¦œ à¦à¦¨à¦¾à¦²à¦¾à¦‡à¦¸à¦¿à¦¸ à¦•à¦°à¦¤à§‡ à¦‰à¦ªà¦°à§‡à¦° à¦¬à¦¾à¦Ÿà¦¨à§‡ à¦•à§à¦²à¦¿à¦• à¦•à¦°à§à¦¨à¥¤</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1825,13 +1830,13 @@ const Dashboard = () => {
                           onClick={() => handleReviewAiArticle(art)}
                           className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-950 rounded-xl text-xs font-bold transition-all text-center"
                         >
-                          পড়ুন ও সম্পাদনা
+                          à¦ªà§œà§à¦¨ à¦“ à¦¸à¦®à§à¦ªà¦¾à¦¦à¦¨à¦¾
                         </button>
                         <button
                           onClick={() => handleApproveAiArticle(art._id)}
                           className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all"
                         >
-                          অনুমোদন
+                          à¦…à¦¨à§à¦®à§‹à¦¦à¦¨
                         </button>
                         <button
                           onClick={() => handleRejectAiArticle(art._id)}
@@ -1855,3 +1860,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+

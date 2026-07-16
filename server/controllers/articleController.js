@@ -218,11 +218,15 @@ const updateArticle = async (req, res) => {
 
     if (status) {
       updateData.status = status;
+      // Only set publishDate when transitioning FROM non-published TO published
+      // (not when updating an already-published article)
       if (status === 'published' && article.status !== 'published') {
         updateData.publishDate = new Date();
       } else if (status === 'scheduled' && scheduledDate) {
         updateData.scheduledDate = new Date(scheduledDate);
       }
+      // If article is already published and we're just updating content,
+      // DO NOT touch publishDate - keep original order
     }
 
     const updated = await Article.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
