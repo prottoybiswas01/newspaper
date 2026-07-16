@@ -6,6 +6,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BreakingTicker from './components/BreakingTicker';
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 import Home from './pages/Home';
 import CategoryNews from './pages/CategoryNews';
@@ -43,6 +44,7 @@ function App() {
               </Routes>
             </div>
             <Footer />
+            <SpeedInsights />
           </div>
         </Router>
       </AuthProvider>
