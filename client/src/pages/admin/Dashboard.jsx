@@ -241,7 +241,7 @@ const Dashboard = () => {
   const handleSaveArticle = async (e) => {
     e.preventDefault();
     if (!articleTitle || !articleContent || !articleCategory) {
-      toast.warning('শিরোনাম, বিভাগ এবং বিষয়বস্তু আবশ্যক।');
+      toast.success('Title, category, and content are required');
       return;
     }
 
@@ -272,11 +272,11 @@ const Dashboard = () => {
       }
 
       if (res.success) {
-        toast.success(editingArticleId ? 'সংবাদটি আপডেট হয়েছে!' : 'সংবাদটি তৈরি হয়েছে!');
+        toast.success(editingArticleId ? 'Article updated!' : 'Article created!');
         resetEditorForm();
         setActiveTab('overview');
       } else {
-        alert(res.message || 'αª╕αªéαª¼αª╛αªªαªƒαª┐ αª╕αªéαª░αªòαºìαª╖αªú αªòαª░αªñαºç αª¼αºìαª»αª░αºìαªÑ αª╣αºƒαºçαª¢αºçαÑñ');
+        toast.error(res.message || 'সংবাদটি সংরক্ষণ করতে ব্যর্থ হয়েছে।');
       }
     } catch (err) {
       console.error(err);
@@ -308,7 +308,7 @@ const Dashboard = () => {
       const res = await api.delete(`/articles/${id}`);
       if (res.success) {
         setArticlesList(prev => prev.filter(a => a._id !== id));
-        alert('αªåαª░αºìαªƒαª┐αªòαºçαª▓ αª╕αª½αª▓αª¡αª╛αª¼αºç αª«αºüαª¢αºç αª½αºçαª▓αª╛ αª╣αºƒαºçαª¢αºçαÑñ');
+        toast.success('আর্টিকেল সফলভাবে মুছে ফেলা হয়েছে।');
         fetchArticlesList();
       }
     } catch (err) {
@@ -459,7 +459,7 @@ const Dashboard = () => {
       const res = await api.put(`/auth/users/${userId}/role`, { role });
       if (res.success) {
         setUsers(prev => prev.map(u => u._id === userId ? { ...u, role } : u));
-        toast.success('ব্যবহারকারীর ভূমিকা আপডেট হয়েছে।');
+        toast.success('User role updated successfully.');
       } else {
         toast.error(res.message);
       }
@@ -474,13 +474,13 @@ const Dashboard = () => {
       const res = await api.delete(`/auth/users/${userId}`);
       if (res.success) {
         setUsers(prev => prev.filter(u => u._id !== userId));
-        toast.success('ব্যবহারকারী মুছে ফেলা হয়েছে।');
+        toast.success('User and their articles deleted successfully.');
       } else {
-        toast.error(res.message || 'ব্যবহারকারী মুছতে ব্যর্থ।');
+        toast.error(res.message || 'Failed to delete user.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('একটি ত্রুটি ঘটেছে।');
+      toast.error('An error occurred.');
     }
   };
 
@@ -488,7 +488,7 @@ const Dashboard = () => {
 
   const handleTranslate = async (targetLang) => {
     if (!articleTitle && !articleContent) {
-      alert('αªàαª¿αºüαª¼αª╛αªª αªòαª░αª╛αª░ αª£αª¿αºìαª» αªàαª¿αºüαªùαºìαª░αª╣ αªòαª░αºç αªåαªùαºç αª╢αª┐αª░αºïαª¿αª╛αª« αª¼αª╛ αª¼αª┐αª╖αºƒαª¼αª╕αºìαªñαºü αª▓αª┐αªûαºüαª¿αÑñ');
+      toast.success('অনুবাদ করার জন্য অনুগ্রহ করে আগে শিরোনাম বা বিষয়বস্তু লিখুন।');
       return;
     }
     setTranslating(true);
@@ -506,11 +506,11 @@ const Dashboard = () => {
         setArticleSummary(res.translated.summary || '');
         setArticleContent(res.translated.content || '');
       } else {
-        toast.error(res.message || 'অনুবাদ ব্যর্থ। Gemini API সমস্যা।');
+        toast.error(res.message || 'Translation failed.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('অনুবাদ অনুরোধ ব্যর্থ।');
+      toast.error('Translation request failed.');
     } finally {
       setTranslating(false);
     }
@@ -537,11 +537,11 @@ const Dashboard = () => {
   const handleAddLayoutSection = (e) => {
     e.preventDefault();
     if (!newSectionCategory) {
-      toast.warning('আগে একটি বিভাগ বেছে নিন।');
+      toast.warning('Please select a category first.');
       return;
     }
     if (homepageSections.some(s => s.category.toLowerCase() === newSectionCategory.toLowerCase())) {
-      toast.warning('এই বিভাগটি ইতিমধ্যে হোমপেজে যুক্ত আছে।');
+      toast.success('This category is already added to the homepage layout.');
       return;
     }
     setHomepageSections(prev => [...prev, { category: newSectionCategory, layout: newSectionLayout }]);
@@ -566,13 +566,13 @@ const Dashboard = () => {
     try {
       const res = await api.post('/settings/homepage_layout', { value: homepageSections });
       if (res.success) {
-        alert('αª╣αºïαª«αª¬αºçαª£ αª▓αºçαªåαªëαªƒ αª╕αºçαªƒαª┐αªéαª╕ αª╕αª½αª▓αª¡αª╛αª¼αºç αª╕αªéαª░αªòαºìαª╖αªú αªòαª░αª╛ αª╣αºƒαºçαª¢αºç!');
+        toast.success('হোমপেজ লেআউট সেটিংস সফলভাবে সংরক্ষণ করা হয়েছে!');
       } else {
-        alert(res.message || 'αª╕αªéαª░αªòαºìαª╖αªú αª¼αºìαª»αª░αºìαªÑ αª╣αºƒαºçαª¢αºçαÑñ');
+        toast.error(res.message || 'সংরক্ষণ ব্যর্থ হয়েছে।');
       }
     } catch (err) {
       console.error(err);
-      toast.error('সেটিংস সংরক্ষণ ব্যর্থ।');
+      toast.error('Failed to save settings.');
     }
   };
 
@@ -604,13 +604,13 @@ const Dashboard = () => {
     try {
       const res = await api.post('/settings/gemini_api_keys', { value: geminiKeysText });
       if (res.success) {
-        alert('αª£αºçαª«αª┐αª¿αª┐ αªÅαª¬αª┐αªåαªç αªòαºÇ αª╕αª½αª▓αª¡αª╛αª¼αºç αª╕αªéαª░αªòαºìαª╖αªú αªòαª░αª╛ αª╣αºƒαºçαª¢αºç!');
+        toast.success('জেমিনি এপিআই কী সফলভাবে সংরক্ষণ করা হয়েছে!');
       } else {
-        alert(res.message || 'αªòαºÇ αª╕αªéαª░αªòαºìαª╖αªú αªòαª░αªñαºç αª¼αºìαª»αª░αºìαªÑ αª╣αºƒαºçαª¢αºçαÑñ');
+        toast.error(res.message || 'কী সংরক্ষণ করতে ব্যর্থ হয়েছে।');
       }
     } catch (err) {
       console.error(err);
-      toast.error('API কী সংরক্ষণ ব্যর্থ।');
+      toast.error('Failed to save API keys.');
     } finally {
       setSavingKeys(false);
     }
@@ -621,14 +621,14 @@ const Dashboard = () => {
     try {
       const res = await api.post('/articles/ai/trigger');
       if (res.success) {
-        alert('αªÅαªåαªç αª░αª┐αª¬αºïαª░αºìαªƒαª╛αª░ αª╕αª½αª▓αª¡αª╛αª¼αºç αª¿αªñαºüαª¿ αª╕αªéαª¼αª╛αªª αª░αª┐αª╕αª╛αª░αºìαªÜ αªô αªíαºìαª░αª╛αª½αªƒ αªñαºêαª░αª┐ αªòαª░αºçαª¢αºç!');
+        toast.success('এআই রিপোর্টার সফলভাবে নতুন সংবাদ রিসার্চ ও ড্রাফট তৈরি করেছে!');
         loadAiArticles();
       } else {
-        toast.error(res.message || 'AI রিসার্চ ব্যর্থ। Gemini API কী যাচাই করুন।');
+        toast.error(res.message || 'AI news research failed.');
       }
     } catch (err) {
       console.error(err);
-      toast.error('রিসার্চ অনুরোধ ব্যর্থ।');
+      toast.error('Research request failed.');
     } finally {
       setTriggeringAi(false);
     }
@@ -659,7 +659,7 @@ const Dashboard = () => {
     try {
       const res = await api.put(`/articles/ai/${id}/approve`);
       if (res.success) {
-        alert('αª╕αªéαª¼αª╛αªªαªƒαª┐ αªàαª¿αºüαª«αºïαªªαª¿ αªô αª¬αºìαª░αªòαª╛αª╢ αªòαª░αª╛ αª╣αºƒαºçαª¢αºç!');
+        toast.success('সংবাদটি অনুমোদন ও প্রকাশ করা হয়েছে!');
         loadAiArticles();
       } else {
         toast.error(res.message || 'Approval failed.');
@@ -674,7 +674,7 @@ const Dashboard = () => {
     try {
       const res = await api.delete(`/articles/ai/${id}/reject`);
       if (res.success) {
-        alert('αªÅαªåαªç αªíαºìαª░αª╛αª½αªƒαªƒαª┐ αª¼αª╛αªñαª┐αª▓ αªô αª«αºüαª¢αºç αª½αºçαª▓αª╛ αª╣αºƒαºçαª¢αºçαÑñ');
+        toast.success('এআই ড্রাফটটি বাতিল ও মুছে ফেলা হয়েছে।');
         loadAiArticles();
       } else {
         toast.error(res.message || 'Rejection failed.');
@@ -699,7 +699,7 @@ const Dashboard = () => {
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 text-white font-black text-lg">
             <Globe className="h-5 w-5 text-blue-500" />
-            <span>αªªαºêαª¿αª┐αªò αªªαª░αºìαª¬αªú</span>
+            <span>দৈনিক দর্পণ</span>
           </Link>
           <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-900 text-blue-300">
             CMS
@@ -768,7 +768,7 @@ const Dashboard = () => {
                 onClick={() => { fetchArticlesList(); setActiveTab('articlesList'); }}
                 className="px-4 py-2 bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-950 text-xs font-bold rounded-lg transition-colors"
               >
-                Manage Published Articles Γ₧ö
+                Manage Published Articles ➔
               </button>
             </div>
 
@@ -903,11 +903,11 @@ const Dashboard = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                  {language === 'bn' ? 'αª╕αªéαª¼αª╛αªª αªñαª╛αª▓αª┐αªòαª╛ αªô αª╕αª«αºìαª¬αª╛αªªαª¿αª╛' : 'Articles Management Console'}
+                  {language === 'bn' ? 'সংবাদ তালিকা ও সম্পাদনা' : 'Articles Management Console'}
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
                   {language === 'bn' 
-                    ? 'αªåαª¬αª¿αª╛αª░ αª¬αºìαª░αªòαª╛αª╢αª┐αªñ αªô αªûαª╕αº£αª╛ αª╕αªéαª¼αª╛αªªαª╕αª«αºéαª╣ αªƒαºìαª░αºìαª»αª╛αªò, αªÅαªíαª┐αªƒ αªÅαª¼αªé αªíαª┐αª▓αª┐αªƒ αªòαª░αºüαª¿αÑñ' 
+                    ? 'আপনার প্রকাশিত ও খসড়া সংবাদসমূহ ট্র্যাক, এডিট এবং ডিলিট করুন।' 
                     : 'Track, edit and manage your published, draft and scheduled news reports.'}
                 </p>
               </div>
@@ -915,7 +915,7 @@ const Dashboard = () => {
               <div className="flex items-center space-x-3">
                 <input
                   type="text"
-                  placeholder={language === 'bn' ? 'αª╕αªéαª¼αª╛αªª αªàαª¿αºüαª╕αª¿αºìαªºαª╛αª¿ αªòαª░αºüαª¿...' : 'Search articles...'}
+                  placeholder={language === 'bn' ? 'সংবাদ অনুসন্ধান করুন...' : 'Search articles...'}
                   value={articleSearchQuery}
                   onChange={(e) => setArticleSearchQuery(e.target.value)}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-semibold focus:outline-none w-64 shadow-sm"
@@ -926,7 +926,7 @@ const Dashboard = () => {
                   className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 text-xs font-black rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center space-x-1.5"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>{language === 'bn' ? 'αª¿αªñαºüαª¿ αª╕αªéαª¼αª╛αªª' : 'Write News'}</span>
+                  <span>{language === 'bn' ? 'নতুন সংবাদ' : 'Write News'}</span>
                 </button>
               </div>
             </div>
@@ -942,19 +942,19 @@ const Dashboard = () => {
                 {filteredArticles.length === 0 ? (
                   <div className="text-center py-16">
                     <FileText className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400">αªòαºïαª¿αºï αª╕αªéαª¼αª╛αªª αª¬αª╛αªôαºƒαª╛ αª»αª╛αºƒαª¿αª┐αÑñ</h3>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-400">কোনো সংবাদ পাওয়া যায়নি।</h3>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs font-semibold text-slate-650">
                       <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black border-b border-slate-100 dark:border-slate-800">
                         <tr>
-                          <th className="p-4">{language === 'bn' ? 'αª╢αª┐αª░αºïαª¿αª╛αª«' : 'Title'}</th>
-                          <th className="p-4">{language === 'bn' ? 'αª¼αª┐αª¡αª╛αªù' : 'Category'}</th>
-                          <th className="p-4">{language === 'bn' ? 'αª▓αºçαªûαªò' : 'Author'}</th>
-                          <th className="p-4">{language === 'bn' ? 'αªàαª¼αª╕αºìαªÑαª╛' : 'Status'}</th>
-                          <th className="p-4">{language === 'bn' ? 'αª¡αª┐αªëαª╕' : 'Views'}</th>
-                          <th className="p-4 text-right">{language === 'bn' ? 'αªàαºìαª»αª╛αªòαª╢αª¿' : 'Actions'}</th>
+                          <th className="p-4">{language === 'bn' ? 'শিরোনাম' : 'Title'}</th>
+                          <th className="p-4">{language === 'bn' ? 'বিভাগ' : 'Category'}</th>
+                          <th className="p-4">{language === 'bn' ? 'লেখক' : 'Author'}</th>
+                          <th className="p-4">{language === 'bn' ? 'অবস্থা' : 'Status'}</th>
+                          <th className="p-4">{language === 'bn' ? 'ভিউস' : 'Views'}</th>
+                          <th className="p-4 text-right">{language === 'bn' ? 'অ্যাকশন' : 'Actions'}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -984,7 +984,7 @@ const Dashboard = () => {
                                   onClick={() => handleEditArticle(art)}
                                   className="px-3 py-1.5 text-[10px] font-black bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 rounded-lg hover:opacity-80 transition-opacity"
                                 >
-                                  {language === 'bn' ? 'αª╕αª«αºìαª¬αª╛αªªαª¿αª╛' : 'Edit'}
+                                  {language === 'bn' ? 'সম্পাদনা' : 'Edit'}
                                 </button>
                                 <button 
                                   onClick={() => handleDeleteArticle(art._id)}
@@ -1010,7 +1010,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                {editingArticleId ? 'αª╕αªéαª¼αª╛αªª αª╕αª«αºìαª¬αª╛αªªαª¿αª╛ (Edit Article)' : 'αª¿αªñαºüαª¿ αª╕αªéαª¼αª╛αªª αª▓αª┐αªûαºüαª¿ (Write Article)'}
+                {editingArticleId ? 'সংবাদ সম্পাদনা (Edit Article)' : 'নতুন সংবাদ লিখুন (Write Article)'}
               </h1>
               <div className="flex items-center space-x-2">
                 <button
@@ -1019,7 +1019,7 @@ const Dashboard = () => {
                   disabled={translating}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
                 >
-                  <span>{translating ? 'αªàαª¿αºüαª¼αª╛αªª αª╣αªÜαºìαª¢αºç...' : 'αª¼αª╛αªéαª▓αª╛αºƒ αªàαª¿αºüαª¼αª╛αªª (Translate to BN)'}</span>
+                  <span>{translating ? 'অনুবাদ হচ্ছে...' : 'বাংলায় অনুবাদ (Translate to BN)'}</span>
                 </button>
                 <button
                   type="button"
@@ -1027,7 +1027,7 @@ const Dashboard = () => {
                   disabled={translating}
                   className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
                 >
-                  <span>{translating ? 'Translating...' : 'Translate to EN (αªçαªéαª░αºçαª£αª┐)'}</span>
+                  <span>{translating ? 'Translating...' : 'Translate to EN (ইংরেজি)'}</span>
                 </button>
               </div>
             </div>
@@ -1040,43 +1040,43 @@ const Dashboard = () => {
                 <div className="lg:col-span-2 space-y-4">
                   {/* Title */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">αª╕αªéαª¼αª╛αªªαºçαª░ αª╢αª┐αª░αºïαª¿αª╛αª« (Title) *</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংবাদের শিরোনাম (Title) *</label>
                     <input 
                       type="text" 
                       value={articleTitle} 
                       onChange={(e) => setArticleTitle(e.target.value)} 
                       required
-                      placeholder="αª╢αª┐αª░αºïαª¿αª╛αª« αª▓αª┐αªûαºüαª¿..."
+                      placeholder="শিরোনাম লিখুন..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
 
                   {/* Subtitle */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">αªëαª¬-αª╢αª┐αª░αºïαª¿αª╛αª« (Subtitle)</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">উপ-শিরোনাম (Subtitle)</label>
                     <input 
                       type="text" 
                       value={articleSubtitle} 
                       onChange={(e) => setArticleSubtitle(e.target.value)}
-                      placeholder="αªëαª¬-αª╢αª┐αª░αºïαª¿αª╛αª« αª▓αª┐αªûαºüαª¿..."
+                      placeholder="উপ-শিরোনাম লিখুন..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
 
                   {/* HTML Body Editor Custom Component */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">αª«αºéαª▓ αª╕αªéαª¼αª╛αªª (Content Body) *</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">মূল সংবাদ (Content Body) *</label>
                     <RichTextEditor value={articleContent} onChange={setArticleContent} />
                   </div>
 
                   {/* Short Summary */}
                   <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">αª╕αªéαªòαºìαª╖αª┐αª¬αºìαªñ αª╕αª╛αª░αª╕αªéαªòαºìαª╖αºçαª¬ (Short Summary)</label>
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংক্ষিপ্ত সারসংক্ষেপ (Short Summary)</label>
                     <textarea 
                       rows="3" 
                       value={articleSummary} 
                       onChange={(e) => setArticleSummary(e.target.value)}
-                      placeholder="αªûαª¼αª░αºçαª░ αªÅαªòαªƒαª┐ αº¿-αº⌐ αª▓αª╛αªçαª¿αºçαª░ αª╕αª╛αª░αª╕αªéαªòαºìαª╖αºçαª¬ αª▓αª┐αªûαºüαª¿..."
+                      placeholder="খবরের একটি ২-৩ লাইনের সারসংক্ষেপ লিখুন..."
                       className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
@@ -1091,7 +1091,7 @@ const Dashboard = () => {
                     
                     {/* Category Selector */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">αª¼αª┐αª¡αª╛αªù (Category) *</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">বিভাগ (Category) *</label>
                       <select 
                         value={articleCategory}
                         onChange={(e) => setArticleCategory(e.target.value)}
@@ -1110,22 +1110,22 @@ const Dashboard = () => {
 
                     {/* Status */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">αªàαª¼αª╕αºìαªÑαª╛ (Status)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">অবস্থা (Status)</label>
                       <select 
                         value={articleStatus}
                         onChange={(e) => setArticleStatus(e.target.value)}
                         className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                       >
-                        <option value="draft">Draft (αªûαª╕αº£αª╛)</option>
-                        <option value="published">Publish Immediately (αª¬αºìαª░αªòαª╛αª╢αª┐αªñ)</option>
-                        <option value="scheduled">Schedule Publish (αª╕αª«αºƒαª╕αºéαªÜαºÇ)</option>
+                        <option value="draft">Draft (খসড়া)</option>
+                        <option value="published">Publish Immediately (প্রকাশিত)</option>
+                        <option value="scheduled">Schedule Publish (সময়সূচী)</option>
                       </select>
                     </div>
 
                     {/* Date Scheduling */}
                     {articleStatus === 'scheduled' && (
                       <div>
-                        <label className="text-xs font-bold text-slate-605 block mb-1">αªñαª╛αª░αª┐αªû αªô αª╕αª«αºƒ (Publish Date)</label>
+                        <label className="text-xs font-bold text-slate-605 block mb-1">তারিখ ও সময় (Publish Date)</label>
                         <input 
                           type="datetime-local" 
                           value={articleScheduledDate}
@@ -1137,19 +1137,19 @@ const Dashboard = () => {
 
                     {/* Tags input */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">αªƒαºìαª»αª╛αªùαª╕αª«αºéαª╣ (Tags - comma separated)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">ট্যাগসমূহ (Tags - comma separated)</label>
                       <input 
                         type="text" 
                         value={articleTags} 
                         onChange={(e) => setArticleTags(e.target.value)}
-                        placeholder="αª░αª╛αª£αª¿αºÇαªñαª┐, αª¿αª┐αª░αºìαª¼αª╛αªÜαª¿, αªóαª╛αªòαª╛"
+                        placeholder="রাজনীতি, নির্বাচন, ঢাকা"
                         className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
                       />
                     </div>
 
                     {/* Featured Image Picker */}
                     <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">αª½αª┐αªÜαª╛αª░ αªçαª«αºçαª£ αª▓αª┐αªéαªò (Featured Image URL)</label>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">ফিচার ইমেজ লিংক (Featured Image URL)</label>
                       <div className="flex space-x-1">
                         <input 
                           type="text" 
@@ -1234,7 +1234,7 @@ const Dashboard = () => {
                     onClick={() => setShowMediaPicker(false)}
                     className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold"
                   >
-                    Γ£ò
+                    ✕
                   </button>
                   <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Select Featured Image</h3>
                   <MediaLibrary 
@@ -1621,13 +1621,13 @@ const Dashboard = () => {
                             onChange={(e) => handleRoleChange(u._id, e.target.value)}
                             className="px-2.5 py-1.5 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                           >
-                            <option value="Reader">Reader (αª╕αª╛αªºαª╛αª░αªú αª░αª┐αªíαª╛αª░)</option>
-                            <option value="Reporter">Reporter (αª╕αªéαª¼αª╛αªªαªªαª╛αªñαª╛)</option>
-                            <option value="Editor">Editor (αª╕αª«αºìαª¬αª╛αªªαªò)</option>
-                            <option value="Moderator">Moderator (αª«αªíαª╛αª░αºçαªƒαª░)</option>
-                            <option value="SEO Manager">SEO Manager (αªÅαª╕αªçαªô αª«αºìαª»αª╛αª¿αºçαª£αª╛αª░)</option>
-                            <option value="Admin">Admin (αª¬αºìαª░αª╢αª╛αª╕αªò)</option>
-                            <option value="Super Admin">Super Admin (αª«αª╛αª╕αºìαªƒαª╛αª░)</option>
+                            <option value="Reader">Reader (সাধারণ রিডার)</option>
+                            <option value="Reporter">Reporter (সংবাদদাতা)</option>
+                            <option value="Editor">Editor (সম্পাদক)</option>
+                            <option value="Moderator">Moderator (মডারেটর)</option>
+                            <option value="SEO Manager">SEO Manager (এসইও ম্যানেজার)</option>
+                            <option value="Admin">Admin (প্রশাসক)</option>
+                            <option value="Super Admin">Super Admin (মাস্টার)</option>
                           </select>
                           {user.id !== u._id && (
                             <button
@@ -1692,9 +1692,9 @@ const Dashboard = () => {
                       onChange={(e) => setNewSectionLayout(e.target.value)}
                       className="w-full px-3 py-2 border bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                     >
-                      <option value="grid">Grid (αº¬αªƒαª┐ αª╕αªéαª¼αª╛αªª αªòαª╛αª░αºìαªí)</option>
-                      <option value="list">List (αº½αªƒαª┐ αª╕αªéαª¼αª╛αªª αªñαª╛αª▓αª┐αªòαª╛)</option>
-                      <option value="hero">Hero (αººαªƒαª┐ αª¼αº£ αª╕αªéαª¼αª╛αªª + αº⌐αªƒαª┐ αª¢αºïαªƒ αª▓αª┐αªéαªò)</option>
+                      <option value="grid">Grid (৪টি সংবাদ কার্ড)</option>
+                      <option value="list">List (৫টি সংবাদ তালিকা)</option>
+                      <option value="hero">Hero (১টি বড় সংবাদ + ৩টি ছোট লিংক)</option>
                     </select>
                   </div>
 
@@ -1725,7 +1725,7 @@ const Dashboard = () => {
                             {sec.category}
                           </h4>
                           <span className="text-[10px] text-slate-400 block capitalize">
-                            Style: {sec.layout === 'grid' ? 'Grid (αº¬αªƒαª┐ αªòαª╛αª░αºìαªí)' : (sec.layout === 'list' ? 'List (αªñαª╛αª▓αª┐αªòαª╛)' : 'Hero (φòÿ∞¥┤αª▓αª╛αªçαªƒαºçαªí)')}
+                            Style: {sec.layout === 'grid' ? 'Grid (৪টি কার্ড)' : (sec.layout === 'list' ? 'List (তালিকা)' : 'Hero (하이লাইটেড)')}
                           </span>
                         </div>
 
@@ -1737,7 +1737,7 @@ const Dashboard = () => {
                             className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Move Up"
                           >
-                            Γû▓
+                            ▲
                           </button>
                           <button
                             onClick={() => handleMoveLayoutSection(index, 1)}
@@ -1745,7 +1745,7 @@ const Dashboard = () => {
                             className="p-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-slate-800"
                             title="Move Down"
                           >
-                            Γû╝
+                            ▼
                           </button>
                           
                           {/* Remove button */}
@@ -1785,7 +1785,7 @@ const Dashboard = () => {
                 id="ai-trigger-btn"
               >
                 <Cpu className={`h-4.5 w-4.5 ${triggeringAi ? 'animate-spin' : ''}`} />
-                <span>{triggeringAi ? 'αª░αª┐αª╕αª╛αª░αºìαªÜ αªô αª░αª╛αªçαªƒαª┐αªé αª╣αªÜαºìαª¢αºç...' : 'αªÅαªåαªç αª¿αªñαºüαª¿ αª╕αªéαª¼αª╛αªª αª░αª┐αª╕αª╛αª░αºìαªÜ αªòαª░αºüαª¿'}</span>
+                <span>{triggeringAi ? 'রিসার্চ ও রাইটিং হচ্ছে...' : 'এআই নতুন সংবাদ রিসার্চ করুন'}</span>
               </button>
             </div>
 
@@ -1793,8 +1793,8 @@ const Dashboard = () => {
               {aiArticles.length === 0 ? (
                 <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl">
                   <ShieldAlert className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">αªòαºïαª¿αºï αª«αºüαª▓αªñαºüαª¼αª┐ αªÅαªåαªç αªíαºìαª░αª╛αª½αªƒ αª¬αª╛αªôαºƒαª╛ αª»αª╛αºƒαª¿αª┐αÑñ</h3>
-                  <p className="text-xs text-slate-400 mt-1">αª¿αªñαºüαª¿ αª¼αºìαª░αºçαªòαª┐αªé αª¿αª┐αªëαª£ αªÅαª¿αª╛αª▓αª╛αªçαª╕αª┐αª╕ αªòαª░αªñαºç αªëαª¬αª░αºçαª░ αª¼αª╛αªƒαª¿αºç αªòαºìαª▓αª┐αªò αªòαª░αºüαª¿αÑñ</p>
+                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-350">কোনো মুলতুবি এআই ড্রাফট পাওয়া যায়নি।</h3>
+                  <p className="text-xs text-slate-400 mt-1">নতুন ব্রেকিং নিউজ এনালাইসিস করতে উপরের বাটনে ক্লিক করুন।</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1827,13 +1827,13 @@ const Dashboard = () => {
                           onClick={() => handleReviewAiArticle(art)}
                           className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-950 rounded-xl text-xs font-bold transition-all text-center"
                         >
-                          αª¬αº£αºüαª¿ αªô αª╕αª«αºìαª¬αª╛αªªαª¿αª╛
+                          পড়ুন ও সম্পাদনা
                         </button>
                         <button
                           onClick={() => handleApproveAiArticle(art._id)}
                           className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all"
                         >
-                          αªàαª¿αºüαª«αºïαªªαª¿
+                          অনুমোদন
                         </button>
                         <button
                           onClick={() => handleRejectAiArticle(art._id)}
