@@ -80,7 +80,7 @@ const MediaLibrary = ({ onSelect, selectedUrl }) => {
     return <FileText className="h-10 w-10 text-purple-500" />;
   };
 
-  const API_HOST = import.meta.env.VITE_API_HOST || 'http://localhost:5000';
+  const API_HOST = import.meta.env.VITE_API_HOST || '';
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800/40 p-6 shadow-sm">

@@ -68,6 +68,10 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Express server running on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Express server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;

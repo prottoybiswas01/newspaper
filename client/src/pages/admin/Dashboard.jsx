@@ -849,7 +849,7 @@ const Dashboard = () => {
                       </div>
                       {articleFeaturedImage && (
                         <img 
-                          src={articleFeaturedImage.startsWith('/') ? `${import.meta.env.VITE_API_HOST || 'http://localhost:5000'}${articleFeaturedImage}` : articleFeaturedImage} 
+                          src={articleFeaturedImage.startsWith('/') ? `${import.meta.env.VITE_API_HOST || ''}${articleFeaturedImage}` : articleFeaturedImage} 
                           alt="preview" 
                           className="h-20 w-full object-cover mt-2 rounded-lg border border-slate-200" 
                         />
