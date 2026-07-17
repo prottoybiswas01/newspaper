@@ -26,26 +26,57 @@ const timeAgo = (dateStr, lang) => {
 
 /** Big featured card (top-left hero) */
 const HeroCard = ({ art, lang }) => art ? (
-  <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300">
-    <div className="relative h-72 md:h-80 overflow-hidden">
-      <img src={imgSrc(art)} alt={art.title}
-        decoding="async"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={e => { e.target.src = FALLBACK; }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-      <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">
-        {art.category}
-      </span>
+  <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300 h-full">
+    <div>
+      <div className="relative h-72 md:h-80 overflow-hidden">
+        <img src={imgSrc(art)} alt={art.title}
+          decoding="async"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={e => { e.target.src = FALLBACK; }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">
+          {art.category}
+        </span>
+      </div>
+      <div className="p-4">
+        <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
+          {art.title}
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{art.summary}</p>
+      </div>
     </div>
-    <div className="p-4">
-      <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
-        {art.title}
-      </h2>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{art.summary}</p>
-      <div className="flex items-center gap-3 mt-3 text-[11px] text-slate-400 font-semibold">
+    <div className="p-4 pt-0">
+      <div className="flex items-center gap-3 text-[11px] text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800/40 pt-3">
         <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
         <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
         <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{art.likes || 0}</span>
+      </div>
+    </div>
+  </Link>
+) : null;
+
+/** Vertical secondary card (Image, Title, Summary, Meta) */
+const SecondaryCard = ({ art, lang }) => art ? (
+  <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-all duration-300 h-full">
+    <div>
+      <div className="relative h-40 overflow-hidden flex-shrink-0">
+        <img src={imgSrc(art)} alt={art.title}
+          loading="lazy" decoding="async"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={e => { e.target.src = FALLBACK; }} />
+      </div>
+      <div className="p-3.5 space-y-2">
+        <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+          {art.title}
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+          {art.summary}
+        </p>
+      </div>
+    </div>
+    <div className="p-3.5 pt-0">
+      <div className="text-[10px] text-slate-400 font-semibold mt-1">
+        {timeAgo(art.publishDate || art.createdAt, lang)}
       </div>
     </div>
   </Link>
@@ -244,14 +275,14 @@ const Home = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         {/* Hero card — left 5/12 */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 flex">
           <HeroCard art={hero} lang={lang} />
         </div>
 
-        {/* Middle strip: 3 row cards — middle 4/12 */}
-        <div className="lg:col-span-4 flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 p-4">
+        {/* Middle strip: 3 secondary cards — middle 4/12 */}
+        <div className="lg:col-span-4 flex flex-col gap-4">
           {secondary.map(art => (
-            <RowCard key={art._id} art={art} lang={lang} />
+            <SecondaryCard key={art._id} art={art} lang={lang} />
           ))}
         </div>
 
