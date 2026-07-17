@@ -1,6 +1,5 @@
 const Article = require('../models/Article');
 const User = require('../models/User');
-const geminiService = require('../services/geminiService');
 
 const slugify = (text) => {
   return text
@@ -367,121 +366,6 @@ const translateArticle = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Get pending AI drafts
-// @route   GET /api/articles/ai/pending
-const getAiArticles = async (req, res) => {
-  try {
-    const articles = await Article.find({ isAiGenerated: true, aiStatus: 'pending' }).sort({ createdAt: -1 });
-    res.json({ success: true, articles });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// @desc    Trigger AI news research and write article
-// @route   POST /api/articles/ai/trigger
-const triggerAiResearch = async (req, res) => {
-  try {
-    const payload = await geminiService.researchAndWriteArticle();
-    
-    // Find the system AI Writer reporter
-    let aiWriter = await User.findOne({ email: 'ai.writer@news.com' });
-    if (!aiWriter) {
-      // Fallback: use first admin or super admin
-      aiWriter = await User.findOne({ role: { $in: ['Super Admin', 'Admin', 'Editor'] } });
-    }
-
-    if (!aiWriter) {
-      return res.status(450).json({ success: false, message: 'AI Writer system user not found' });
-    }
-
-    const title = payload.title || 'এআই গবেষণালব্ধ সংবাদ';
-    const textSlug = slugify(title) + '-' + Date.now();
-    const readingTime = calculateReadingTime(payload.content);
-
-    const newArticle = await Article.create({
-      title,
-      subtitle: payload.subtitle || '',
-      slug: textSlug,
-      content: payload.content || '<p></p>',
-      summary: payload.summary || '',
-      category: payload.category || 'Bangladesh',
-      tags: payload.tags || [],
-      author: aiWriter.name,
-      authorId: aiWriter._id.toString(),
-      isAiGenerated: true,
-      aiStatus: 'pending',
-      status: 'draft',
-      readingTime
-    });
-
-    res.json({ success: true, article: newArticle });
-  } catch (error) {
-    console.error("AI trigger controller error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// @desc    Approve AI draft
-// @route   PUT /api/articles/ai/:id/approve
-const approveAiArticle = async (req, res) => {
-  try {
-    const updated = await Article.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: {
-          aiStatus: 'approved',
-          status: 'published',
-          publishDate: new Date()
-        }
-      },
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({ success: false, message: 'Article not found' });
-    }
-
-    // Automatically register tags in Taxonomy Tag collection for approved AI article
-    if (updated.tags && updated.tags.length > 0) {
-      try {
-        const Tag = require('../models/Tag');
-        for (const tName of updated.tags) {
-          const tSlug = tName.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-          if (tSlug) {
-            const exists = await Tag.findOne({ slug: tSlug });
-            if (!exists) {
-              await Tag.create({ name: tName, slug: tSlug });
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Failed to auto-seed taxonomy tags on AI approval:", err);
-      }
-    }
-
-    res.json({ success: true, article: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-// @desc    Reject/Delete AI draft
-// @route   DELETE /api/articles/ai/:id/reject
-const rejectAiArticle = async (req, res) => {
-  try {
-    const article = await Article.findById(req.params.id);
-    if (!article) {
-      return res.status(404).json({ success: false, message: 'Article not found' });
-    }
-    await Article.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'AI draft rejected and deleted' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 module.exports = {
   createArticle,
   getArticles,
@@ -490,9 +374,5 @@ module.exports = {
   deleteArticle,
   likeArticle,
   shareArticle,
-  translateArticle,
-  getAiArticles,
-  triggerAiResearch,
-  approveAiArticle,
-  rejectAiArticle
+  translateArticle
 };

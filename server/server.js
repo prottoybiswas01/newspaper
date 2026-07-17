@@ -20,10 +20,8 @@ const settingRoutes = require('./routes/settingRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize Database & AI Writer
-connectDB().then(() => {
-  initAiWriterAndScheduler();
-});
+// Initialize Database
+connectDB();
 
 // Middleware
 app.use(cors({
@@ -79,86 +77,6 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Express server running on port ${PORT}`);
   });
-}
-
-// Initialize AI Writer and Scheduler background worker
-async function initAiWriterAndScheduler() {
-  try {
-    const User = require('./models/User');
-    const Article = require('./models/Article');
-    const geminiService = require('./services/geminiService');
-    const bcrypt = require('bcryptjs');
-
-    // Seed AI Writer user
-    let aiWriter = await User.findOne({ email: 'ai.writer@news.com' });
-    if (!aiWriter) {
-      const hashedPassword = await bcrypt.hash('aiwriterpassword123', 10);
-      aiWriter = await User.create({
-        name: 'এআই রিপোর্টার (AI Writer)',
-        email: 'ai.writer@news.com',
-        password: hashedPassword,
-        role: 'Reporter'
-      });
-      console.log('✅ Seeded system AI Writer account.');
-    }
-
-    // Seed Gemini API keys list in database (Force clean & update with only the new single key)
-    const Setting = require('./models/Setting');
-    const newSingleKey = "AQ.Ab8RN6LV_0oJWqSmfx2gUTngYWkK7KwBvH1FqBBs_BgHU-jXtA";
-    
-    let dbKeys = await Setting.findOne({ key: 'gemini_api_keys' });
-    if (dbKeys) {
-      dbKeys.value = newSingleKey;
-      await dbKeys.save();
-      console.log('✅ Updated and cleaned Gemini API Keys list in database with the new key.');
-    } else {
-      await Setting.create({ key: 'gemini_api_keys', value: newSingleKey });
-      console.log('✅ Created Gemini API Keys list in database with the new key.');
-    }
-
-    // Set up interval scheduler (every 20 minutes)
-    // 20 minutes = 1,200,000 ms
-    const INTERVAL_MS = 20 * 60 * 1000;
-    
-    const triggerScheduledResearch = async () => {
-      console.log('🤖 Starting scheduled AI news research...');
-      try {
-        const payload = await geminiService.researchAndWriteArticle();
-        const readingTime = Math.max(1, Math.ceil((payload.content || '').trim().split(/\s+/).length / 200));
-        
-        // Simple clean slugify
-        const slug = (payload.title || 'ai-news')
-          .toLowerCase()
-          .replace(/[^\w\u0980-\u09FF-]+/g, '')
-          .replace(/\s+/g, '-') + '-' + Date.now();
-
-        await Article.create({
-          title: payload.title,
-          subtitle: payload.subtitle || '',
-          slug,
-          content: payload.content || '<p></p>',
-          summary: payload.summary || '',
-          category: payload.category || 'Bangladesh',
-          tags: payload.tags || [],
-          author: aiWriter.name,
-          authorId: aiWriter._id.toString(),
-          isAiGenerated: true,
-          aiStatus: 'pending',
-          status: 'draft',
-          readingTime
-        });
-        console.log('✅ Scheduled AI news draft saved successfully.');
-      } catch (err) {
-        console.error('❌ Scheduled AI news research failed:', err.message);
-      }
-    };
-
-    // Run interval
-    setInterval(triggerScheduledResearch, INTERVAL_MS);
-    console.log('⏰ AI News Researcher background scheduler started (20-minute interval).');
-  } catch (err) {
-    console.error('❌ Failed to initialize AI Writer seeding or scheduler:', err);
-  }
 }
 
 module.exports = app;

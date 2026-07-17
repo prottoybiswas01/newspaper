@@ -15,15 +15,6 @@ const ArticleSchema = {
     enum: ['draft', 'published', 'scheduled', 'archived'], 
     default: 'draft' 
   },
-  isAiGenerated: { 
-    type: Boolean, 
-    default: false 
-  },
-  aiStatus: { 
-    type: String, 
-    enum: ['pending', 'approved', 'rejected'], 
-    default: 'pending' 
-  },
   featuredImage: { type: String, default: '' },
   images: { type: [String], default: [] },
   videoUrl: { type: String, default: '' },
