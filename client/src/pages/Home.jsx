@@ -123,30 +123,34 @@ const Home = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        // Top articles
-        const r1 = await api.get('/articles?limit=10&sort=latest');
-        if (r1.success) {
+        const [r1, r2, rc] = await Promise.all([
+          api.get('/articles?limit=10&sort=latest'),
+          api.get('/articles?limit=5&sort=popular'),
+          api.get('/settings/homepage_layout').catch(() => null)
+        ]);
+
+        if (r1 && r1.success) {
           setTopArticles(r1.articles);
           setLatestArticles(r1.articles);
         }
 
-        // Popular
-        const r2 = await api.get('/articles?limit=5&sort=popular');
-        if (r2.success) setMostRead(r2.articles);
+        if (r2 && r2.success) {
+          setMostRead(r2.articles);
+        }
 
-        // Layout config
         let cfg = [];
-        try {
-          const rc = await api.get('/settings/homepage_layout');
-          if (rc.success && Array.isArray(rc.value) && rc.value.length > 0) cfg = rc.value;
-        } catch (_) {}
+        if (rc && rc.success && Array.isArray(rc.value) && rc.value.length > 0) {
+          cfg = rc.value;
+        }
 
-        if (!cfg.length) cfg = [
-          { category: 'Bangladesh', layout: 'grid' },
-          { category: 'Politics',   layout: 'hero' },
-          { category: 'Sports',     layout: 'grid' },
-          { category: 'Technology', layout: 'list' },
-        ];
+        if (!cfg.length) {
+          cfg = [
+            { category: 'Bangladesh', layout: 'grid' },
+            { category: 'Politics',   layout: 'hero' },
+            { category: 'Sports',     layout: 'grid' },
+            { category: 'Technology', layout: 'list' },
+          ];
+        }
 
         const sections = await Promise.all(cfg.map(async sec => {
           try {

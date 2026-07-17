@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { api } from '../utils/api';
@@ -39,22 +39,22 @@ const ArticleDetails = () => {
           setArticle(res.article);
           setLikeCount(res.article.likes || 0);
           
-          // Log analytics view for this article
-          await api.post('/analytics/log', {
-            path: `/article/${slug}`,
-            articleId: res.article._id,
-            device: window.innerWidth < 768 ? 'Mobile' : 'Desktop'
-          });
+          // Fetch comments, related articles and log analytics view in parallel
+          const [commentsRes, relatedRes] = await Promise.all([
+            api.get(`/comments/article/${res.article._id}`),
+            api.get(`/articles?category=${res.article.category}&limit=3`),
+            api.post('/analytics/log', {
+              path: `/article/${slug}`,
+              articleId: res.article._id,
+              device: window.innerWidth < 768 ? 'Mobile' : 'Desktop'
+            }).catch(() => null)
+          ]);
 
-          // Fetch comments
-          const commentsRes = await api.get(`/comments/article/${res.article._id}`);
-          if (commentsRes.success) {
+          if (commentsRes && commentsRes.success) {
             setComments(commentsRes.comments);
           }
 
-          // Fetch related articles
-          const relatedRes = await api.get(`/articles?category=${res.article.category}&limit=3`);
-          if (relatedRes.success) {
+          if (relatedRes && relatedRes.success) {
             // Exclude current article
             const filtered = relatedRes.articles.filter(a => a._id !== res.article._id);
             setRelated(filtered);
