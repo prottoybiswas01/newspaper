@@ -64,7 +64,7 @@ const Header = () => {
           </button>
 
           {/* Vertical Divider */}
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-850"></div>
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
 
           {/* Profile / Auth Button */}
           {user && (
@@ -72,7 +72,7 @@ const Header = () => {
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
-                  className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-55 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors animate-pulse"
+                  className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors animate-pulse"
                 >
                   <Shield className="h-3.5 w-3.5" />
                   <span>{t('dashboard')}</span>
@@ -92,7 +92,7 @@ const Header = () => {
       </div>
 
       {/* Row 2: Category Scroll Bar + Theme/Language Toggles (Visible on all screens) */}
-      <div className="border-t border-b border-slate-100 dark:border-slate-850/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md">
+      <div className="border-t border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-4">
           
           {/* Scrollable Categories List */}
@@ -126,7 +126,7 @@ const Header = () => {
             {/* Theme Toggle */}
             <button 
               onClick={toggleTheme} 
-              className="p-1.5 rounded-lg hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-555 dark:text-slate-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
               title="Toggle Theme"
             >
               {isDark ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-indigo-650" />}

@@ -594,11 +594,11 @@ const Dashboard = () => {
         </div>
 
         {/* User Card */}
-        <div className="p-4 border-b border-slate-850 flex items-center space-x-3 bg-slate-950/40">
+        <div className="p-4 border-b border-slate-800 flex items-center space-x-3 bg-slate-950/40">
           <img 
             src={user?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`} 
             alt={user?.name} 
-            className="h-9 w-9 rounded-full bg-slate-850" 
+            className="h-9 w-9 rounded-full bg-slate-800" 
           />
           <div className="truncate">
             <h4 className="text-xs font-bold text-white leading-normal truncate">{user?.name}</h4>
@@ -719,11 +719,11 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Browser distribution */}
                   <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800/40 shadow-xs">
-                    <h3 className="text-xs font-bold text-slate-850 dark:text-white mb-4 uppercase">Device distribution</h3>
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-white mb-4 uppercase">Device distribution</h3>
                     <div className="space-y-4">
                       {Object.keys(stats.devices || {}).map(dev => (
                         <div key={dev} className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-slate-655 dark:text-slate-350">
+                          <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-350">
                             <span>{dev}</span>
                             <span>{stats.devices[dev]} views</span>
                           </div>
@@ -736,11 +736,11 @@ const Dashboard = () => {
                   </div>
                   {/* Country distribution */}
                   <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800/40 shadow-xs">
-                    <h3 className="text-xs font-bold text-slate-850 dark:text-white mb-4 uppercase">Visitor Countries</h3>
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-white mb-4 uppercase">Visitor Countries</h3>
                     <div className="space-y-4">
                       {Object.keys(stats.countries || {}).map(coun => (
                         <div key={coun} className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-slate-655 dark:text-slate-350">
+                          <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-350">
                             <span>{coun}</span>
                             <span>{stats.countries[coun]} views</span>
                           </div>
@@ -825,7 +825,7 @@ const Dashboard = () => {
                 ))}
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-850 overflow-hidden shadow-xs">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-800 overflow-hidden shadow-xs">
                 {filteredArticles.length === 0 ? (
                   <div className="text-center py-16">
                     <FileText className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
@@ -834,7 +834,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs font-semibold text-slate-650">
-                      <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black border-b border-slate-100 dark:border-slate-800">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black border-b border-slate-100 dark:border-slate-800">
                         <tr>
                           <th className="p-4">{language === 'bn' ? 'শিরোনাম' : 'Title'}</th>
                           <th className="p-4">{language === 'bn' ? 'বিভাগ' : 'Category'}</th>
@@ -964,7 +964,7 @@ const Dashboard = () => {
                       value={articleSummary} 
                       onChange={(e) => setArticleSummary(e.target.value)}
                       placeholder="খবরের একটি ২-৩ লাইনের সারসংক্ষেপ লিখুন..."
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -1201,7 +1201,7 @@ const Dashboard = () => {
 
                 <form onSubmit={handleMergeTags} className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-655 block mb-1">Source Tag Slug (To Delete)</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">Source Tag Slug (To Delete)</label>
                     <input
                       type="text"
                       placeholder="e.g. cricket-news"
@@ -1212,7 +1212,7 @@ const Dashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-655 block mb-1">Target Tag Slug (To Retain)</label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">Target Tag Slug (To Retain)</label>
                     <input
                       type="text"
                       placeholder="e.g. cricket"
@@ -1231,7 +1231,7 @@ const Dashboard = () => {
                 </form>
 
                 {/* Available tags cloud */}
-                <div className="mt-8 border-t border-slate-100 dark:border-slate-850 pt-4">
+                <div className="mt-8 border-t border-slate-100 dark:border-slate-800 pt-4">
                   <h4 className="text-xs font-bold text-slate-500 mb-3">Active Tag Database Slugs:</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {tags.map(t => (
@@ -1261,7 +1261,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs font-semibold text-slate-650">
-                      <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
                         <tr>
                           <th className="p-3">Author</th>
                           <th className="p-3">Comment Content</th>
@@ -1272,7 +1272,7 @@ const Dashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                         {comments.map(comm => (
-                          <tr key={comm._id} className="hover:bg-slate-55 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350">
+                          <tr key={comm._id} className="hover:bg-slate-100 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350">
                             <td className="p-3">
                               <div className="font-bold text-slate-800 dark:text-slate-200">{comm.authorName}</div>
                               <div className="text-[10px] text-slate-400">{comm.authorEmail}</div>
@@ -1281,7 +1281,7 @@ const Dashboard = () => {
                             <td className="p-3 truncate max-w-xs font-semibold text-[10px]">{comm.articleTitle}</td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
-                                comm.status === 'approved' ? 'bg-green-105 bg-green-100 text-green-700' :
+                                comm.status === 'approved' ? 'bg-green-100 bg-green-100 text-green-700' :
                                 (comm.status === 'spam' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700')
                               }`}>
                                 {comm.status}
@@ -1429,7 +1429,7 @@ const Dashboard = () => {
                       <div key={ad._id} className="p-4 border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between gap-4">
                         <div className="space-y-1.5 flex-1 truncate">
                           <div className="flex items-center space-x-2">
-                            <span className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-550">{ad.placement}</span>
+                            <span className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">{ad.placement}</span>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">{ad.title}</h4>
                           </div>
                           
@@ -1480,7 +1480,7 @@ const Dashboard = () => {
             ) : (
               <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs font-semibold text-slate-650">
-                  <thead className="bg-slate-50 dark:bg-slate-850 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
+                  <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
                     <tr>
                       <th className="p-3">Name</th>
                       <th className="p-3">Email Address</th>
@@ -1490,7 +1490,7 @@ const Dashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {users.map(u => (
-                      <tr key={u._id} className="hover:bg-slate-55 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350">
+                      <tr key={u._id} className="hover:bg-slate-100 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350">
                         <td className="p-3 font-bold text-slate-800 dark:text-slate-100">{u.name}</td>
                         <td className="p-3">{u.email}</td>
                         <td className="p-3">
@@ -1538,7 +1538,7 @@ const Dashboard = () => {
         {/* TAB 7: HOMEPAGE LAYOUT SETTINGS */}
         {activeTab === 'layout' && hasPermission(['Super Admin', 'Admin', 'Editor']) && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-850 pb-4">
+            <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Homepage Category Layout Configurator</h1>
                 <p className="text-xs text-slate-505 mt-1">Configure which news categories are displayed on the home page, their layout style, and ordering.</p>

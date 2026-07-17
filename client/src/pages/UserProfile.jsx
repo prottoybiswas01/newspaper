@@ -105,7 +105,7 @@ const UserProfile = () => {
 
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-655 block mb-1">পূর্ণ নাম *</label>
+              <label className="text-xs font-bold text-slate-600 block mb-1">পূর্ণ নাম *</label>
               <input
                 type="text"
                 required
@@ -116,17 +116,17 @@ const UserProfile = () => {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-655 block mb-1">ইমেইল ঠিকানা (Email - readonly)</label>
+              <label className="text-xs font-bold text-slate-600 block mb-1">ইমেইল ঠিকানা (Email - readonly)</label>
               <input
                 type="email"
                 readOnly
                 value={user.email}
-                className="w-full px-4 py-2 border rounded-xl text-sm bg-slate-100 dark:bg-slate-850 text-slate-450 focus:outline-none cursor-not-allowed"
+                className="w-full px-4 py-2 border rounded-xl text-sm bg-slate-100 dark:bg-slate-800 text-slate-450 focus:outline-none cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-655 block mb-1">লেখক পরিচিতি (Bio)</label>
+              <label className="text-xs font-bold text-slate-600 block mb-1">লেখক পরিচিতি (Bio)</label>
               <textarea
                 rows="4"
                 value={bio}
@@ -202,7 +202,7 @@ const UserProfile = () => {
                   <Link 
                     key={art._id} 
                     to={`/article/${art.slug}`}
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 border-b border-slate-100 dark:border-slate-850/50 pb-2 last:border-b-0"
+                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 border-b border-slate-100 dark:border-slate-800/50 pb-2 last:border-b-0"
                   >
                     {art.title}
                   </Link>
@@ -222,7 +222,7 @@ const UserProfile = () => {
                 <Link 
                   key={art._id} 
                   to={`/article/${art.slug}`}
-                  className="block text-xs font-bold text-slate-650 dark:text-slate-400 hover:text-blue-600 border-b border-slate-100 dark:border-slate-850/50 pb-2 last:border-b-0"
+                  className="block text-xs font-bold text-slate-650 dark:text-slate-400 hover:text-blue-600 border-b border-slate-100 dark:border-slate-800/50 pb-2 last:border-b-0"
                 >
                   {art.title}
                 </Link>

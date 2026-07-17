@@ -15,8 +15,7 @@ export default {
         }
       },
       fontFamily: {
-        bengali: ['SolaimanLipi', 'system-ui', 'sans-serif'],
-        sans: ['Outfit', 'Inter', 'system-ui', 'sans-serif']
+        sans: ['Hind Siliguri', 'Noto Sans Bengali', 'system-ui', 'sans-serif']
       }
     },
   },

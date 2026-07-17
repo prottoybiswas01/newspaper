@@ -306,6 +306,7 @@ const ArticleDetails = () => {
           <img 
             src={displayArticle.featuredImage} 
             alt={displayArticle.title} 
+            decoding="async"
             className="w-full h-auto max-h-[500px] object-cover" 
           />
         </div>
@@ -313,7 +314,7 @@ const ArticleDetails = () => {
 
       {/* Article Body Content */}
       <div 
-        className="prose dark:prose-invert max-w-none mb-10 leading-relaxed font-sans"
+        className="prose prose-lg dark:prose-invert max-w-none mb-10 leading-loose font-sans"
         style={{ fontSize: `${fontSize}px` }}
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayArticle.content) }}
       />
@@ -416,7 +417,7 @@ const ArticleDetails = () => {
             </div>
             <button 
               type="submit"
-              className="px-6 py-2.5 bg-blue-655 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
             >
               {language === 'bn' ? 'মন্তব্য জমা দিন' : 'Submit Comment'}
             </button>
@@ -432,7 +433,7 @@ const ArticleDetails = () => {
             {related.map(art => (
               <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-3 hover:shadow-md transition-shadow">
                 <Link to={`/article/${art.slug}`}>
-                  <img src={art.featuredImage} alt={art.title} className="w-full h-36 object-cover rounded-lg mb-3" />
+                  <img src={art.featuredImage} alt={art.title} loading="lazy" decoding="async" className="w-full h-36 object-cover rounded-lg mb-3" />
                   <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 leading-snug transition-colors line-clamp-2">{art.title}</h4>
                 </Link>
               </div>

@@ -29,6 +29,7 @@ const HeroCard = ({ art, lang }) => art ? (
   <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300">
     <div className="relative h-72 md:h-80 overflow-hidden">
       <img src={imgSrc(art)} alt={art.title}
+        decoding="async"
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
         onError={e => { e.target.src = FALLBACK; }} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -55,6 +56,7 @@ const RowCard = ({ art, lang, index }) => art ? (
   <Link to={`/article/${art.slug}`} className="group flex gap-3 items-start py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/20 rounded-lg px-2 -mx-2 transition-colors">
     <div className="relative w-20 h-16 flex-shrink-0 overflow-hidden rounded-lg">
       <img src={imgSrc(art)} alt={art.title}
+        loading="lazy" decoding="async"
         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         onError={e => { e.target.src = FALLBACK; }} />
     </div>
@@ -72,6 +74,7 @@ const GridCard = ({ art, lang }) => art ? (
   <Link to={`/article/${art.slug}`} className="group block bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-shadow">
     <div className="relative h-44 overflow-hidden">
       <img src={imgSrc(art)} alt={art.title}
+        loading="lazy" decoding="async"
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         onError={e => { e.target.src = FALLBACK; }} />
       <span className="absolute top-2 left-2 bg-blue-700/90 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
@@ -109,6 +112,7 @@ const Home = () => {
   const [latestArticles, setLatestArticles] = useState([]);   // sidebar latest
   const [mostRead, setMostRead]             = useState([]);
   const [layoutSections, setLayoutSections] = useState([]);
+  const [loading, setLoading]               = useState(true);
   const { language: lang, t } = useLanguage();
 
   // analytics ping
@@ -164,6 +168,8 @@ const Home = () => {
         setLayoutSections(sections.filter(Boolean));
       } catch (err) {
         console.error('Home load error:', err);
+      } finally {
+        setLoading(false);
       }
     };
     load();
@@ -173,6 +179,61 @@ const Home = () => {
   const hero       = topArticles[0] || null;
   const secondary  = topArticles.slice(1, 4);   // 3 row-cards next to hero
   const gridRow    = topArticles.slice(4, 8);   // 4-card grid below
+
+  if (loading) {
+    return (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10 animate-pulse">
+        {/* Header Ad skeleton */}
+        <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+
+        {/* Top Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Hero skeleton */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="h-72 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-5/6" />
+          </div>
+
+          {/* Row list skeleton */}
+          <div className="lg:col-span-4 space-y-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="flex gap-3 items-center">
+                <div className="w-20 h-16 bg-slate-200 dark:bg-slate-800 rounded-lg flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
+                  <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sidebar skeleton */}
+          <div className="lg:col-span-3 space-y-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
+            <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2 mb-4" />
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="space-y-2 border-b border-slate-100 dark:border-slate-800/40 pb-3 last:border-0">
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
+                <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid Row skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <div className="h-40 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
+              <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2" />
+            </div>
+          ))}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
@@ -283,7 +344,9 @@ const Home = () => {
                 { img:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400', label: lang==='bn'?'আকাশপথে বিমানের স্বপ্নযাত্রা':'Aviation Dreams', t:'photo' },
               ].map((m,i)=>(
                 <div key={i} className="relative rounded-lg overflow-hidden group aspect-video">
-                  <img src={m.img} alt={m.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                  <img src={m.img} alt={m.label}
+                    loading="lazy" decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     {m.t==='video'
                       ? <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>

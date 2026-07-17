@@ -142,7 +142,7 @@ const Search = () => {
             <button
               type="button"
               onClick={() => { setSearchTerm(''); setCategory(''); setAuthorId(''); setSort('latest'); }}
-              className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-300 font-bold rounded-lg text-xs transition-colors"
+              className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-lg text-xs transition-colors"
             >
               Reset Filters
             </button>
@@ -169,6 +169,8 @@ const Search = () => {
                 <img
                   src={art.featuredImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600'}
                   alt={art.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-40 object-cover"
                 />
                 <div className="p-4 space-y-2">

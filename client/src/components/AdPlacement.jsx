@@ -57,7 +57,7 @@ const AdPlacement = ({ placement }) => {
   if (placement === 'popup') {
     return (
       <div className={dimensionsClass.popup}>
-        <div className="relative bg-white dark:bg-slate-950 p-4 rounded-2xl max-w-lg w-11/12 border border-slate-200 dark:border-slate-850 shadow-2xl">
+        <div className="relative bg-white dark:bg-slate-950 p-4 rounded-2xl max-w-lg w-11/12 border border-slate-200 dark:border-slate-800 shadow-2xl">
           <button 
             onClick={() => setAd(null)}
             className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold"

@@ -55,7 +55,7 @@ const RichTextEditor = ({ value, onChange }) => {
   return (
     <div className="w-full border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
       {/* Editor Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800">
         <button
           type="button"
           onClick={() => addHeading('h2')}

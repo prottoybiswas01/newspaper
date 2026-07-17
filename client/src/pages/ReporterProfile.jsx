@@ -66,7 +66,7 @@ const ReporterProfile = () => {
             {reporter.role}
           </span>
           <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">{reporter.name}</h1>
-          <p className="text-sm text-slate-550 dark:text-slate-400 max-w-2xl leading-relaxed">{reporter.bio || 'এই লেখকের কোনো জীবনবৃত্তান্ত এখনো যোগ করা হয়নি।'}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">{reporter.bio || 'এই লেখকের কোনো জীবনবৃত্তান্ত এখনো যোগ করা হয়নি।'}</p>
           
           {/* Social Links */}
           {reporter.socialLinks && (

@@ -63,13 +63,15 @@ const CategoryNews = () => {
                     <img 
                       src={art.featuredImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600'} 
                       alt={art.title} 
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-44 object-cover" 
                     />
                     <div className="p-4 space-y-2">
                       <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug">
                         {art.title}
                       </h3>
-                      <p className="text-xs text-slate-550 dark:text-slate-400 line-clamp-2">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                         {art.summary}
                       </p>
                       <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold pt-2">
