@@ -1061,6 +1061,18 @@ const Dashboard = () => {
                       )}
                     </div>
 
+                    {/* Video URL Input */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-605 block mb-1">ভিডিও লিংক (YouTube Video URL)</label>
+                      <input 
+                        type="text" 
+                        value={articleVideoUrl} 
+                        onChange={(e) => setArticleVideoUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=xxxxxx"
+                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
+                      />
+                    </div>
+
                     {/* Submit Actions */}
                     <div className="pt-2 flex gap-2">
                       <button 
