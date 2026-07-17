@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../utils/api';
 import { useToast } from '../../components/Toast';
 import RichTextEditor from '../../components/RichTextEditor';
@@ -18,6 +19,7 @@ import {
 
 const Dashboard = () => {
   const { user, loading, logout, hasPermission } = useAuth();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -148,9 +150,6 @@ const Dashboard = () => {
     } else if (activeTab === 'layout') {
       loadHomepageLayout();
       loadTaxonomies();
-    } else if (activeTab === 'aiDrafts') {
-      loadAiArticles();
-      loadGeminiKeys();
     } else if (activeTab === 'articlesList') {
       fetchArticlesList();
     }
