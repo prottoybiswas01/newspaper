@@ -19,6 +19,14 @@
       "dest": "server/server.js"
     },
     {
+      "src": "/sitemap.xml",
+      "dest": "server/server.js"
+    },
+    {
+      "src": "/rss.xml",
+      "dest": "server/server.js"
+    },
+    {
       "src": "/uploads/(.*)",
       "dest": "server/server.js"
     },
