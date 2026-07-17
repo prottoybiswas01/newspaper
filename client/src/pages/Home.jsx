@@ -7,9 +7,15 @@ import { useLanguage } from '../context/LanguageContext';
 import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight } from 'lucide-react';
 
 // ── helpers ────────────────────────────────────────────────
-const FALLBACK = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80';
+const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
 
-const imgSrc = (art) => art?.featuredImage || FALLBACK;
+const imgSrc = (art) => {
+  if (!art || !art.featuredImage) return null;
+  if (art.featuredImage.startsWith('http://') || art.featuredImage.startsWith('https://') || art.featuredImage.startsWith('data:')) {
+    return art.featuredImage;
+  }
+  return `${API_HOST}${art.featuredImage}`;
+};
 
 const timeAgo = (dateStr, lang) => {
   if (!dateStr) return '';
@@ -25,100 +31,146 @@ const timeAgo = (dateStr, lang) => {
 // ── sub-components ─────────────────────────────────────────
 
 /** Big featured card (top-left hero) */
-const HeroCard = ({ art, lang }) => art ? (
-  <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300">
-    <div className="relative h-72 md:h-96 overflow-hidden">
-      <img src={imgSrc(art)} alt={art.title}
-        decoding="async"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        onError={e => { e.target.src = FALLBACK; }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-      <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">
-        {art.category}
-      </span>
-    </div>
-    <div className="p-4">
-      <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
-        {art.title}
-      </h2>
-      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{art.summary}</p>
-      <div className="flex items-center gap-3 mt-4 text-[11px] text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800/40 pt-3">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
-        <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
-        <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{art.likes || 0}</span>
+const HeroCard = ({ art, lang }) => {
+  if (!art) return null;
+  const img = imgSrc(art);
+  return (
+    <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300 w-full">
+      {img && (
+        <div className="relative h-72 md:h-96 overflow-hidden">
+          <img src={img} alt={art.title}
+            decoding="async"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            onError={e => { e.target.style.display = 'none'; }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <span className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider">
+            {art.category}
+          </span>
+        </div>
+      )}
+      <div className="p-4">
+        {!img && (
+          <span className="inline-block bg-red-600 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-full tracking-wider mb-2.5">
+            {art.category}
+          </span>
+        )}
+        <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
+          {art.title}
+        </h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{art.summary}</p>
+        <div className="flex items-center gap-3 mt-4 text-[11px] text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800/40 pt-3">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
+          <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
+          <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{art.likes || 0}</span>
+        </div>
       </div>
-    </div>
-  </Link>
-) : null;
+    </Link>
+  );
+};
 
 /** Vertical secondary card (Image, Title, Summary, Meta) */
-const SecondaryCard = ({ art, lang }) => art ? (
-  <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-all duration-300 h-full">
-    <div>
-      <div className="relative h-40 overflow-hidden flex-shrink-0">
-        <img src={imgSrc(art)} alt={art.title}
-          loading="lazy" decoding="async"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={e => { e.target.src = FALLBACK; }} />
+const SecondaryCard = ({ art, lang }) => {
+  if (!art) return null;
+  const img = imgSrc(art);
+  return (
+    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-all duration-300 h-full">
+      <div>
+        {img && (
+          <div className="relative h-40 overflow-hidden flex-shrink-0">
+            <img src={img} alt={art.title}
+              loading="lazy" decoding="async"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={e => { e.target.style.display = 'none'; }} />
+          </div>
+        )}
+        <div className="p-3.5 space-y-2">
+          {!img && (
+            <span className="inline-block bg-red-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
+              {art.category}
+            </span>
+          )}
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+            {art.title}
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+            {art.summary}
+          </p>
+        </div>
       </div>
-      <div className="p-3.5 space-y-2">
-        <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-          {art.title}
-        </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-          {art.summary}
-        </p>
+      <div className="p-3.5 pt-0">
+        <div className="text-[10px] text-slate-400 font-semibold mt-1">
+          {timeAgo(art.publishDate || art.createdAt, lang)}
+        </div>
       </div>
-    </div>
-    <div className="p-3.5 pt-0">
-      <div className="text-[10px] text-slate-400 font-semibold mt-1">
-        {timeAgo(art.publishDate || art.createdAt, lang)}
-      </div>
-    </div>
-  </Link>
-) : null;
+    </Link>
+  );
+};
 
 /** Thumbnail row card */
-const RowCard = ({ art, lang, index }) => art ? (
-  <Link to={`/article/${art.slug}`} className="group flex gap-3 items-start py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/20 rounded-lg px-2 -mx-2 transition-colors">
-    <div className="relative w-20 h-16 flex-shrink-0 overflow-hidden rounded-lg">
-      <img src={imgSrc(art)} alt={art.title}
-        loading="lazy" decoding="async"
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        onError={e => { e.target.src = FALLBACK; }} />
-    </div>
-    <div className="flex-1 min-w-0">
-      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-        {art.title}
-      </h3>
-      <span className="text-[10px] text-slate-400 mt-1 block">{timeAgo(art.publishDate || art.createdAt, lang)}</span>
-    </div>
-  </Link>
-) : null;
+const RowCard = ({ art, lang, index }) => {
+  if (!art) return null;
+  const img = imgSrc(art);
+  return (
+    <Link to={`/article/${art.slug}`} className="group flex gap-3 items-start py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/20 rounded-lg px-2 -mx-2 transition-colors">
+      {img && (
+        <div className="relative w-20 h-16 flex-shrink-0 overflow-hidden rounded-lg">
+          <img src={img} alt={art.title}
+            loading="lazy" decoding="async"
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            onError={e => { e.target.style.display = 'none'; }} />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+          {art.title}
+        </h3>
+        <span className="text-[10px] text-slate-400 mt-1 block">
+          {timeAgo(art.publishDate || art.createdAt, lang)}
+          {index !== undefined && <span className="text-red-500 font-black ml-2">#{index + 1}</span>}
+        </span>
+      </div>
+    </Link>
+  );
+};
 
 /** Grid card (image top, text below) */
-const GridCard = ({ art, lang }) => art ? (
-  <Link to={`/article/${art.slug}`} className="group block bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-shadow">
-    <div className="relative h-44 overflow-hidden">
-      <img src={imgSrc(art)} alt={art.title}
-        loading="lazy" decoding="async"
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        onError={e => { e.target.src = FALLBACK; }} />
-      <span className="absolute top-2 left-2 bg-blue-700/90 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
-        {art.category}
-      </span>
-    </div>
-    <div className="p-3.5">
-      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-        {art.title}
-      </h3>
-      <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-400 font-semibold">
-        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
-        <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
+const GridCard = ({ art, lang }) => {
+  if (!art) return null;
+  const img = imgSrc(art);
+  return (
+    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-shadow h-full">
+      <div>
+        {img && (
+          <div className="relative h-44 overflow-hidden">
+            <img src={img} alt={art.title}
+              loading="lazy" decoding="async"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              onError={e => { e.target.style.display = 'none'; }} />
+            <span className="absolute top-2 left-2 bg-blue-700/90 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
+              {art.category}
+            </span>
+          </div>
+        )}
+        <div className="p-3.5">
+          {!img && (
+            <span className="inline-block bg-blue-700/90 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">
+              {art.category}
+            </span>
+          )}
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {art.title}
+          </h3>
+        </div>
       </div>
-    </div>
-  </Link>
-) : null;
+      <div className="p-3.5 pt-0">
+        <div className="flex items-center gap-2 text-[10px] text-slate-400 font-semibold">
+          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
+          <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
+        </div>
+      </div>
+    </Link>
+  );
+};
 
 /** Section header with View More */
 const SectionHead = ({ label, slug, lang }) => (
@@ -154,45 +206,13 @@ const Home = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [r1, r2, rc] = await Promise.all([
-          api.get('/articles?limit=10&sort=latest'),
-          api.get('/articles?limit=5&sort=popular'),
-          api.get('/settings/homepage_layout').catch(() => null)
-        ]);
-
-        if (r1 && r1.success) {
-          setTopArticles(r1.articles);
-          setLatestArticles(r1.articles);
+        const res = await api.get('/articles/homepage');
+        if (res.success) {
+          setTopArticles(res.topArticles || []);
+          setLatestArticles(res.topArticles || []);
+          setMostRead(res.mostRead || []);
+          setLayoutSections(res.layoutSections || []);
         }
-
-        if (r2 && r2.success) {
-          setMostRead(r2.articles);
-        }
-
-        let cfg = [];
-        if (rc && rc.success && Array.isArray(rc.value) && rc.value.length > 0) {
-          cfg = rc.value;
-        }
-
-        if (!cfg.length) {
-          cfg = [
-            { category: 'Bangladesh', layout: 'grid' },
-            { category: 'Politics',   layout: 'hero' },
-            { category: 'Sports',     layout: 'grid' },
-            { category: 'Technology', layout: 'list' },
-          ];
-        }
-
-        const sections = await Promise.all(cfg.map(async sec => {
-          try {
-            const limit = sec.layout === 'list' ? 5 : 4;
-            const r = await api.get(`/articles?category=${encodeURIComponent(sec.category)}&limit=${limit}&sort=latest`);
-            if (r.success && r.articles.length > 0)
-              return { ...sec, articles: r.articles };
-          } catch (_) {}
-          return null;
-        }));
-        setLayoutSections(sections.filter(Boolean));
       } catch (err) {
         console.error('Home load error:', err);
       } finally {

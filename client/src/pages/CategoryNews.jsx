@@ -3,6 +3,15 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
 import { Calendar, Eye } from 'lucide-react';
+const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
+
+const imgSrc = (art) => {
+  if (!art || !art.featuredImage) return null;
+  if (art.featuredImage.startsWith('http://') || art.featuredImage.startsWith('https://') || art.featuredImage.startsWith('data:')) {
+    return art.featuredImage;
+  }
+  return `${API_HOST}${art.featuredImage}`;
+};
 
 const CategoryNews = () => {
   const { categorySlug } = useParams();
@@ -57,31 +66,37 @@ const CategoryNews = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {articles.map((art) => (
-                <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800/40 shadow-xs hover:shadow-lg transition-all duration-300">
-                  <Link to={`/article/${art.slug}`}>
-                    <img 
-                      src={art.featuredImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600'} 
-                      alt={art.title} 
-                      loading="lazy"
-                      decoding="async"
-                      className="w-full h-44 object-cover" 
-                    />
-                    <div className="p-4 space-y-2">
-                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug">
-                        {art.title}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                        {art.summary}
-                      </p>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold pt-2">
-                        <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
-                        <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
+              {articles.map((art) => {
+                const img = imgSrc(art);
+                return (
+                  <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800/40 shadow-xs hover:shadow-lg transition-all duration-300">
+                    <Link to={`/article/${art.slug}`}>
+                      {img && (
+                        <img 
+                          src={img} 
+                          alt={art.title} 
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-44 object-cover" 
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                      )}
+                      <div className="p-4 space-y-2">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug">
+                          {art.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                          {art.summary}
+                        </p>
+                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60 mt-2">
+                          <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
+                          <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                </div>
-              ))}
+                    </Link>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

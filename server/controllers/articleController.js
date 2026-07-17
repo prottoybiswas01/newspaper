@@ -107,7 +107,7 @@ const getArticles = async (req, res) => {
       query.status = 'published';
     }
 
-    if (category) query.category = category;
+    if (category) query.category = { $regex: new RegExp('^' + category.trim() + '$', 'i') };
     if (tag) query.tags = tag; // Matches tag in the tags array
     if (authorId) query.authorId = authorId;
 
@@ -366,10 +366,72 @@ const translateArticle = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// @desc    Get all homepage unified dataset (top, most read, layout sections)
+// @route   GET /api/articles/homepage
+const getHomepageData = async (req, res) => {
+  try {
+    const Setting = require('../models/Setting');
+    
+    // 1. Fetch top articles (latest 10)
+    const topArticles = await Article.find({ status: 'published' })
+      .sort({ publishDate: -1, createdAt: -1 })
+      .limit(10);
+      
+    // 2. Fetch popular articles (most read 5)
+    const mostRead = await Article.find({ status: 'published' })
+      .sort({ views: -1, publishDate: -1 })
+      .limit(5);
+      
+    // 3. Fetch homepage layout settings
+    const layoutSetting = await Setting.findOne({ key: 'homepage_layout' });
+    let cfg = layoutSetting ? layoutSetting.value : [
+      { category: 'Bangladesh', layout: 'grid' },
+      { category: 'Politics',   layout: 'hero' },
+      { category: 'Sports',     layout: 'grid' },
+      { category: 'Technology', layout: 'list' },
+    ];
+    
+    if (!Array.isArray(cfg)) {
+      cfg = [];
+    }
+    
+    // 4. Fetch articles for each category row in parallel
+    const layoutSections = await Promise.all(cfg.map(async (sec) => {
+      const limit = sec.layout === 'list' ? 5 : 4;
+      const articles = await Article.find({ 
+        status: 'published',
+        category: { $regex: new RegExp('^' + sec.category.trim() + '$', 'i') }
+      })
+      .sort({ publishDate: -1, createdAt: -1 })
+      .limit(limit);
+      
+      if (articles.length > 0) {
+        return {
+          category: sec.category,
+          layout: sec.layout,
+          articles
+        };
+      }
+      return null;
+    }));
+    
+    res.json({
+      success: true,
+      topArticles,
+      mostRead,
+      layoutSections: layoutSections.filter(Boolean)
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createArticle,
   getArticles,
   getArticleBySlug,
+  getHomepageData,
   updateArticle,
   deleteArticle,
   likeArticle,

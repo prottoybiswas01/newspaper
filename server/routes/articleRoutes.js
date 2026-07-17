@@ -4,6 +4,7 @@ const {
   createArticle,
   getArticles,
   getArticleBySlug,
+  getHomepageData,
   updateArticle,
   deleteArticle,
   likeArticle,
@@ -12,6 +13,7 @@ const {
 } = require('../controllers/articleController');
 const { protect, authorize } = require('../middleware/auth');
 
+router.get('/homepage', getHomepageData);
 router.get('/', getArticles);
 router.get('/slug/:slug', getArticleBySlug);
 router.post('/translate', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), translateArticle);
