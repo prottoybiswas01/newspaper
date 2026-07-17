@@ -24,8 +24,12 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Middleware
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : '*';
+
 app.use(cors({
-  origin: '*', // For local dev flexibility, adjust in production
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

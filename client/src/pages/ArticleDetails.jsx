@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import DOMPurify from 'dompurify';
 import { useToast } from '../components/Toast';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
@@ -188,6 +190,18 @@ const ArticleDetails = () => {
 
   return (
     <article className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print-container">
+      <Helmet>
+        <title>{displayArticle.title} | দৈনিক দর্পণ</title>
+        <meta name="description" content={displayArticle.summary || displayArticle.subtitle || displayArticle.title} />
+        <meta property="og:title" content={displayArticle.title} />
+        <meta property="og:description" content={displayArticle.summary} />
+        <meta property="og:image" content={displayArticle.featuredImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200'} />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="twitter:title" content={displayArticle.title} />
+        <meta property="twitter:description" content={displayArticle.summary} />
+        <meta property="twitter:image" content={displayArticle.featuredImage || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200'} />
+        <meta property="twitter:url" content={window.location.href} />
+      </Helmet>
       {/* Header Info */}
       <header className="mb-6">
         <div className="flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wider no-print">
@@ -301,7 +315,7 @@ const ArticleDetails = () => {
       <div 
         className="prose dark:prose-invert max-w-none mb-10 leading-relaxed font-sans"
         style={{ fontSize: `${fontSize}px` }}
-        dangerouslySetInnerHTML={{ __html: displayArticle.content }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayArticle.content) }}
       />
 
       {/* Article Tags */}

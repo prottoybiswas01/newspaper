@@ -41,7 +41,6 @@ function App() {
                     <Route path="/media-center" element={<MediaCenter />} />
                     <Route path="/profile" element={<UserProfile />} />
                     <Route path="/login-admin" element={<Login />} />
-                    <Route path="/admin-login" element={<Login />} />
                     <Route path="/admin" element={<Dashboard />} />
                   </Routes>
                 </div>

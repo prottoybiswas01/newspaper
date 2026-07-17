@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Environment Variables
+.env
+.env*.local
+server/.env
+client/.env
+
+# Production Build Output
+dist/
+client/dist/
+
+# IDE / System files
+.gemini/
+.agents/
+task.md
+walkthrough.md
+implementation_plan.md
+.system_generated/
