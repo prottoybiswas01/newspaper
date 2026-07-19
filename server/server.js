@@ -16,6 +16,7 @@ const newsletterRoutes = require('./routes/newsletterRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const settingRoutes = require('./routes/settingRoutes');
+const autoFetchedRoutes = require('./routes/autoFetchedRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -57,6 +58,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/auto-fetched', autoFetchedRoutes);
 
 // Dynamic Sitemap Route
 app.get('/sitemap.xml', async (req, res) => {

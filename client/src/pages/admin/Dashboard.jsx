@@ -34,7 +34,8 @@ const Dashboard = () => {
     { id: 'ads', name: 'Manage Ads', icon: Megaphone, roles: ['Super Admin', 'Admin'] },
     { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] },
     { id: 'layout', name: 'Homepage Layout', icon: Settings, roles: ['Super Admin', 'Admin', 'Editor'] },
-      ];
+    { id: 'autoFetched', name: 'Auto Fetched Data', icon: Cpu, roles: ['Super Admin', 'Admin', 'Editor'] }
+  ];
 
   const allowedTabs = tabs.filter(tab => hasPermission(tab.roles));
 
@@ -112,6 +113,14 @@ const Dashboard = () => {
     // User Manager States
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
+
+  // Auto Fetched Articles States
+  const [autoFetchedArticles, setAutoFetchedArticles] = useState([]);
+  const [autoFetchedLoading, setAutoFetchedLoading] = useState(false);
+  const [autoFetchedTotal, setAutoFetchedTotal] = useState(0);
+  const [autoFetchedPage, setAutoFetchedPage] = useState(1);
+  const [autoFetchedLimit] = useState(10);
+  const [autoFetchedSearch, setAutoFetchedSearch] = useState('');
 
   // Redirect non-staff
   useEffect(() => {
@@ -203,6 +212,32 @@ const Dashboard = () => {
       setUsersLoading(false);
     }
   };
+
+  // Load auto fetched articles from server
+  const loadAutoFetchedArticles = async () => {
+    setAutoFetchedLoading(true);
+    try {
+      const res = await api.get(`/auto-fetched?page=${autoFetchedPage}&limit=${autoFetchedLimit}&search=${encodeURIComponent(autoFetchedSearch)}`);
+      if (res.success) {
+        setAutoFetchedArticles(res.articles);
+        setAutoFetchedTotal(res.pagination.total);
+      } else {
+        toast.error(res.message || 'Failed to fetch automation data');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load auto-fetched articles');
+    } finally {
+      setAutoFetchedLoading(false);
+    }
+  };
+
+  // Effect to load auto-fetched articles when active tab, page, or search changes
+  useEffect(() => {
+    if (activeTab === 'autoFetched') {
+      loadAutoFetchedArticles();
+    }
+  }, [activeTab, autoFetchedPage, autoFetchedSearch]);
 
   // Load all articles for list views
   const fetchArticlesList = async () => {
@@ -1664,7 +1699,132 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* TAB 8: AUTO FETCHED DATA */}
+        {activeTab === 'autoFetched' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 dark:border-slate-800 pb-4 gap-4">
+              <div>
+                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Auto Fetched Data Logs</h1>
+                <p className="text-xs text-slate-505 dark:text-slate-400 mt-1">
+                  View article feeds imported automatically from external RSS sources via background Vercel Python cron jobs.
+                </p>
+              </div>
+              {/* Search Bar */}
+              <div className="relative w-full md:w-80">
+                <input
+                  type="text"
+                  placeholder="Search title, description or source..."
+                  value={autoFetchedSearch}
+                  onChange={(e) => {
+                    setAutoFetchedSearch(e.target.value);
+                    setAutoFetchedPage(1); // reset to page 1 on search
+                  }}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
+                />
+                {autoFetchedSearch && (
+                  <button
+                    onClick={() => setAutoFetchedSearch('')}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {autoFetchedLoading ? (
+              <div className="animate-pulse bg-white dark:bg-slate-900 p-6 h-60 rounded-xl border border-slate-200/60 dark:border-slate-800/40" />
+            ) : (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl overflow-hidden shadow-xs">
+                {autoFetchedArticles.length === 0 ? (
+                  <p className="p-8 text-center text-slate-400 italic">No auto-fetched articles found.</p>
+                ) : (
+                  <div className="flex flex-col">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs font-semibold text-slate-650">
+                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase text-[9px] font-black">
+                          <tr>
+                            <th className="p-4 w-12 text-center">#</th>
+                            <th className="p-4">Title</th>
+                            <th className="p-4 w-40">Feed Source</th>
+                            <th className="p-4 w-44">Publication Date</th>
+                            <th className="p-4 w-44">Fetched Date</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                          {autoFetchedArticles.map((art, idx) => (
+                            <tr key={art._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/10 text-slate-700 dark:text-slate-350 transition-colors">
+                              <td className="p-4 text-center text-slate-400 font-mono text-[10px]">
+                                {(autoFetchedPage - 1) * autoFetchedLimit + idx + 1}
+                              </td>
+                              <td className="p-4 max-w-md">
+                                <a 
+                                  href={art.link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="font-bold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline leading-relaxed block break-words"
+                                >
+                                  {art.title}
+                                </a>
+                                {art.description && (
+                                  <p className="text-[10px] text-slate-450 mt-1 line-clamp-2 leading-normal">
+                                    {art.description.replace(/<[^>]*>/g, '')}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="p-4">
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 uppercase tracking-wider">
+                                  {art.source || 'Unknown'}
+                                </span>
+                              </td>
+                              <td className="p-4 text-slate-500 dark:text-slate-400 font-medium text-[11px]">
+                                {art.pubDate ? new Date(art.pubDate).toLocaleString() : 'N/A'}
+                              </td>
+                              <td className="p-4 text-slate-400 dark:text-slate-505 text-[10px]">
+                                {art.createdAt ? new Date(art.createdAt).toLocaleString() : new Date(art.updatedAt).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
+                    {/* Pagination footer */}
+                    <div className="flex items-center justify-between p-4 border-t border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 text-slate-500 text-[11px] font-bold">
+                      <div>
+                        Showing <span className="text-slate-800 dark:text-white">{(autoFetchedPage - 1) * autoFetchedLimit + 1}</span> to{' '}
+                        <span className="text-slate-800 dark:text-white">
+                          {Math.min(autoFetchedPage * autoFetchedLimit, autoFetchedTotal)}
+                        </span>{' '}
+                        of <span className="text-slate-800 dark:text-white">{autoFetchedTotal}</span> logs
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setAutoFetchedPage(prev => Math.max(prev - 1, 1))}
+                          disabled={autoFetchedPage === 1}
+                          className="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-150 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="text-slate-400 font-normal">
+                          Page {autoFetchedPage} of {Math.ceil(autoFetchedTotal / autoFetchedLimit) || 1}
+                        </span>
+                        <button
+                          onClick={() => setAutoFetchedPage(prev => Math.min(prev + 1, Math.ceil(autoFetchedTotal / autoFetchedLimit)))}
+                          disabled={autoFetchedPage >= Math.ceil(autoFetchedTotal / autoFetchedLimit)}
+                          className="px-2.5 py-1 rounded border border-slate-200 dark:border-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-150 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
       </section>
     </div>
