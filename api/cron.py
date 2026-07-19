@@ -50,6 +50,57 @@ def fetch_single_feed(feed):
         safe_print(f"Error fetching feed '{feed['name']}': {e}")
         return feed['name'], None
 
+def rewrite_with_gemini(title, description, api_key):
+    """Rewrite news title and description using Google's free Gemini API to make them unique."""
+    if not title or not description:
+        return title, description
+        
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    
+    prompt = (
+        "You are an expert Bengali journalist. Paraphrase and rewrite the following news article title and description "
+        "in Bengali so that it is completely unique, avoids plagiarism, sounds professional, and is written in standard Bengali (Sadhu/Cholit). "
+        "Return the output STRICTLY as a raw JSON object with keys 'title' and 'description'. Do not include markdown code block syntax "
+        "like ```json or ```, just return the raw JSON text.\n\n"
+        f"Original Title: {title}\n"
+        f"Original Description: {description}"
+    )
+    
+    payload = {
+        "contents": [{
+            "parts": [{
+                "text": prompt
+            }]
+        }],
+        "generationConfig": {
+            "responseMimeType": "application/json"
+        }
+    }
+    
+    try:
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        with urllib.request.urlopen(req, timeout=4.0) as response:
+            res_data = json.loads(response.read().decode('utf-8'))
+            
+        candidates = res_data.get('candidates', [])
+        if candidates:
+            content_text = candidates[0].get('content', {}).get('parts', [{}])[0].get('text', '')
+            cleaned_text = content_text.strip().replace('```json', '').replace('```', '')
+            parsed_res = json.loads(cleaned_text)
+            
+            new_title = parsed_res.get('title', title)
+            new_desc = parsed_res.get('description', description)
+            return new_title, new_desc
+            
+    except Exception as e:
+        safe_print(f"Gemini rewriting failed: {e}. Falling back to original content.")
+        
+    return title, description
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # 1. Fetch feeds concurrently
@@ -119,6 +170,14 @@ class handler(BaseHTTPRequestHandler):
                         duplicate_count += 1
                         continue
                     
+                    title = entry.get('title', 'No Title')
+                    description = entry.get('summary') or entry.get('description') or ''
+                    
+                    # Rewrite with Gemini AI if GEMINI_API_KEY is defined in environment variables
+                    gemini_key = os.environ.get("GEMINI_API_KEY")
+                    if gemini_key:
+                        title, description = rewrite_with_gemini(title, description, gemini_key)
+                    
                     # Parse date or default to now
                     pub_date_parsed = entry.get('published_parsed')
                     if pub_date_parsed:
@@ -130,13 +189,12 @@ class handler(BaseHTTPRequestHandler):
                     else:
                         pub_date = datetime.now(timezone.utc)
                     
-                    description = entry.get('summary') or entry.get('description') or ''
                     # Clean description if it's too long
                     if len(description) > 1000:
                         description = description[:997] + '...'
                     
                     doc = {
-                        "title": entry.get('title', 'No Title'),
+                        "title": title,
                         "link": link,
                         "description": description,
                         "pubDate": pub_date,
