@@ -151,8 +151,10 @@ def rewrite_with_gemini(title, description, retries=5):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
         
         prompt = (
-            "You are an expert Bengali journalist. Paraphrase and rewrite the following news article title and description "
-            "in Bengali so that it is completely unique, avoids plagiarism, sounds professional, and is written in standard Bengali (Sadhu/Cholit). "
+            "You are a professional Bengali journalist. Read and fully digest the news article title and description below. "
+            "Rewrite them completely in your own words. Use different sentence structures, synonyms, and a unique editorial style "
+            "to ensure the resulting text is 100% unique, copyright-friendly, and free from plagiarism while accurately retaining the core facts of the news. "
+            "Write in modern, standard Bengali (Cholitobhasa). "
             "Return the output STRICTLY as a raw JSON object with keys 'title' and 'description'. Do not include markdown code block syntax "
             "like ```json or ```, just return the raw JSON text.\n\n"
             f"Original Title: {title}\n"

@@ -246,9 +246,11 @@ const Dashboard = () => {
     setArticleTitle(fetchedArt.title);
     setArticleSubtitle(fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '');
     
+    const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 11px; color: #64748b; font-style: italic;">তথ্যসূত্র ও কৃতজ্ঞতা: <strong>${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'}</strong>। মূল খবরটির বিস্তারিত পড়তে এবং আসল সূত্র যাচাই করতে এখানে <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিঙ্কে প্রবেশ করুন</a>।</p>`;
+    
     const htmlContent = fetchedArt.description 
-      ? `<p>${fetchedArt.description}</p><br/><p>মূল খবরের লিঙ্ক: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`
-      : `<p>মূল খবরের লিঙ্ক: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`;
+      ? `<p>${fetchedArt.description}</p>${sourceAttribution}`
+      : `<p>খবরটি বিস্তারিত পড়তে নিচের মূল লিঙ্কে ক্লিক করুন।</p>${sourceAttribution}`;
     
     setArticleContent(htmlContent);
     setArticleSummary(fetchedArt.description ? fetchedArt.description.substring(0, 150) : '');
@@ -268,12 +270,14 @@ const Dashboard = () => {
   const handlePublishFetchedArticle = async (fetchedArt) => {
     if (!window.confirm('আপনি কি এই খবরটি সরাসরি লাইভ ওয়েবসাইটে পাবলিশ করতে চান?')) return;
     try {
+      const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 11px; color: #64748b; font-style: italic;">তথ্যসূত্র ও কৃতজ্ঞতা: <strong>${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'}</strong>। মূল খবরটির বিস্তারিত পড়তে এবং আসল সূত্র যাচাই করতে এখানে <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিঙ্কে প্রবেশ করুন</a>।</p>`;
+
       const payload = {
         title: fetchedArt.title,
         subtitle: fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '',
         content: fetchedArt.description 
-          ? `<p>${fetchedArt.description}</p><br/><p>মূল খবর: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>` 
-          : `<p>মূল খবর: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`,
+          ? `<p>${fetchedArt.description}</p>${sourceAttribution}` 
+          : `<p>খবরটি বিস্তারিত পড়তে নিচের মূল লিঙ্কে ক্লিক করুন।</p>${sourceAttribution}`,
         summary: fetchedArt.description ? fetchedArt.description.substring(0, 150).replace(/<[^>]*>/g, '') + '...' : '',
         category: 'Bangladesh',
         tags: fetchedArt.source ? [fetchedArt.source] : [],
