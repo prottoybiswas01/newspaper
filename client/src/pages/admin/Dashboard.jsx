@@ -239,6 +239,86 @@ const Dashboard = () => {
     }
   }, [activeTab, autoFetchedPage, autoFetchedSearch]);
 
+  // Import an auto-fetched article directly into the CMS editor tab
+  const handleImportToEditor = (fetchedArt) => {
+    resetEditorForm();
+    setEditingArticleId(null);
+    setArticleTitle(fetchedArt.title);
+    setArticleSubtitle(fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '');
+    
+    const htmlContent = fetchedArt.description 
+      ? `<p>${fetchedArt.description}</p><br/><p>মূল খবরের লিঙ্ক: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`
+      : `<p>মূল খবরের লিঙ্ক: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`;
+    
+    setArticleContent(htmlContent);
+    setArticleSummary(fetchedArt.description ? fetchedArt.description.substring(0, 150) : '');
+    setArticleCategory('Bangladesh');
+    setArticleTags(fetchedArt.source || '');
+    setArticleStatus('draft');
+    
+    setArticleSeoTitle(fetchedArt.title);
+    setArticleSeoDesc(fetchedArt.description ? fetchedArt.description.substring(0, 150) : '');
+    setArticleSeoKeywords(fetchedArt.source || '');
+    
+    toast.success('নিউজটি এডিটরে লোড করা হয়েছে! অনুগ্রহ করে সম্পাদনা করে পাবলিশ করুন।');
+    setActiveTab('editor');
+  };
+
+  // Instantly publish a fetched article directly onto the live site
+  const handlePublishFetchedArticle = async (fetchedArt) => {
+    if (!window.confirm('আপনি কি এই খবরটি সরাসরি লাইভ ওয়েবসাইটে পাবলিশ করতে চান?')) return;
+    try {
+      const payload = {
+        title: fetchedArt.title,
+        subtitle: fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '',
+        content: fetchedArt.description 
+          ? `<p>${fetchedArt.description}</p><br/><p>মূল খবর: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>` 
+          : `<p>মূল খবর: <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer">${fetchedArt.link}</a></p>`,
+        summary: fetchedArt.description ? fetchedArt.description.substring(0, 150).replace(/<[^>]*>/g, '') + '...' : '',
+        category: 'Bangladesh',
+        tags: fetchedArt.source ? [fetchedArt.source] : [],
+        status: 'published',
+        featuredImage: '',
+        videoUrl: '',
+        seo: {
+          metaTitle: fetchedArt.title,
+          metaDescription: fetchedArt.description ? fetchedArt.description.substring(0, 150) : '',
+          keywords: fetchedArt.source || ''
+        }
+      };
+
+      const res = await api.post('/articles', payload);
+      if (res.success) {
+        toast.success('খবরটি সফলভাবে সরাসরি পাবলিশ করা হয়েছে!');
+        // Delete log after publishing
+        await api.delete(`/auto-fetched/${fetchedArt._id}`);
+        loadAutoFetchedArticles();
+      } else {
+        toast.error(res.message || 'পাবলিশ করতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('আর্টিকেল প্রকাশে ত্রুটি ঘটেছে।');
+    }
+  };
+
+  // Delete a fetched log entry
+  const handleDeleteFetchedLog = async (id) => {
+    if (!window.confirm('আপনি কি এই আরএসএস ফিডের লগটি মুছে ফেলতে চান?')) return;
+    try {
+      const res = await api.delete(`/auto-fetched/${id}`);
+      if (res.success) {
+        toast.success('ফিড লগটি মুছে ফেলা হয়েছে।');
+        loadAutoFetchedArticles();
+      } else {
+        toast.error(res.message || 'মুছে ফেলতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('লগ মুছে ফেলতে ত্রুটি ঘটেছে।');
+    }
+  };
+
   // Load all articles for list views
   const fetchArticlesList = async () => {
     setArticlesLoading(true);
@@ -1749,6 +1829,7 @@ const Dashboard = () => {
                             <th className="p-4 w-40">Feed Source</th>
                             <th className="p-4 w-44">Publication Date</th>
                             <th className="p-4 w-44">Fetched Date</th>
+                            <th className="p-4 w-44 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1782,6 +1863,29 @@ const Dashboard = () => {
                               </td>
                               <td className="p-4 text-slate-400 dark:text-slate-505 text-[10px]">
                                 {art.createdAt ? new Date(art.createdAt).toLocaleString() : new Date(art.updatedAt).toLocaleString()}
+                              </td>
+                              <td className="p-4 text-right flex items-center justify-end space-x-2">
+                                <button
+                                  onClick={() => handlePublishFetchedArticle(art)}
+                                  className="px-2.5 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold transition-colors"
+                                  title="Publish Instantly"
+                                >
+                                  পাবলিশ
+                                </button>
+                                <button
+                                  onClick={() => handleImportToEditor(art)}
+                                  className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold transition-colors"
+                                  title="Import to Editor"
+                                >
+                                  এডিট
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteFetchedLog(art._id)}
+                                  className="px-1.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors flex items-center justify-center shrink-0"
+                                  title="Delete log"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
                               </td>
                             </tr>
                           ))}
