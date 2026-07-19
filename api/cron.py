@@ -148,7 +148,7 @@ def rewrite_with_gemini(title, description, retries=5):
         if not api_key:
             break
             
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
         
         prompt = (
             "You are an expert Bengali journalist. Paraphrase and rewrite the following news article title and description "
