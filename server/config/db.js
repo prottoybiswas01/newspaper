@@ -3,42 +3,54 @@ const fs = require('fs');
 const path = require('path');
 
 let isJSONFallback = false;
+let connPromise = null;
 const DATA_DIR = path.join(__dirname, '..', 'data');
 
-// Data directory for JSON fallback (lazy creation)
+// Disable command buffering globally so queries fail fast or fall back instead of timing out after 10s
+try {
+  mongoose.set('bufferCommands', false);
+} catch (e) {
+  // Ignore if bufferCommands setting not supported in version
+}
 
 const connectDB = async () => {
-  const mongoURI = process.env.MONGODB_URI;
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+  if (connPromise) return connPromise;
 
-  if (!mongoURI) {
-    if (isProduction) {
-      console.error('\n❌ Error: MONGODB_URI is required in production.');
+  connPromise = (async () => {
+    if (mongoose.connection.readyState === 1) {
       return;
     }
-    console.warn('\n⚠️  No MONGODB_URI provided in .env. Falling back to local JSON database.');
-    isJSONFallback = true;
-    return;
-  }
 
-  try {
-    // Attempt Mongoose connection with short timeout to avoid hanging
-    await mongoose.connect(mongoURI, {
-      serverSelectionTimeoutMS: 5000
-    });
-    console.log('\n✅ Connected to MongoDB successfully.');
-  } catch (error) {
-    console.error('\n❌ MongoDB connection failed:', error.message);
-    if (isProduction) {
-      // In production, do not fall back to JSON database, let queries fail with connection error
+    const mongoURI = process.env.MONGODB_URI;
+
+    if (!mongoURI) {
+      console.warn('\n⚠️  No MONGODB_URI provided in environment. Falling back to local JSON database.');
+      isJSONFallback = true;
       return;
     }
-    console.warn('⚠️  Falling back to local JSON database.');
-    isJSONFallback = true;
-  }
+
+    try {
+      await mongoose.connect(mongoURI, {
+        serverSelectionTimeoutMS: 5000
+      });
+      console.log('\n✅ Connected to MongoDB successfully.');
+      isJSONFallback = false;
+    } catch (error) {
+      console.error('\n❌ MongoDB connection failed:', error.message);
+      console.warn('⚠️  Falling back to local JSON database.');
+      isJSONFallback = true;
+    }
+  })();
+
+  return connPromise;
 };
 
-const getFallbackStatus = () => isJSONFallback;
+const getFallbackStatus = () => {
+  if (mongoose.connection.readyState === 1) {
+    return false;
+  }
+  return true;
+};
 
 // Helper to generate a unique random MongoDB-like string ID
 const generateId = () => {

@@ -21,8 +21,15 @@ const autoFetchedRoutes = require('./routes/autoFetchedRoutes');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize Database
-connectDB();
+// Initialize Database connection middleware
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('Database middleware error:', err);
+  }
+  next();
+});
 
 // Middleware
 const allowedOrigins = process.env.ALLOWED_ORIGINS
