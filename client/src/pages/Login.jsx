@@ -11,11 +11,21 @@ const Login = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const { login, register } = useAuth();
+  const { user, login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const redirectPath = location.state?.from?.pathname || '/';
+  const isStaffRole = (role) => {
+    return ['Super Admin', 'Admin', 'Editor', 'Reporter', 'Moderator', 'SEO Manager'].includes(role);
+  };
+
+  // Automatically redirect if already logged in or profile resolved
+  React.useEffect(() => {
+    if (user) {
+      const target = location.state?.from?.pathname || (isStaffRole(user.role) ? '/admin' : '/');
+      navigate(target, { replace: true });
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +36,16 @@ const Login = () => {
       if (isLoginMode) {
         const res = await login(email, password);
         if (res.success) {
-          navigate(redirectPath, { replace: true });
+          const target = location.state?.from?.pathname || (isStaffRole(res.user?.role) ? '/admin' : '/');
+          navigate(target, { replace: true });
         } else {
           setError(res.message || 'Login details incorrect.');
         }
       } else {
         const res = await register(name, email, password);
         if (res.success) {
-          navigate('/');
+          const target = isStaffRole(res.user?.role) ? '/admin' : '/';
+          navigate(target, { replace: true });
         } else {
           setError(res.message || 'Registration failed.');
         }

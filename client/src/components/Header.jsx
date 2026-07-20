@@ -67,7 +67,7 @@ const Header = () => {
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
 
           {/* Profile / Auth Button */}
-          {user && (
+          {user ? (
             <div className="flex items-center space-x-2">
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
@@ -87,6 +87,14 @@ const Header = () => {
                 <span className="hidden sm:inline-block text-xs font-bold text-slate-700 dark:text-slate-300">{user.name.split(' ')[0]}</span>
               </Link>
             </div>
+          ) : (
+            <Link 
+              to="/login-admin" 
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 text-xs font-bold hover:bg-slate-800 transition-colors"
+            >
+              <User className="h-3.5 w-3.5" />
+              <span>লগইন</span>
+            </Link>
           )}
         </div>
       </div>
