@@ -105,6 +105,18 @@ class JSONModel {
         if (!val.$in.includes(doc[key])) return false;
         continue;
       }
+      if (val && typeof val === 'object' && '$lt' in val) {
+        const docTime = new Date(doc[key]).getTime();
+        const targetTime = new Date(val.$lt).getTime();
+        if (isNaN(docTime) || docTime >= targetTime) return false;
+        continue;
+      }
+      if (val && typeof val === 'object' && '$gte' in val) {
+        const docTime = new Date(doc[key]).getTime();
+        const targetTime = new Date(val.$gte).getTime();
+        if (isNaN(docTime) || docTime < targetTime) return false;
+        continue;
+      }
       // Direct match
       if (doc[key] !== val) return false;
     }
@@ -222,6 +234,14 @@ class JSONModel {
     docs.splice(idx, 1);
     this._write(docs);
     return deleted;
+  }
+
+  async deleteMany(query = {}) {
+    const docs = this._read();
+    const remaining = docs.filter(doc => !this._match(doc, query));
+    const deletedCount = docs.length - remaining.length;
+    this._write(remaining);
+    return { deletedCount };
   }
 
   async countDocuments(query = {}) {

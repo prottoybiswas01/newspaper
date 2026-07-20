@@ -213,6 +213,9 @@ const Dashboard = () => {
     }
   };
 
+  const [autoFetchEnabled, setAutoFetchEnabled] = useState(true);
+  const [autoFetchTriggering, setAutoFetchTriggering] = useState(false);
+
   // Load auto fetched articles from server
   const loadAutoFetchedArticles = async () => {
     setAutoFetchedLoading(true);
@@ -221,6 +224,9 @@ const Dashboard = () => {
       if (res.success) {
         setAutoFetchedArticles(res.articles);
         setAutoFetchedTotal(res.pagination.total);
+        if (res.enabled !== undefined) {
+          setAutoFetchEnabled(res.enabled);
+        }
       } else {
         toast.error(res.message || 'Failed to fetch automation data');
       }
@@ -229,6 +235,42 @@ const Dashboard = () => {
       toast.error('Failed to load auto-fetched articles');
     } finally {
       setAutoFetchedLoading(false);
+    }
+  };
+
+  const handleToggleAutoFetch = async () => {
+    const nextState = !autoFetchEnabled;
+    try {
+      const res = await api.post('/auto-fetched/status', { enabled: nextState });
+      if (res.success) {
+        setAutoFetchEnabled(res.enabled);
+        toast.success(res.message);
+      } else {
+        toast.error(res.message || 'স্ট্যাটাস আপডেট করতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      toast.error('ত্রুটি ঘটেছে।');
+    }
+  };
+
+  const handleTriggerAutoFetch = async () => {
+    if (!autoFetchEnabled) {
+      toast.warning('অটো-ফেচিং বর্তমানে বন্ধ রাখা রয়েছে! আগে অন বাটনে ক্লিক করুন।');
+      return;
+    }
+    setAutoFetchTriggering(true);
+    try {
+      const res = await api.post('/auto-fetched/trigger', {});
+      if (res.success) {
+        toast.success(res.message);
+        loadAutoFetchedArticles();
+      } else {
+        toast.error(res.message || 'অটো-সার্চ করতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      toast.error('সার্চের সময় সমস্যা হয়েছে।');
+    } finally {
+      setAutoFetchTriggering(false);
     }
   };
 
@@ -1786,34 +1828,90 @@ const Dashboard = () => {
         {/* TAB 8: AUTO FETCHED DATA */}
         {activeTab === 'autoFetched' && (
           <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-100 dark:border-slate-800 pb-4 gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between border-b border-slate-200 dark:border-slate-800 pb-5 gap-4">
               <div>
-                <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Auto Fetched Data Logs</h1>
-                <p className="text-xs text-slate-505 dark:text-slate-400 mt-1">
-                  View article feeds imported automatically from external RSS sources via background Vercel Python cron jobs.
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Auto Fetched Data Logs</h1>
+                  
+                  {/* Auto-Fetch ON/OFF Toggle Button */}
+                  <button
+                    onClick={handleToggleAutoFetch}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center space-x-2 border shadow-xs ${
+                      autoFetchEnabled
+                        ? 'bg-green-500/10 border-green-500/40 text-green-600 dark:text-green-400 hover:bg-green-500/20'
+                        : 'bg-red-500/10 border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/20'
+                    }`}
+                    title="ক্লিক করে অটো-ফেচিং চালু বা বন্ধ করুন"
+                  >
+                    <span className={`h-2.5 w-2.5 rounded-full ${autoFetchEnabled ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                    <span>{autoFetchEnabled ? 'অটো-ফেচিং: ON (চালু)' : 'অটো-ফেচিং: OFF (বন্ধ)'}</span>
+                  </button>
+                </div>
+                
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  স্বয়ংক্রিয়ভাবে বিভিন্ন জনপ্রিয় নিউজ পোর্টালের ফিড থেকে খবর সংগ্রহ। আপনি ইচ্ছে করলে যেকোনো সময় অন বা অফ করে রাখতে পারবেন।
                 </p>
               </div>
-              {/* Search Bar */}
-              <div className="relative w-full md:w-80">
-                <input
-                  type="text"
-                  placeholder="Search title, description or source..."
-                  value={autoFetchedSearch}
-                  onChange={(e) => {
-                    setAutoFetchedSearch(e.target.value);
-                    setAutoFetchedPage(1); // reset to page 1 on search
-                  }}
-                  className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-lg focus:outline-none focus:border-blue-600 transition-colors"
-                />
-                {autoFetchedSearch && (
-                  <button
-                    onClick={() => setAutoFetchedSearch('')}
-                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
+
+              {/* Header Action Controls */}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Manual Trigger Search Now Button */}
+                <button
+                  onClick={handleTriggerAutoFetch}
+                  disabled={autoFetchTriggering || !autoFetchEnabled}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center space-x-2"
+                >
+                  {autoFetchTriggering ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                      <span>নিউজ সার্চ করা হচ্ছে...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Cpu className="h-4 w-4" />
+                      <span>এখনই নিউজ সার্চ করুন</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Search Bar */}
+                <div className="relative w-full sm:w-64">
+                  <input
+                    type="text"
+                    placeholder="খবরের শিরোনাম বা উৎস দিয়ে খুঁজুন..."
+                    value={autoFetchedSearch}
+                    onChange={(e) => {
+                      setAutoFetchedSearch(e.target.value);
+                      setAutoFetchedPage(1);
+                    }}
+                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:border-blue-600 transition-colors"
+                  />
+                  {autoFetchedSearch && (
+                    <button
+                      onClick={() => setAutoFetchedSearch('')}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
+            </div>
+
+            {/* 24-Hour Reset Notice Banner */}
+            <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 p-3.5 rounded-xl flex items-center justify-between text-xs text-blue-900 dark:text-blue-200">
+              <div className="flex items-center space-x-2.5">
+                <Calendar className="h-4.5 w-4.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <div>
+                  <span className="font-bold">২৪ ঘণ্টার লাইভ নিউজ কন্ডিশন: </span>
+                  <span className="text-slate-700 dark:text-blue-300">
+                    এখানে প্রতিদিনের (রাত ০০:০০ থেকে রাত ২৩:৫৯) সংগৃহীত নিউজ থাকবে। রাত ১২:০০ টা পার হলে আগেরদিনের নিউজগুলো স্বয়ংক্রিয়ভাবে মুছে নতুন দিনের সার্চ শুরু হবে।
+                  </span>
+                </div>
+              </div>
+              <span className="hidden md:inline-block px-2.5 py-1 bg-blue-100 dark:bg-blue-900/60 font-mono text-[10px] font-bold rounded-md text-blue-800 dark:text-blue-200 shrink-0">
+                24H AUTO RESET
+              </span>
             </div>
             
             {autoFetchedLoading ? (

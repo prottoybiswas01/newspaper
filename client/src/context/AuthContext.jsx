@@ -16,8 +16,8 @@ export const AuthProvider = ({ children }) => {
           const res = await api.get('/auth/profile');
           if (res.success) {
             setUser(res.user);
-          } else {
-            // Token invalid or expired
+          } else if (res.message && res.message.toLowerCase().includes('authorized')) {
+            // Token explicitly invalid or expired
             logout();
           }
         } catch (e) {

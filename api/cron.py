@@ -250,8 +250,33 @@ class handler(BaseHTTPRequestHandler):
                 db = client.get_default_database()
             except Exception:
                 db = client['newspaper']
+            
+            # Check if auto_fetch_enabled setting is turned OFF
+            settings_col = db['settings']
+            fetch_setting = settings_col.find_one({"key": "auto_fetch_enabled"})
+            if fetch_setting and (fetch_setting.get('value') is False or str(fetch_setting.get('value')).lower() == 'false'):
+                client.close()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response_payload = {
+                    "success": True,
+                    "enabled": False,
+                    "message": "Auto-fetching is currently turned OFF by Admin. Skipping fetch."
+                }
+                self.wfile.write(json.dumps(response_payload).encode('utf-8'))
+                return
                 
             collection = db['autofetchedarticles']
+            
+            # 24-hour Midnight cleanup: Purge articles created before start of today (00:00:00 UTC)
+            start_of_today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            collection.delete_many({
+                "$or": [
+                    {"createdAt": {"$lt": start_of_today}},
+                    {"pubDate": {"$lt": start_of_today}}
+                ]
+            })
             
             # Ensure unique index on link field to enforce duplicate prevention in the DB layer too
             collection.create_index("link", unique=True)

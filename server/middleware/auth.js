@@ -9,8 +9,8 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const secret = process.env.JWT_SECRET || 'super_secret_jwt_token_for_professional_news_portal';
+      const decoded = jwt.verify(token, secret);
 
       // Attempt to retrieve user profile
       const user = await User.findById(decoded.id);
