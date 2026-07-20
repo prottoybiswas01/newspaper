@@ -72,10 +72,11 @@ const Header = () => {
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
-                  className="hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/40 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors animate-pulse"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-colors shadow-sm"
+                  title="এডমিন প্যানেল ড্যাশবোর্ডে যান"
                 >
-                  <Shield className="h-3.5 w-3.5" />
-                  <span>{t('dashboard')}</span>
+                  <Shield className="h-4 w-4 text-amber-300 shrink-0" />
+                  <span>ড্যাশবোর্ড (Dashboard)</span>
                 </Link>
               )}
               <Link to="/profile" className="flex items-center space-x-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -105,7 +106,18 @@ const Header = () => {
           
           {/* Scrollable Categories List */}
           <nav className="flex-1 overflow-x-auto scrollbar-none py-1.5">
-            <ul className="flex space-x-5 text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+            <ul className="flex items-center space-x-4 text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+              {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
+                <li>
+                  <Link 
+                    to="/admin" 
+                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 text-white rounded-md text-xs font-black hover:bg-blue-700 transition-colors shadow-xs"
+                  >
+                    <Shield className="h-3.5 w-3.5 text-amber-300" />
+                    <span>ড্যাশবোর্ড</span>
+                  </Link>
+                </li>
+              )}
               <li>
                 <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('home')}

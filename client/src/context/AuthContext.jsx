@@ -75,11 +75,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // Check roles helper: Super Admin has full clearance bypass
+  // Check roles helper: Super Admin / Admin has full clearance bypass (case-insensitive)
   const hasPermission = (allowedRoles = []) => {
     if (!user) return false;
-    if (user.role === 'Super Admin') return true;
-    return allowedRoles.includes(user.role);
+    const role = (user.role || '').trim().toLowerCase();
+    if (role === 'super admin' || role === 'admin') return true;
+    return allowedRoles.some(r => r.trim().toLowerCase() === role);
   };
 
   return (
