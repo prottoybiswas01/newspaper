@@ -43,7 +43,8 @@ const register = async (req, res) => {
       success: true,
       token: signToken(user._id),
       user: {
-        id: user._id,
+        id: user._id.toString(),
+        _id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
@@ -79,7 +80,8 @@ const login = async (req, res) => {
       success: true,
       token: signToken(user._id),
       user: {
-        id: user._id,
+        id: user._id.toString(),
+        _id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
@@ -102,7 +104,8 @@ const getProfile = async (req, res) => {
     
     // Omit password
     const userProfile = {
-      _id: user._id,
+      id: user._id.toString(),
+      _id: user._id.toString(),
       name: user.name,
       email: user.email,
       role: user.role,

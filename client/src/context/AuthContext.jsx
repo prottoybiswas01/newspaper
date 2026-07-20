@@ -4,9 +4,16 @@ import { api } from '../utils/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!user);
 
   // Initialize and verify user auth status
   useEffect(() => {
@@ -16,13 +23,13 @@ export const AuthProvider = ({ children }) => {
           const res = await api.get('/auth/profile');
           if (res.success) {
             setUser(res.user);
+            localStorage.setItem('user', JSON.stringify(res.user));
           } else if (res.message && res.message.toLowerCase().includes('authorized')) {
             // Token explicitly invalid or expired
             logout();
           }
         } catch (e) {
           console.error('Profile fetch failed:', e);
-          // If offline or network issue, don't clear token immediately, but set loading false
         }
       }
       setLoading(false);
@@ -37,6 +44,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/login', { email, password });
       if (res.success) {
         localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
         setToken(res.token);
         setUser(res.user);
         return { success: true };
@@ -56,6 +64,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.post('/auth/register', { name, email, password });
       if (res.success) {
         localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
         setToken(res.token);
         setUser(res.user);
         return { success: true };
@@ -71,6 +80,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
