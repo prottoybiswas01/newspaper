@@ -178,10 +178,13 @@ exports.triggerAutoFetch = async (req, res) => {
 
           const title = titleMatch ? titleMatch[1].trim() : '';
           const link = linkMatch ? linkMatch[1].trim() : '';
-          const description = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').trim() : '';
+          let description = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').trim() : '';
           const pubDate = dateMatch ? new Date(dateMatch[1]) : new Date();
 
           if (!title || !link) continue;
+
+          // Strip "আরও পড়ুন..." teaser links inside descriptions
+          description = description.replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
 
           // Check duplicate
           const existing = await AutoFetchedArticle.findOne({ link });
@@ -210,6 +213,73 @@ exports.triggerAutoFetch = async (req, res) => {
   } catch (error) {
     console.error('Trigger fetch error:', error);
     res.status(500).json({ success: false, message: 'স্বয়ংক্রিয় নিউজ সার্চের সময় ত্রুটি ঘটেছে।' });
+  }
+};
+
+// POST /api/auto-fetched/extract - Scrape/extract complete full article text from link
+exports.extractFullArticleContent = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ success: false, message: 'URL is required' });
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      signal: AbortSignal.timeout(6000)
+    });
+
+    if (!response.ok) {
+      return res.status(400).json({ success: false, message: 'Failed to fetch news page' });
+    }
+
+    const html = await response.text();
+
+    const decodeHtmlEntities = (text) => {
+      if (!text) return '';
+      return text
+        .replace(/&rsquo;/g, "'")
+        .replace(/&lsquo;/g, "'")
+        .replace(/&rdquo;/g, '"')
+        .replace(/&ldquo;/g, '"')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&amp;/g, '&')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
+    };
+
+    const pMatches = html.match(/<p[^\>]*>[\s\S]*?<\/p>/gi) || [];
+    const badPatterns = [
+      /আরও\s*পড়ুন/i, /আরও\s*দেখুন/i, /READ\s*MORE/i, /পাঠকপ্রিয়/i, /লিখতে\s*পারেন/i,
+      /আজই\s*আপনার\s*লেখাটি/i, /সম্পাদক\s*:/i, /সর্বস্বত্ব/i, /কমফোর্ট/i, /প্রগতি\s*সরণি/i,
+      /বিজ্ঞাপন/i, /ফাইল\s*ছবি/i, /সর্বশেষ\s*-/i, /শেয়ার\s*করুন/i, /লাইক\s*দিন/i,
+      /ফলো\s*করুন/i, /সাবস্ক্রাইব/i, /Copyright/i
+    ];
+
+    const cleanParagraphs = pMatches
+      .map(p => decodeHtmlEntities(p.replace(/<[^>]*>/g, '').trim()))
+      .filter(p => p.length > 25 && !badPatterns.some(pattern => pattern.test(p)));
+
+    if (cleanParagraphs.length === 0) {
+      return res.json({ success: false, message: 'Could not extract full text' });
+    }
+
+    const htmlContent = cleanParagraphs.map(p => `<p>${p}</p>`).join('\n');
+    const summary = cleanParagraphs[0] ? cleanParagraphs[0].substring(0, 250) : '';
+
+    res.json({
+      success: true,
+      content: htmlContent,
+      summary,
+      paragraphCount: cleanParagraphs.length
+    });
+  } catch (error) {
+    console.error('Extract article error:', error.message);
+    res.status(500).json({ success: false, message: 'Extracting full article content failed' });
   }
 };
 

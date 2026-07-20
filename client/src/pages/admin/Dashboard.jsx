@@ -281,46 +281,82 @@ const Dashboard = () => {
     }
   }, [activeTab, autoFetchedPage, autoFetchedSearch]);
 
-  // Import an auto-fetched article directly into the CMS editor tab
-  const handleImportToEditor = (fetchedArt) => {
+  // Import an auto-fetched article directly into the CMS editor tab with FULL article extraction
+  const handleImportToEditor = async (fetchedArt) => {
     resetEditorForm();
     setEditingArticleId(null);
     setArticleTitle(fetchedArt.title);
     setArticleSubtitle(fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '');
     
-    const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 11px; color: #64748b; font-style: italic;">তথ্যসূত্র ও কৃতজ্ঞতা: <strong>${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'}</strong>। মূল খবরটির বিস্তারিত পড়তে এবং আসল সূত্র যাচাই করতে এখানে <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিঙ্কে প্রবেশ করুন</a>।</p>`;
+    // Initial source attribution footer
+    const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} (<a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>`;
     
-    const htmlContent = fetchedArt.description 
-      ? `<p>${fetchedArt.description}</p>${sourceAttribution}`
-      : `<p>খবরটি বিস্তারিত পড়তে নিচের মূল লিঙ্কে ক্লিক করুন।</p>${sourceAttribution}`;
+    // Initial fallback text cleaned of teaser snippets
+    let initialDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
+    const initialContent = initialDesc ? `<p>${initialDesc}</p>${sourceAttribution}` : sourceAttribution;
     
-    setArticleContent(htmlContent);
-    setArticleSummary(fetchedArt.description ? fetchedArt.description.substring(0, 150) : '');
+    setArticleContent(initialContent);
+    setArticleSummary(initialDesc ? initialDesc.substring(0, 200) : '');
     setArticleCategory('Bangladesh');
     setArticleTags(fetchedArt.source || '');
     setArticleStatus('draft');
     
     setArticleSeoTitle(fetchedArt.title);
-    setArticleSeoDesc(fetchedArt.description ? fetchedArt.description.substring(0, 150) : '');
+    setArticleSeoDesc(initialDesc ? initialDesc.substring(0, 150) : '');
     setArticleSeoKeywords(fetchedArt.source || '');
     
-    toast.success('নিউজটি এডিটরে লোড করা হয়েছে! অনুগ্রহ করে সম্পাদনা করে পাবলিশ করুন।');
     setActiveTab('editor');
+    toast.info('সংবাদটির সম্পূর্ণ মূল প্যারাগ্রাফ এক্সট্রাক্ট করা হচ্ছে...');
+
+    // Attempt to extract 100% full complete text from the target news URL
+    try {
+      const extRes = await api.post('/auto-fetched/extract', { url: fetchedArt.link });
+      if (extRes.success && extRes.content) {
+        setArticleContent(`${extRes.content}\n${sourceAttribution}`);
+        if (extRes.summary) {
+          setArticleSummary(extRes.summary);
+          setArticleSeoDesc(extRes.summary.substring(0, 150));
+        }
+        toast.success(`সম্পূর্ণ ${extRes.paragraphCount || ''}টি প্যারাগ্রাফ সফলভাবে লোড করা হয়েছে!`);
+      } else {
+        toast.success('সংবাদটি এডিটরে লোড করা হয়েছে।');
+      }
+    } catch (e) {
+      toast.success('সংবাদটি এডিটরে লোড করা হয়েছে।');
+    }
   };
 
-  // Instantly publish a fetched article directly onto the live site
+  // Instantly publish a fetched article directly onto the live site with FULL article extraction
   const handlePublishFetchedArticle = async (fetchedArt) => {
     if (!window.confirm('আপনি কি এই খবরটি সরাসরি লাইভ ওয়েবসাইটে পাবলিশ করতে চান?')) return;
     try {
-      const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 11px; color: #64748b; font-style: italic;">তথ্যসূত্র ও কৃতজ্ঞতা: <strong>${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'}</strong>। মূল খবরটির বিস্তারিত পড়তে এবং আসল সূত্র যাচাই করতে এখানে <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিঙ্কে প্রবেশ করুন</a>।</p>`;
+      const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} (<a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>`;
+
+      let fullContent = '';
+      let fullSummary = '';
+
+      // Try full extraction
+      try {
+        const extRes = await api.post('/auto-fetched/extract', { url: fetchedArt.link });
+        if (extRes.success && extRes.content) {
+          fullContent = `${extRes.content}\n${sourceAttribution}`;
+          fullSummary = extRes.summary || '';
+        }
+      } catch (e) {
+        // Ignore fallback to snippet
+      }
+
+      if (!fullContent) {
+        let cleanDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
+        fullContent = cleanDesc ? `<p>${cleanDesc}</p>${sourceAttribution}` : sourceAttribution;
+        fullSummary = cleanDesc ? cleanDesc.substring(0, 200) : '';
+      }
 
       const payload = {
         title: fetchedArt.title,
         subtitle: fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '',
-        content: fetchedArt.description 
-          ? `<p>${fetchedArt.description}</p>${sourceAttribution}` 
-          : `<p>খবরটি বিস্তারিত পড়তে নিচের মূল লিঙ্কে ক্লিক করুন।</p>${sourceAttribution}`,
-        summary: fetchedArt.description ? fetchedArt.description.substring(0, 150).replace(/<[^>]*>/g, '') + '...' : '',
+        content: fullContent,
+        summary: fullSummary,
         category: 'Bangladesh',
         tags: fetchedArt.source ? [fetchedArt.source] : [],
         status: 'published',
@@ -328,14 +364,14 @@ const Dashboard = () => {
         videoUrl: '',
         seo: {
           metaTitle: fetchedArt.title,
-          metaDescription: fetchedArt.description ? fetchedArt.description.substring(0, 150) : '',
+          metaDescription: fullSummary.substring(0, 150),
           keywords: fetchedArt.source || ''
         }
       };
 
       const res = await api.post('/articles', payload);
       if (res.success) {
-        toast.success('খবরটি সফলভাবে সরাসরি পাবলিশ করা হয়েছে!');
+        toast.success('খবরটি সফলভাবে সম্পূর্ণ টেক্সটসহ সরাসরি পাবলিশ করা হয়েছে!');
         // Delete log after publishing
         await api.delete(`/auto-fetched/${fetchedArt._id}`);
         loadAutoFetchedArticles();
