@@ -24,7 +24,7 @@ const calculateReadingTime = (text) => {
 // @route   POST /api/articles
 const createArticle = async (req, res) => {
   try {
-    const { title, subtitle, content, summary, category, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
+    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
 
     if (!title || !content || !category) {
       return res.status(400).json({ success: false, message: 'Title, content, and category are required' });
@@ -50,6 +50,7 @@ const createArticle = async (req, res) => {
       content,
       summary: summary || content.substring(0, 150).replace(/<[^>]*>/g, '') + '...',
       category,
+      subcategory: subcategory || '',
       tags: tags || [],
       author: req.user.name,
       authorId: req.user.id,
@@ -96,7 +97,7 @@ const createArticle = async (req, res) => {
 // @route   GET /api/articles
 const getArticles = async (req, res) => {
   try {
-    const { category, tag, authorId, status, search, limit, skip, sort } = req.query;
+    const { category, subcategory, tag, authorId, status, search, limit, skip, sort } = req.query;
 
     const query = {};
 
@@ -108,6 +109,7 @@ const getArticles = async (req, res) => {
     }
 
     if (category) query.category = { $regex: new RegExp('^' + category.trim() + '$', 'i') };
+    if (subcategory) query.subcategory = { $regex: new RegExp('^' + subcategory.trim() + '$', 'i') };
     if (tag) query.tags = tag; // Matches tag in the tags array
     if (authorId) query.authorId = authorId;
 

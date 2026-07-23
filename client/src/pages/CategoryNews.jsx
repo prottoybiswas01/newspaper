@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
 import { Calendar, Eye } from 'lucide-react';
@@ -14,19 +14,45 @@ const imgSrc = (art) => {
 };
 
 const CategoryNews = () => {
-  const { categorySlug } = useParams();
+  const { categorySlug, subSlug } = useParams();
+  const [searchParams] = useSearchParams();
+  const activeSubSlug = subSlug || searchParams.get('sub') || '';
+
   const [articles, setArticles] = useState([]);
+  const [categoryInfo, setCategoryInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Capitalize category name for display
-  const displayName = categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1);
+  // Fetch Category taxonomy info (including subcategories)
+  useEffect(() => {
+    const fetchCategoryTaxonomy = async () => {
+      try {
+        const res = await api.get('/taxonomy/categories');
+        if (res.success && Array.isArray(res.categories)) {
+          const found = res.categories.find(c => c.slug.toLowerCase() === categorySlug.toLowerCase());
+          if (found) {
+            setCategoryInfo(found);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load category taxonomy info:', err);
+      }
+    };
+    fetchCategoryTaxonomy();
+  }, [categorySlug]);
+
+  const catName = categoryInfo ? categoryInfo.name : categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1);
+  const activeSubInfo = categoryInfo?.subcategories?.find(s => s.slug.toLowerCase() === activeSubSlug.toLowerCase());
+  const subName = activeSubInfo ? activeSubInfo.name : activeSubSlug;
 
   useEffect(() => {
     const fetchCategoryArticles = async () => {
       setLoading(true);
       try {
-        // Query by category name (which matches the database value capitalized)
-        const res = await api.get(`/articles?category=${displayName}&limit=20`);
+        let url = `/articles?category=${encodeURIComponent(catName)}&limit=30`;
+        if (activeSubSlug) {
+          url += `&subcategory=${encodeURIComponent(subName || activeSubSlug)}`;
+        }
+        const res = await api.get(url);
         if (res.success) {
           setArticles(res.articles);
         }
@@ -37,18 +63,59 @@ const CategoryNews = () => {
       }
     };
     fetchCategoryArticles();
-  }, [categorySlug, displayName]);
+  }, [categorySlug, catName, activeSubSlug, subName]);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumbs */}
-      <div className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider">
-        <Link to="/" className="hover:underline">Home</Link> ➔ <span className="text-slate-650">{displayName}</span>
+      <div className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider flex items-center space-x-1.5">
+        <Link to="/" className="hover:underline">Home</Link>
+        <span>➔</span>
+        <Link to={`/category/${categorySlug}`} className="hover:underline text-slate-700 dark:text-slate-300">{catName}</Link>
+        {activeSubSlug && (
+          <>
+            <span>➔</span>
+            <span className="text-red-600">{subName}</span>
+          </>
+        )}
       </div>
 
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 mb-8 border-b-2 border-blue-600 pb-2 capitalize">
-        {displayName} News
-      </h1>
+      <div className="flex flex-wrap items-baseline justify-between gap-4 mb-4 border-b-2 border-red-600 pb-3">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 capitalize">
+          {catName} {subName ? `➔ ${subName}` : 'সংবাদ'}
+        </h1>
+      </div>
+
+      {/* Subcategory Pills Navigation Bar */}
+      {categoryInfo && categoryInfo.subcategories && categoryInfo.subcategories.length > 0 && (
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
+          <Link
+            to={`/category/${categorySlug}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
+              !activeSubSlug 
+                ? 'bg-red-600 text-white shadow-xs' 
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            সকল (All)
+          </Link>
+          {categoryInfo.subcategories
+            .sort((a,b) => (a.order || 0) - (b.order || 0))
+            .map(sub => (
+              <Link
+                key={sub._id || sub.slug}
+                to={`/category/${categorySlug}/${sub.slug}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
+                  activeSubSlug.toLowerCase() === sub.slug.toLowerCase()
+                    ? 'bg-red-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {sub.name}
+              </Link>
+            ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         

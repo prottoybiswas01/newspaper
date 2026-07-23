@@ -550,6 +550,33 @@ const Dashboard = () => {
     }
   };
 
+  const handleAddSubcategory = async (catId, subName, subOrder) => {
+    if (!subName) return;
+    try {
+      const res = await api.post(`/taxonomy/categories/${catId}/subcategories`, {
+        name: subName,
+        order: subOrder || 0
+      });
+      if (res.success) {
+        setCategories(prev => prev.map(c => c._id === catId ? res.category : c));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSubcategory = async (catId, subId) => {
+    if (!window.confirm('Delete subcategory?')) return;
+    try {
+      const res = await api.delete(`/taxonomy/categories/${catId}/subcategories/${subId}`);
+      if (res.success) {
+        setCategories(prev => prev.map(c => c._id === catId ? res.category : c));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Tag Merging Action
   const handleMergeTags = async (e) => {
     e.preventDefault();
@@ -1382,19 +1409,90 @@ const Dashboard = () => {
                   </button>
                 </form>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {categories.map(cat => (
-                    <div key={cat._id} className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-800/60 rounded-xl">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-[10px] font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">Order: {cat.order}</span>
-                        <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
+                    <div key={cat._id} className="border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/20">
+                      <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">Order: {cat.order}</span>
+                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
+                          <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full">
+                            {(cat.subcategories || []).length} সাব-ক্যাটাগরি
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <button 
+                            onClick={() => handleDeleteCategory(cat._id)} 
+                            className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                            title="Delete category"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <button 
-                        onClick={() => handleDeleteCategory(cat._id)} 
-                        className="text-red-500 hover:text-red-700 p-1"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+
+                      {/* Subcategories Desk */}
+                      <div className="p-3 space-y-2.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+                          <span>সাব-ক্যাটাগরি সমূহ (Subcategories):</span>
+                        </div>
+
+                        {/* Inline form to add subcategory */}
+                        <form 
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const subName = e.target.subName.value.trim();
+                            const subOrder = parseInt(e.target.subOrder.value) || 0;
+                            if (subName) {
+                              handleAddSubcategory(cat._id, subName, subOrder);
+                              e.target.reset();
+                            }
+                          }}
+                          className="flex gap-2"
+                        >
+                          <input 
+                            name="subName"
+                            type="text" 
+                            placeholder="+ নতুন সাব-ক্যাটাগরি নাম (e.g. রাজধানী)..." 
+                            required
+                            className="flex-1 px-2.5 py-1.5 border rounded-lg text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none border-slate-200 dark:border-slate-700"
+                          />
+                          <input 
+                            name="subOrder"
+                            type="number" 
+                            placeholder="Order" 
+                            defaultValue={ (cat.subcategories || []).length }
+                            className="w-16 px-2 py-1.5 border rounded-lg text-xs bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none border-slate-200 dark:border-slate-700"
+                          />
+                          <button 
+                            type="submit" 
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-colors"
+                          >
+                            যুক্ত করুন
+                          </button>
+                        </form>
+
+                        {/* Existing Subcategories list */}
+                        {(!cat.subcategories || cat.subcategories.length === 0) ? (
+                          <p className="text-[11px] text-slate-400 italic">কোন সাব-ক্যাটাগরি যুক্ত করা হয়নি।</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {cat.subcategories.map(sub => (
+                              <div key={sub._id || sub.slug} className="flex items-center space-x-1.5 px-2.5 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xs text-xs">
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">{sub.name}</span>
+                                <span className="text-[9px] text-slate-400">({sub.slug})</span>
+                                <button 
+                                  onClick={() => handleDeleteSubcategory(cat._id, sub._id || sub.slug)}
+                                  className="text-slate-400 hover:text-red-500 ml-1 transition-colors"
+                                  title="Delete subcategory"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

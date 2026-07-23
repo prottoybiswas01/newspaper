@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers } from 'lucide-react';
+import { api } from '../utils/api';
+import CategoryMegaMenu from './CategoryMegaMenu';
 
 const Header = () => {
   const { user, logout, hasPermission } = useAuth();
@@ -11,20 +13,32 @@ const Header = () => {
   const { language, toggleLanguage, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
+  const [categories, setCategories] = useState([
+    { name: 'Bangladesh', slug: 'bangladesh', subcategories: [] },
+    { name: 'International', slug: 'international', subcategories: [] },
+    { name: 'Politics', slug: 'politics', subcategories: [] },
+    { name: 'Economy', slug: 'economy', subcategories: [] },
+    { name: 'Sports', slug: 'sports', subcategories: [] },
+    { name: 'Entertainment', slug: 'entertainment', subcategories: [] },
+    { name: 'Technology', slug: 'technology', subcategories: [] },
+    { name: 'Opinion', slug: 'opinion', subcategories: [] },
+  ]);
 
-  const categories = [
-    { name: 'Bangladesh', slug: 'bangladesh' },
-    { name: 'International', slug: 'international' },
-    { name: 'Politics', slug: 'politics' },
-    { name: 'Economy', slug: 'economy' },
-    { name: 'Sports', slug: 'sports' },
-    { name: 'Entertainment', slug: 'entertainment' },
-    { name: 'Technology', slug: 'technology' },
-    { name: 'Opinion', slug: 'opinion' },
-    { name: 'Media Center', slug: 'media-center' },
-  ];
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const res = await api.get('/taxonomy/categories');
+        if (res.success && Array.isArray(res.categories) && res.categories.length > 0) {
+          setCategories(res.categories.sort((a,b) => (a.order || 0) - (b.order || 0)));
+        }
+      } catch (err) {
+        console.error('Failed to fetch navbar categories:', err);
+      }
+    };
+    fetchCats();
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -118,21 +132,61 @@ const Header = () => {
                   </Link>
                 </li>
               )}
+
+              <li>
+                <button 
+                  onClick={() => setMegaMenuOpen(!megaMenuOpen)}
+                  className={`flex items-center space-x-1 px-2 py-0.5 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'hover:text-red-600 dark:hover:text-red-400 text-slate-900 dark:text-white font-extrabold'}`}
+                  title="সকল বিভাগ (All Categories)"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>সব বিভাগ</span>
+                  <ChevronDown className={`h-3 w-3 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+              </li>
+
               <li>
                 <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('home')}
                 </Link>
               </li>
-              {categories.map((cat) => (
-                <li key={cat.slug}>
-                  <Link 
-                    to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
-                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    {t(cat.slug.replace(/-([a-z])/g, g => g[1].toUpperCase()))}
-                  </Link>
-                </li>
-              ))}
+
+              {categories.map((cat) => {
+                const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+                return (
+                  <li key={cat._id || cat.slug} className="relative group">
+                    <div className="flex items-center space-x-0.5">
+                      <Link 
+                        to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
+                        className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-1"
+                      >
+                        {cat.name}
+                      </Link>
+                      {hasSubs && (
+                        <ChevronDown className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-transform group-hover:rotate-180" />
+                      )}
+                    </div>
+
+                    {/* Hover Dropdown for Subcategories */}
+                    {hasSubs && (
+                      <div className="absolute left-0 top-full hidden group-hover:block z-50 pt-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 px-1 min-w-[180px]">
+                          {cat.subcategories.map(sub => (
+                            <Link
+                              key={sub._id || sub.slug}
+                              to={`/category/${cat.slug}/${sub.slug}`}
+                              className="block px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600 rounded-lg transition-colors"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+
               <li>
                 <Link to="/archive" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('archive')}
@@ -173,6 +227,13 @@ const Header = () => {
 
         </div>
       </div>
+
+      {/* Mega Menu Overlay */}
+      {megaMenuOpen && (
+        <div className="border-b border-slate-200 dark:border-slate-800 shadow-md animate-in slide-in-from-top duration-200">
+          <CategoryMegaMenu />
+        </div>
+      )}
 
       {/* Search Input Bar (Dropdown) */}
       {searchOpen && (

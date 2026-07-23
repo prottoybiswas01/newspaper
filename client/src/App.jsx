@@ -34,6 +34,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/category/:categorySlug" element={<CategoryNews />} />
+                    <Route path="/category/:categorySlug/:subSlug" element={<CategoryNews />} />
                     <Route path="/article/:slug" element={<ArticleDetails />} />
                     <Route path="/search" element={<Search />} />
                     <Route path="/reporter/:id" element={<ReporterProfile />} />

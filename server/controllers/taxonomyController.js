@@ -2,12 +2,29 @@ const Category = require('../models/Category');
 const Tag = require('../models/Tag');
 const Article = require('../models/Article');
 
-// CATEGORY CONTROLLERS
+const generateSlug = (text) => {
+  if (!text) return '';
+  const slug = text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\u0980-\u09FF-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+  return slug || 'subcat-' + Date.now();
+};
 
 const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({}).sort({ order: 1 });
-    res.json({ success: true, categories });
+    // Normalize subcategories array
+    const normalized = categories.map(c => ({
+      ...c,
+      subcategories: Array.isArray(c.subcategories) ? c.subcategories.sort((a,b) => (a.order || 0) - (b.order || 0)) : []
+    }));
+    res.json({ success: true, categories: normalized });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -15,18 +32,30 @@ const getCategories = async (req, res) => {
 
 const createCategory = async (req, res) => {
   try {
-    const { name, order } = req.body;
+    const { name, order, subcategories } = req.body;
     if (!name) {
       return res.status(400).json({ success: false, message: 'Category name is required' });
     }
-    const slug = name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+    const slug = generateSlug(name);
     
     const exists = await Category.findOne({ slug });
     if (exists) {
       return res.status(400).json({ success: false, message: 'Category already exists' });
     }
 
-    const category = await Category.create({ name, slug, order: order || 0 });
+    const formattedSubs = Array.isArray(subcategories) ? subcategories.map((sub, idx) => ({
+      _id: sub._id || (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)),
+      name: sub.name,
+      slug: sub.slug || generateSlug(sub.name),
+      order: sub.order !== undefined ? sub.order : idx
+    })) : [];
+
+    const category = await Category.create({ 
+      name, 
+      slug, 
+      order: order || 0,
+      subcategories: formattedSubs
+    });
     res.status(201).json({ success: true, category });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -35,7 +64,7 @@ const createCategory = async (req, res) => {
 
 const updateCategory = async (req, res) => {
   try {
-    const { name, order } = req.body;
+    const { name, order, subcategories } = req.body;
     const cat = await Category.findById(req.params.id);
     if (!cat) {
       return res.status(404).json({ success: false, message: 'Category not found' });
@@ -44,10 +73,18 @@ const updateCategory = async (req, res) => {
     const updateData = {};
     if (name) {
       updateData.name = name;
-      updateData.slug = name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+      updateData.slug = generateSlug(name);
     }
     if (order !== undefined) {
       updateData.order = order;
+    }
+    if (subcategories !== undefined && Array.isArray(subcategories)) {
+      updateData.subcategories = subcategories.map((sub, idx) => ({
+        _id: sub._id || (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)),
+        name: sub.name,
+        slug: sub.slug || generateSlug(sub.name),
+        order: sub.order !== undefined ? sub.order : idx
+      }));
     }
 
     const updated = await Category.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
@@ -65,6 +102,95 @@ const deleteCategory = async (req, res) => {
     }
     await Category.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Category deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// SUBCATEGORY CONTROLLERS
+
+const addSubcategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, order } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Subcategory name is required' });
+    }
+
+    const cat = await Category.findById(id);
+    if (!cat) {
+      return res.status(404).json({ success: false, message: 'Category not found' });
+    }
+
+    const subs = Array.isArray(cat.subcategories) ? cat.subcategories : [];
+    const slug = generateSlug(name);
+    
+    // Check if subcategory slug already exists in this category
+    if (subs.some(s => s.slug === slug || s.name === name)) {
+      return res.status(400).json({ success: false, message: 'Subcategory already exists in this category' });
+    }
+
+    const newSub = {
+      _id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+      name,
+      slug,
+      order: order !== undefined ? Number(order) : subs.length
+    };
+
+    subs.push(newSub);
+    const updated = await Category.findByIdAndUpdate(id, { $set: { subcategories: subs } }, { new: true });
+    res.status(201).json({ success: true, category: updated, subcategory: newSub });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const updateSubcategory = async (req, res) => {
+  try {
+    const { id, subId } = req.params;
+    const { name, order } = req.body;
+
+    const cat = await Category.findById(id);
+    if (!cat) {
+      return res.status(404).json({ success: false, message: 'Category not found' });
+    }
+
+    let subs = Array.isArray(cat.subcategories) ? [...cat.subcategories] : [];
+    const subIdx = subs.findIndex(s => s._id === subId || s.slug === subId);
+    
+    if (subIdx === -1) {
+      return res.status(404).json({ success: false, message: 'Subcategory not found' });
+    }
+
+    if (name) {
+      subs[subIdx].name = name;
+      subs[subIdx].slug = generateSlug(name);
+    }
+    if (order !== undefined) {
+      subs[subIdx].order = Number(order);
+    }
+
+    const updated = await Category.findByIdAndUpdate(id, { $set: { subcategories: subs } }, { new: true });
+    res.json({ success: true, category: updated, subcategory: subs[subIdx] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteSubcategory = async (req, res) => {
+  try {
+    const { id, subId } = req.params;
+
+    const cat = await Category.findById(id);
+    if (!cat) {
+      return res.status(404).json({ success: false, message: 'Category not found' });
+    }
+
+    let subs = Array.isArray(cat.subcategories) ? [...cat.subcategories] : [];
+    const filteredSubs = subs.filter(s => s._id !== subId && s.slug !== subId);
+
+    const updated = await Category.findByIdAndUpdate(id, { $set: { subcategories: filteredSubs } }, { new: true });
+    res.json({ success: true, category: updated, message: 'Subcategory deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -179,6 +305,9 @@ module.exports = {
   createCategory,
   updateCategory,
   deleteCategory,
+  addSubcategory,
+  updateSubcategory,
+  deleteSubcategory,
   getTags,
   createTag,
   updateTag,

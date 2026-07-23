@@ -7,6 +7,7 @@ const ArticleSchema = {
   content: { type: String, required: true },
   summary: { type: String, default: '' },
   category: { type: String, required: true },
+  subcategory: { type: String, default: '' },
   tags: { type: [String], default: [] },
   author: { type: String, required: true }, // User Name or User ID
   authorId: { type: String, required: true },
