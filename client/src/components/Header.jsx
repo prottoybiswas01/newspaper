@@ -279,16 +279,36 @@ const Header = () => {
               <Link to="/" onClick={handleCategoryClick} className="text-base font-bold text-slate-800 dark:text-slate-100 hover:text-blue-600 p-2 border-b border-slate-100 dark:border-slate-800">
                 {t('home')}
               </Link>
-              {categories.map((cat) => (
-                <Link 
-                  key={cat.slug} 
-                  to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`}
-                  onClick={handleCategoryClick}
-                  className="text-base font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 p-2 border-b border-slate-100 dark:border-slate-800"
-                >
-                  {t(cat.slug.replace(/-([a-z])/g, g => g[1].toUpperCase()))}
-                </Link>
-              ))}
+              {categories.map((cat) => {
+                const catName = cat.name || (cat.slug ? (cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1)) : 'বিভাগ');
+                const hasSubs = cat.subcategories && cat.subcategories.length > 0;
+
+                return (
+                  <div key={cat._id || cat.slug} className="border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <Link 
+                      to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`}
+                      onClick={handleCategoryClick}
+                      className="text-base font-bold text-slate-800 dark:text-slate-100 hover:text-red-600 p-2 block"
+                    >
+                      {catName}
+                    </Link>
+                    {hasSubs && (
+                      <div className="flex flex-wrap gap-1.5 pl-4 pt-1">
+                        {cat.subcategories.map(sub => (
+                          <Link
+                            key={sub._id || sub.slug}
+                            to={`/category/${cat.slug}/${sub.slug}`}
+                            onClick={handleCategoryClick}
+                            className="text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md hover:text-red-600 transition-colors"
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <Link to="/archive" onClick={handleCategoryClick} className="text-base font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 p-2 border-b border-slate-100 dark:border-slate-800">
                 {t('archive')}
               </Link>
