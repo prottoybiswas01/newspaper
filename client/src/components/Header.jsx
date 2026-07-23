@@ -80,8 +80,8 @@ const Header = () => {
           {/* Vertical Divider */}
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
 
-          {/* Profile / Auth Button */}
-          {user ? (
+          {/* Profile / Auth Button (Only visible when logged in) */}
+          {user && (
             <div className="flex items-center space-x-2">
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
@@ -102,14 +102,6 @@ const Header = () => {
                 <span className="hidden sm:inline-block text-xs font-bold text-slate-700 dark:text-slate-300">{user.name.split(' ')[0]}</span>
               </Link>
             </div>
-          ) : (
-            <Link 
-              to="/login-admin" 
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 text-xs font-bold hover:bg-slate-800 transition-colors"
-            >
-              <User className="h-3.5 w-3.5" />
-              <span>লগইন</span>
-            </Link>
           )}
         </div>
       </div>
@@ -132,18 +124,6 @@ const Header = () => {
                   </Link>
                 </li>
               )}
-
-              <li>
-                <button 
-                  onClick={() => setMegaMenuOpen(!megaMenuOpen)}
-                  className={`flex items-center space-x-1 px-2 py-0.5 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'hover:text-red-600 dark:hover:text-red-400 text-slate-900 dark:text-white font-extrabold'}`}
-                  title="সকল বিভাগ (All Categories)"
-                >
-                  <Layers className="h-3.5 w-3.5" />
-                  <span>সব বিভাগ</span>
-                  <ChevronDown className={`h-3 w-3 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-              </li>
 
               <li>
                 <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -191,6 +171,19 @@ const Header = () => {
                 <Link to="/archive" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                   {t('archive')}
                 </Link>
+              </li>
+
+              {/* All Categories / Mega Menu button at the VERY END */}
+              <li>
+                <button 
+                  onClick={() => setMegaMenuOpen(!megaMenuOpen)}
+                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-slate-200/80 dark:bg-slate-800 hover:bg-red-600 hover:text-white text-slate-800 dark:text-slate-200 font-extrabold'}`}
+                  title="সকল বিভাগ (All Categories)"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>সব বিভাগ</span>
+                  <ChevronDown className={`h-3 w-3 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
               </li>
             </ul>
           </nav>

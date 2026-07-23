@@ -60,6 +60,7 @@ const Dashboard = () => {
   const [articleContent, setArticleContent] = useState('<p><br></p>');
   const [articleSummary, setArticleSummary] = useState('');
   const [articleCategory, setArticleCategory] = useState('Bangladesh');
+  const [articleSubcategory, setArticleSubcategory] = useState('');
   const [articleTags, setArticleTags] = useState('');
   const [articleStatus, setArticleStatus] = useState('draft');
   const [articleFeaturedImage, setArticleFeaturedImage] = useState('');
@@ -440,6 +441,7 @@ const Dashboard = () => {
       content: articleContent,
       summary: articleSummary,
       category: articleCategory,
+      subcategory: articleSubcategory,
       tags: articleTags.split(',').map(t => t.trim()).filter(t => t.length > 0),
       status: articleStatus,
       featuredImage: articleFeaturedImage,
@@ -478,7 +480,8 @@ const Dashboard = () => {
     setArticleSubtitle(art.subtitle || '');
     setArticleContent(art.content);
     setArticleSummary(art.summary || '');
-    setArticleCategory(art.category);
+    setArticleCategory(art.category || 'Bangladesh');
+    setArticleSubcategory(art.subcategory || '');
     setArticleTags((art.tags || []).join(', '));
     setArticleStatus(art.status);
     setArticleFeaturedImage(art.featuredImage || '');
@@ -512,6 +515,7 @@ const Dashboard = () => {
     setArticleContent('<p><br></p>');
     setArticleSummary('');
     setArticleCategory('Bangladesh');
+    setArticleSubcategory('');
     setArticleTags('');
     setArticleStatus('draft');
     setArticleFeaturedImage('');

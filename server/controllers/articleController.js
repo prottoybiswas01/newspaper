@@ -174,7 +174,7 @@ const getArticleBySlug = async (req, res) => {
 // @route   PUT /api/articles/:id
 const updateArticle = async (req, res) => {
   try {
-    const { title, subtitle, content, summary, category, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
+    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
     
     const article = await Article.findById(req.params.id);
     if (!article) {
@@ -212,6 +212,7 @@ const updateArticle = async (req, res) => {
     }
     if (summary !== undefined) updateData.summary = summary;
     if (category) updateData.category = category;
+    if (subcategory !== undefined) updateData.subcategory = subcategory;
     if (tags) updateData.tags = tags;
     if (featuredImage !== undefined) updateData.featuredImage = featuredImage;
     if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
