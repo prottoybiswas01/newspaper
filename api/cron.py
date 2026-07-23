@@ -368,48 +368,6 @@ class handler(BaseHTTPRequestHandler):
                     try:
                         collection.insert_one(doc)
                         inserted_count += 1
-
-                        # Also publish directly into public 'articles' collection
-                        articles_col = db['articles']
-                        base_slug = slugify(title)
-                        if not articles_col.find_one({"$or": [{"title": title}, {"slug": base_slug}]}):
-                            category = detect_category(title, description)
-                            slug = base_slug
-                            count = 1
-                            while articles_col.find_one({"slug": slug}):
-                                slug = f"{base_slug}-{count}"
-                                count += 1
-                            
-                            source_attr = f'<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> {feed_name} (<a href="{link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>' if feed_name else ''
-                            content = f'<p>{description}</p>{source_attr}' if description else f'<p>{title}</p>{source_attr}'
-                            
-                            pub_article = {
-                                "title": title,
-                                "subtitle": f"উৎস: {feed_name}" if feed_name else "",
-                                "slug": slug,
-                                "content": content,
-                                "summary": description[:200] if description else title,
-                                "category": category,
-                                "subcategory": "",
-                                "tags": [category, feed_name] if feed_name else [category],
-                                "author": feed_name or "অনলাইন নিউজ",
-                                "authorId": "system",
-                                "status": "published",
-                                "publishDate": pub_date,
-                                "readingTime": max(1, len(description.split()) // 200) if description else 1,
-                                "views": random.randint(10, 80),
-                                "likes": random.randint(0, 15),
-                                "shares": random.randint(0, 10),
-                                "seo": {
-                                    "metaTitle": title,
-                                    "metaDescription": (description or title)[:150],
-                                    "keywords": category
-                                },
-                                "createdAt": datetime.now(timezone.utc),
-                                "updatedAt": datetime.now(timezone.utc)
-                            }
-                            articles_col.insert_one(pub_article)
-
                     except PyMongoError:
                         # Handle duplicate key or database write exception
                         duplicate_count += 1

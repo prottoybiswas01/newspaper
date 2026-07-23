@@ -255,19 +255,8 @@ const seed = async () => {
       console.log('✅ Tags seeded.');
     }
 
-    // 4. Articles: Automatically trigger RSS fetch and sync to publish initial news
-    console.log('Seeding & Syncing Public News Articles...');
-    try {
-      const { triggerAutoFetch } = require('./controllers/autoFetchedController');
-      const mockReq = {};
-      const mockRes = {
-        json: (data) => console.log('✅ RSS Fetch result:', data.message || 'Complete'),
-        status: () => mockRes
-      };
-      await triggerAutoFetch(mockReq, mockRes);
-    } catch (fetchErr) {
-      console.warn('Initial RSS fetch skipped during seed:', fetchErr.message);
-    }
+    // 4. Articles (Clean state - unapproved RSS news remain in AutoFetchedArticle for admin approval)
+    console.log('✅ Articles ready (clean state).');
 
     // 5. Comments (Clean state)
     console.log('✅ Comments ready.');

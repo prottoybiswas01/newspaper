@@ -1,6 +1,5 @@
 const AutoFetchedArticle = require('../models/AutoFetchedArticle');
 const Setting = require('../models/Setting');
-const { syncAutoFetchedToArticles } = require('../services/autoSync');
 
 // Helper to get start of today (Midnight 00:00:00)
 const getStartOfToday = () => {
@@ -204,9 +203,6 @@ exports.triggerAutoFetch = async (req, res) => {
         // Continue to next feed if one fails
       }
     }
-
-    // Sync all fetched items into public Article model
-    await syncAutoFetchedToArticles();
 
     res.json({
       success: true,

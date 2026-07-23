@@ -1,6 +1,5 @@
 const Article = require('../models/Article');
 const User = require('../models/User');
-const { syncAutoFetchedToArticles } = require('../services/autoSync');
 
 const slugify = (text) => {
   return text
@@ -98,9 +97,6 @@ const createArticle = async (req, res) => {
 // @route   GET /api/articles
 const getArticles = async (req, res) => {
   try {
-    // Automatically ensure all auto-fetched articles are synced to public articles
-    await syncAutoFetchedToArticles();
-
     const { category, subcategory, tag, authorId, status, search, limit, skip, sort } = req.query;
 
     const query = {};
@@ -378,9 +374,6 @@ const translateArticle = async (req, res) => {
 // @route   GET /api/articles/homepage
 const getHomepageData = async (req, res) => {
   try {
-    // Automatically ensure all auto-fetched articles are synced to public articles
-    await syncAutoFetchedToArticles();
-
     const Setting = require('../models/Setting');
     
     // 1. Fetch top articles (latest 10)
