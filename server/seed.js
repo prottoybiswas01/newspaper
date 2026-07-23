@@ -267,37 +267,8 @@ const seed = async () => {
       console.log('✅ Articles seeded.');
     }
 
-    // 5. Seed Comments
-    const commentCount = await Comment.countDocuments({});
-    if (commentCount === 0) {
-      console.log('Seeding Comments...');
-      const matchedArticles = await Article.find({ status: 'published' });
-      if (matchedArticles.length > 0) {
-        const artId = matchedArticles[0]._id.toString();
-        const artTitle = matchedArticles[0].title;
-
-        await Comment.create({
-          articleId: artId,
-          articleTitle: artTitle,
-          authorName: 'রহিম উল্লাহ',
-          authorEmail: 'rahim@gmail.com',
-          authorAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=rahim',
-          content: 'দারুণ খবর! রোম ফ্লাইট চালু হওয়ায় ইউরোপ প্রবাসী হাজার হাজার মানুষের অনেক বড় উপকার হবে। বিমানের সেবার মান উন্নত রাখা প্রয়োজন।',
-          status: 'approved'
-        });
-
-        await Comment.create({
-          articleId: artId,
-          articleTitle: artTitle,
-          authorName: 'Guest Reader',
-          authorEmail: 'reader1@gmail.com',
-          authorAvatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=reader1',
-          content: 'টিকিটের দাম কত নির্ধারণ করা হয়েছে? প্রবাসীদের কথা চিন্তা করে একটু কম রাখা উচিত।',
-          status: 'pending'
-        });
-      }
-      console.log('✅ Comments seeded.');
-    }
+    // 5. Seed Comments (Empty by default)
+    console.log('✅ Comments ready (clean state).');
 
     // 6. Seed Ads
     const adCount = await Ad.countDocuments({});

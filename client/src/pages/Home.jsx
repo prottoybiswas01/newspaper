@@ -5,7 +5,7 @@ import AdPlacement from '../components/AdPlacement';
 import PollWidget from '../components/PollWidget';
 import CategoryMegaMenu from '../components/CategoryMegaMenu';
 import { useLanguage } from '../context/LanguageContext';
-import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight } from 'lucide-react';
+import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight, Inbox } from 'lucide-react';
 
 // ── helpers ────────────────────────────────────────────────
 const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
@@ -283,6 +283,23 @@ const Home = () => {
     );
   }
 
+  if (topArticles.length === 0) {
+    return (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <AdPlacement placement="header" />
+        <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
+          <Inbox className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">
+            {lang === 'bn' ? 'বর্তমানে কোনো প্রকাশিত সংবাদ নেই' : 'No Published News Available'}
+          </h2>
+          <p className="text-xs text-slate-400">
+            {lang === 'bn' ? 'অ্যাডমিন বা রিপোর্টার দ্বারা সংবাদ প্রকাশিত হলে বা অটো-ফেচ করা হলে তা এখানে স্বয়ংক্রিয়ভাবে দেখাবে।' : 'Articles created or auto-fetched into database will automatically show up here.'}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
       {/* Header Ad */}
@@ -380,31 +397,34 @@ const Home = () => {
           })}
 
           {/* Media center */}
-          <div className="bg-slate-900 text-white p-5 rounded-2xl">
-            <h2 className="text-base font-black border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
-              <PlayCircle className="h-5 w-5 text-red-500" />
-              {lang === 'bn' ? 'ভিডিও ও ছবি কেন্দ্র' : 'Media Center'}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { img:'https://images.unsplash.com/photo-1540747737956-37872404af0b?w=400', label: lang==='bn'?'ক্রীড়া মাঠের সেরা মুহূর্তসমূহ':'Sports Best Moments', t:'video' },
-                { img:'https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?w=400', label: lang==='bn'?'পদ্মা সেতুর যোগাযোগ ভূমিকা':'Role of Padma Bridge', t:'video' },
-                { img:'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400', label: lang==='bn'?'আকাশপথে বিমানের স্বপ্নযাত্রা':'Aviation Dreams', t:'photo' },
-              ].map((m,i)=>(
-                <div key={i} className="relative rounded-lg overflow-hidden group aspect-video">
-                  <img src={m.img} alt={m.label}
-                    loading="lazy" decoding="async"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    {m.t==='video'
-                      ? <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
-                      : <ImageIcon className="h-9 w-9 text-white drop-shadow"/>}
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2 text-xs font-bold truncate">{m.label}</div>
-                </div>
-              ))}
+          {topArticles.filter(a => a.featuredImage || a.videoUrl).length > 0 && (
+            <div className="bg-slate-900 text-white p-5 rounded-2xl">
+              <h2 className="text-base font-black border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
+                <PlayCircle className="h-5 w-5 text-red-500" />
+                {lang === 'bn' ? 'ভিডিও ও ছবি কেন্দ্র' : 'Media Center'}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {topArticles.filter(a => a.featuredImage || a.videoUrl).slice(0, 3).map((art) => {
+                  const img = imgSrc(art);
+                  return (
+                    <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-slate-800 block">
+                      {img && (
+                        <img src={img} alt={art.title}
+                          loading="lazy" decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                      )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        {art.videoUrl
+                          ? <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
+                          : <ImageIcon className="h-9 w-9 text-white drop-shadow"/>}
+                      </div>
+                      <div className="absolute bottom-2 left-2 right-2 text-xs font-bold truncate">{art.title}</div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right: Sidebar */}
