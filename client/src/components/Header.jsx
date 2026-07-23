@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -11,6 +11,8 @@ const Header = () => {
   const { user, logout, hasPermission } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
+  const location = useLocation();
+  const currentPath = location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
@@ -126,40 +128,59 @@ const Header = () => {
               )}
 
               <li>
-                <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link 
+                  to="/" 
+                  className={`inline-block px-3 py-1 rounded-full transition-all duration-200 ${
+                    currentPath === '/' 
+                      ? 'bg-red-600 text-white font-black shadow-xs' 
+                      : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                  }`}
+                >
                   {t('home')}
                 </Link>
               </li>
 
               {categories.map((cat) => {
+                const isCatActive = currentPath === `/category/${cat.slug}` || currentPath.startsWith(`/category/${cat.slug}/`) || (cat.slug === 'media-center' && currentPath === '/media-center');
                 const hasSubs = cat.subcategories && cat.subcategories.length > 0;
                 return (
                   <li key={cat._id || cat.slug} className="relative group">
                     <div className="flex items-center space-x-0.5">
                       <Link 
                         to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
-                        className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-1"
+                        className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full transition-all duration-200 ${
+                          isCatActive 
+                            ? 'bg-red-600 text-white font-black shadow-xs' 
+                            : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                        }`}
                       >
-                        {cat.name}
+                        <span>{cat.name}</span>
+                        {hasSubs && (
+                          <ChevronDown className={`h-3 w-3 transition-transform group-hover:rotate-180 ${isCatActive ? 'text-white' : 'text-slate-400 group-hover:text-red-600'}`} />
+                        )}
                       </Link>
-                      {hasSubs && (
-                        <ChevronDown className="h-3 w-3 text-slate-400 group-hover:text-blue-600 transition-transform group-hover:rotate-180" />
-                      )}
                     </div>
 
                     {/* Hover Dropdown for Subcategories */}
                     {hasSubs && (
                       <div className="absolute left-0 top-full hidden group-hover:block z-50 pt-2 animate-in fade-in slide-in-from-top-1 duration-150">
                         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 px-1 min-w-[180px]">
-                          {cat.subcategories.map(sub => (
-                            <Link
-                              key={sub._id || sub.slug}
-                              to={`/category/${cat.slug}/${sub.slug}`}
-                              className="block px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600 rounded-lg transition-colors"
-                            >
-                              {sub.name}
-                            </Link>
-                          ))}
+                          {cat.subcategories.map(sub => {
+                            const isSubActive = currentPath === `/category/${cat.slug}/${sub.slug}`;
+                            return (
+                              <Link
+                                key={sub._id || sub.slug}
+                                to={`/category/${cat.slug}/${sub.slug}`}
+                                className={`block px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                                  isSubActive
+                                    ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 font-bold'
+                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600'
+                                }`}
+                              >
+                                {sub.name}
+                              </Link>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -168,7 +189,14 @@ const Header = () => {
               })}
 
               <li>
-                <Link to="/archive" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                <Link 
+                  to="/archive" 
+                  className={`inline-block px-3 py-1 rounded-full transition-all duration-200 ${
+                    currentPath === '/archive' 
+                      ? 'bg-red-600 text-white font-black shadow-xs' 
+                      : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                  }`}
+                >
                   {t('archive')}
                 </Link>
               </li>
@@ -269,11 +297,20 @@ const Header = () => {
                 </Link>
               )}
               
-              <Link to="/" onClick={handleCategoryClick} className="text-base font-bold text-slate-800 dark:text-slate-100 hover:text-blue-600 p-2 border-b border-slate-100 dark:border-slate-800">
+              <Link 
+                to="/" 
+                onClick={handleCategoryClick} 
+                className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
+                  currentPath === '/' 
+                    ? 'bg-red-600 text-white font-black' 
+                    : 'text-slate-800 dark:text-slate-100 hover:text-red-600 border-b border-slate-100 dark:border-slate-800'
+                }`}
+              >
                 {t('home')}
               </Link>
               {categories.map((cat) => {
                 const catName = cat.name || (cat.slug ? (cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1)) : 'বিভাগ');
+                const isCatActive = currentPath === `/category/${cat.slug}` || currentPath.startsWith(`/category/${cat.slug}/`) || (cat.slug === 'media-center' && currentPath === '/media-center');
                 const hasSubs = cat.subcategories && cat.subcategories.length > 0;
 
                 return (
@@ -281,28 +318,47 @@ const Header = () => {
                     <Link 
                       to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`}
                       onClick={handleCategoryClick}
-                      className="text-base font-bold text-slate-800 dark:text-slate-100 hover:text-red-600 p-2 block"
+                      className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
+                        isCatActive 
+                          ? 'bg-red-600 text-white font-black' 
+                          : 'text-slate-800 dark:text-slate-100 hover:text-red-600'
+                      }`}
                     >
                       {catName}
                     </Link>
                     {hasSubs && (
                       <div className="flex flex-wrap gap-1.5 pl-4 pt-1">
-                        {cat.subcategories.map(sub => (
-                          <Link
-                            key={sub._id || sub.slug}
-                            to={`/category/${cat.slug}/${sub.slug}`}
-                            onClick={handleCategoryClick}
-                            className="text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md hover:text-red-600 transition-colors"
-                          >
-                            {sub.name}
-                          </Link>
-                        ))}
+                        {cat.subcategories.map(sub => {
+                          const isSubActive = currentPath === `/category/${cat.slug}/${sub.slug}`;
+                          return (
+                            <Link
+                              key={sub._id || sub.slug}
+                              to={`/category/${cat.slug}/${sub.slug}`}
+                              onClick={handleCategoryClick}
+                              className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
+                                isSubActive
+                                  ? 'bg-red-600 text-white font-bold'
+                                  : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:text-red-600'
+                              }`}
+                            >
+                              {sub.name}
+                            </Link>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 );
               })}
-              <Link to="/archive" onClick={handleCategoryClick} className="text-base font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 p-2 border-b border-slate-100 dark:border-slate-800">
+              <Link 
+                to="/archive" 
+                onClick={handleCategoryClick} 
+                className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
+                  currentPath === '/archive' 
+                    ? 'bg-red-600 text-white font-black' 
+                    : 'text-slate-700 dark:text-slate-300 hover:text-red-600 border-b border-slate-100 dark:border-slate-800'
+                }`}
+              >
                 {t('archive')}
               </Link>
               
