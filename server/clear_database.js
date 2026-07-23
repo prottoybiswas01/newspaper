@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const db = require('./config/db');
 const Article = require('./models/Article');
 const Comment = require('./models/Comment');
