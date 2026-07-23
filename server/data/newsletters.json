@@ -1,16 +1,1 @@
-[
-  {
-    "_id": "352ffd8f3cc01ea99bc6ebd6",
-    "email": "subscriber1@gmail.com",
-    "status": "active",
-    "createdAt": "2026-07-16T14:19:45.154Z",
-    "updatedAt": "2026-07-16T14:19:45.154Z"
-  },
-  {
-    "_id": "73ede33856d17a2cbe7fb2a7",
-    "email": "subscriber2@gmail.com",
-    "status": "active",
-    "createdAt": "2026-07-16T14:19:45.155Z",
-    "updatedAt": "2026-07-16T14:19:45.155Z"
-  }
-]
+[]

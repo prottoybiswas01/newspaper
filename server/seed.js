@@ -255,126 +255,17 @@ const seed = async () => {
       console.log('✅ Tags seeded.');
     }
 
-    // 4. Seed Articles
-    const articleCount = await Article.countDocuments({});
-    if (articleCount === 0) {
-      console.log('Seeding Articles...');
-      const articles = [];
+    // 4. Articles (Clean state)
+    console.log('✅ Articles ready (clean state).');
 
-      for (const art of articles) {
-        await Article.create(art);
-      }
-      console.log('✅ Articles seeded.');
-    }
-
-    // 5. Seed Comments (Empty by default)
+    // 5. Comments (Clean state)
     console.log('✅ Comments ready (clean state).');
 
-    // 6. Seed Ads
-    const adCount = await Ad.countDocuments({});
-    if (adCount === 0) {
-      console.log('Seeding Ads...');
-      await Ad.create({
-        title: 'Header Banner Ad',
-        placement: 'header',
-        type: 'image',
-        imageUrl: 'https://images.unsplash.com/photo-1542744094-3a31f103e35f?w=1200&h=200&fit=crop',
-        linkUrl: 'https://www.google.com',
-        active: true,
-        impressions: 120,
-        clicks: 8
-      });
+    // 6. Ads (Clean state)
+    console.log('✅ Ads ready (clean state).');
 
-      await Ad.create({
-        title: 'Sidebar Premium Ad',
-        placement: 'sidebar',
-        type: 'image',
-        imageUrl: 'https://images.unsplash.com/photo-1508921912186-1d1a45ebb3c1?w=400&h=600&fit=crop',
-        linkUrl: 'https://www.google.com',
-        active: true,
-        impressions: 245,
-        clicks: 14
-      });
-
-      await Ad.create({
-        title: 'Popup Newsletter Ad',
-        placement: 'popup',
-        type: 'image',
-        imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=400&fit=crop',
-        linkUrl: 'https://www.google.com',
-        active: false, // Inactive by default
-        impressions: 0,
-        clicks: 0
-      });
-      console.log('✅ Ads seeded.');
-    }
-
-    // 7. Seed Poll
-    const pollCount = await Poll.countDocuments({});
-    if (pollCount === 0) {
-      console.log('Seeding Survey Polls...');
-      await Poll.create({
-        question: 'আপনি কি মনে করেন এআই (AI) আগামী ১০ বছরের মধ্যে সাংবাদিকদের কাজ দখল করবে?',
-        options: [
-          { option: 'হ্যাঁ, সম্পূর্ণভাবে', votes: 124 },
-          { option: 'না, এটি শুধুমাত্র একটি সহযোগী প্রযুক্তি হিসেবে থাকবে', votes: 412 },
-          { option: 'আংশিক প্রভাব ফেলবে, তবে মানুষের সৃজনশীলতা প্রয়োজনীয় থাকবে', votes: 235 },
-          { option: 'মন্তব্য নেই', votes: 19 }
-        ],
-        status: 'active',
-        votedUserIds: []
-      });
-      console.log('✅ Polls seeded.');
-    }
-
-    // 8. Seed Newsletter
-    const nsCount = await Newsletter.countDocuments({});
-    if (nsCount === 0) {
-      await Newsletter.create({ email: 'subscriber1@gmail.com', status: 'active' });
-      await Newsletter.create({ email: 'subscriber2@gmail.com', status: 'active' });
-      console.log('✅ Subscribers seeded.');
-    }
-
-    // 9. Seed Traffic Analytics (Builds historical pageviews chart)
-    const analyticsCount = await Analytics.countDocuments({});
-    if (analyticsCount === 0) {
-      console.log('Seeding Analytics events for charts...');
-      
-      const devices = ['Desktop', 'Mobile', 'Tablet'];
-      const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge'];
-      const countries = ['Bangladesh', 'United States', 'United Kingdom', 'Saudi Arabia', 'Canada'];
-
-      // Generate traffic events across the last 7 days
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        
-        // Random volume between 25 and 65 pageviews per day
-        const dailyVolume = Math.floor(Math.random() * 40) + 25;
-        for (let j = 0; j < dailyVolume; j++) {
-          const randDevice = devices[Math.floor(Math.random() * devices.length)];
-          const randBrowser = browsers[Math.floor(Math.random() * browsers.length)];
-          const randCountry = countries[Math.floor(Math.random() * countries.length)];
-          
-          const event = await Analytics.create({
-            eventType: 'view',
-            path: '/',
-            ip: `192.168.1.${Math.floor(Math.random() * 254)}`,
-            device: randDevice,
-            browser: randBrowser,
-            country: randCountry
-          });
-          
-          // Override date properties in JSON model directly or through Mongoose timestamps
-          // (db.isFallback() handles file write. Let's adjust target directly by modifying timestamp/createdAt)
-          await Analytics.findByIdAndUpdate(event._id, {
-            createdAt: d,
-            timestamp: d
-          });
-        }
-      }
-      console.log('✅ Analytics logs seeded.');
-    }
+    // 7. Polls (Clean state)
+    console.log('✅ Polls ready (clean state).');
 
     console.log('🎉 Seeding Completed Successfully.');
     process.exit(0);
