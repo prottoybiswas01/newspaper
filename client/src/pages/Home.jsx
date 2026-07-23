@@ -438,14 +438,6 @@ const Home = () => {
           </div>
         </div>
       </div>
-
-      {/* Category Index & Subcategories Directory */}
-      <section className="mt-12">
-        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100 border-b-2 border-red-600 pb-2 mb-4 uppercase tracking-wide">
-          {lang === 'bn' ? 'সকল বিভাগ ও বিষয়সূচি' : 'Categories Directory'}
-        </h2>
-        <CategoryMegaMenu className="rounded-2xl border border-slate-200/60 dark:border-slate-800/40" />
-      </section>
     </main>
   );
 };
