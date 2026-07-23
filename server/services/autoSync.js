@@ -46,6 +46,35 @@ const detectCategory = (title = '', description = '') => {
   return 'Bangladesh';
 };
 
+const detectSubcategory = (category, title = '', description = '') => {
+  const text = (title + ' ' + description).toLowerCase();
+  if (category === 'Bangladesh') {
+    if (text.match(/রাজধানী|ঢাকা|মিরপুর|ধানমন্ডি|উত্তরা|গুলিস্তান|সচিবালয়/i)) return 'রাজধানী';
+    if (text.match(/অপরাধ|হত্যা|গ্রেপ্তার|র‌্যাব|আটক|পুলিশ|মামলা|ডাকাতি|ছিনতাই/i)) return 'অপরাধ';
+    if (text.match(/পরিবেশ|বন্যা|বৃষ্টি|ঝড়|আবহাওয়া|দূষণ|তাপমাত্রা/i)) return 'পরিবেশ';
+    if (text.match(/করোনা|কোভিড|ভ্যাকসিন|ডেঙ্গু|হাসপাতাল|রোগী/i)) return 'করোনাভাইরাস';
+    if (text.match(/জেলা|চট্টগ্রাম|সিলেট|খুলনা|রাজশাহী|বরিশাল|রংপুর|ময়মনসিংহ|কুমিল্লা/i)) return 'জেলা';
+  }
+  if (category === 'Sports') {
+    if (text.match(/ক্রিকেট|উইকেট|রান|আউট|বিসিবি|টাইগার/i)) return 'ক্রিকেট';
+    if (text.match(/ফুটবল|গোল|মেসি|রোনালদো|ফিফা/i)) return 'বিশ্বকাপ ফুটবল';
+    if (text.match(/টেনিস|ফেদেরার|নাদাল/i)) return 'টেনিস';
+  }
+  if (category === 'Politics') {
+    if (text.match(/সংসদ|স্পিকার|অধিবেশন/i)) return 'সংসদ';
+    if (text.match(/বিএনপি|আওয়ামী|লীগ|দলীয়|সভা|সমাবেশ/i)) return 'দলীয় সংবাদ';
+    return 'জাতীয়';
+  }
+  if (category === 'International') {
+    if (text.match(/ভারত|মোদি|দিল্লি/i)) return 'ভারত';
+    if (text.match(/পাকিস্তান|ইসলামাবাদ|ইমরান/i)) return 'পাকিস্তান';
+    if (text.match(/চীন|বেইজিং|শি জিনপিং/i)) return 'চীন';
+    if (text.match(/যুক্তরাষ্ট্র|বাইডেন|ট্রাম্প|ওয়াশিংটন/i)) return 'যুক্তরাষ্ট্র';
+    if (text.match(/ইরান|তেহরান/i)) return 'ইরান যুদ্ধ';
+  }
+  return '';
+};
+
 const calculateReadingTime = (text) => {
   const wordsPerMinute = 200;
   const wordCount = (text || '').trim().split(/\s+/).filter(w => w.length > 0).length;
@@ -78,6 +107,7 @@ const syncAutoFetchedToArticles = async () => {
         }
 
         const category = detectCategory(item.title, item.description);
+        const subcategory = detectSubcategory(category, item.title, item.description);
         const sourceAttribution = item.source 
           ? `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> ${item.source} (<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>` 
           : '';
@@ -92,7 +122,7 @@ const syncAutoFetchedToArticles = async () => {
           content,
           summary: item.description ? item.description.substring(0, 200) : item.title,
           category,
-          subcategory: '',
+          subcategory,
           tags: [category, item.source].filter(Boolean),
           author: item.source || 'অনলাইন নিউজ',
           authorId: 'system',

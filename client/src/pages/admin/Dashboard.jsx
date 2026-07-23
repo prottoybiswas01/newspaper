@@ -147,10 +147,9 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    loadTaxonomies();
     if (activeTab === 'overview') {
       loadAnalytics();
-    } else if (activeTab === 'taxonomy') {
-      loadTaxonomies();
     } else if (activeTab === 'comments') {
       loadComments();
     } else if (activeTab === 'ads') {
@@ -159,7 +158,6 @@ const Dashboard = () => {
       loadUsers();
     } else if (activeTab === 'layout') {
       loadHomepageLayout();
-      loadTaxonomies();
     } else if (activeTab === 'articlesList') {
       fetchArticlesList();
     }
@@ -1208,19 +1206,55 @@ const Dashboard = () => {
                       <label className="text-xs font-bold text-slate-605 block mb-1">বিভাগ (Category) *</label>
                       <select 
                         value={articleCategory}
-                        onChange={(e) => setArticleCategory(e.target.value)}
+                        onChange={(e) => {
+                          setArticleCategory(e.target.value);
+                          setArticleSubcategory('');
+                        }}
                         className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
                       >
-                        <option value="Bangladesh">Bangladesh</option>
-                        <option value="International">International</option>
-                        <option value="Politics">Politics</option>
-                        <option value="Economy">Economy</option>
-                        <option value="Sports">Sports</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Technology">Technology</option>
-                        <option value="Opinion">Opinion</option>
+                        {categories && categories.length > 0 ? (
+                          categories.map(cat => (
+                            <option key={cat._id || cat.name} value={cat.name}>{cat.name}</option>
+                          ))
+                        ) : (
+                          <>
+                            <option value="Bangladesh">Bangladesh</option>
+                            <option value="International">International</option>
+                            <option value="Politics">Politics</option>
+                            <option value="Economy">Economy</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Education">Education</option>
+                            <option value="Jobs">Jobs</option>
+                            <option value="Lifestyle">Lifestyle</option>
+                            <option value="Opinion">Opinion</option>
+                          </>
+                        )}
                       </select>
                     </div>
+
+                    {/* Subcategory Selector */}
+                    {(() => {
+                      const selectedCatObj = (categories || []).find(c => c.name.toLowerCase() === (articleCategory || '').toLowerCase());
+                      const subcats = selectedCatObj?.subcategories || [];
+                      if (subcats.length === 0) return null;
+                      return (
+                        <div>
+                          <label className="text-xs font-bold text-slate-605 block mb-1">উপবিভাগ (Subcategory)</label>
+                          <select 
+                            value={articleSubcategory}
+                            onChange={(e) => setArticleSubcategory(e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
+                          >
+                            <option value="">-- কোনো উপবিভাগ নেই (মূল বিভাগে থাকবে) --</option>
+                            {subcats.map(sub => (
+                              <option key={sub._id || sub.slug || sub.name} value={sub.name}>{sub.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })()}
 
                     {/* Status */}
                     <div>
