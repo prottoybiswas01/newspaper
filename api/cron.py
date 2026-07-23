@@ -204,6 +204,42 @@ def rewrite_with_gemini(title, description, retries=5):
             
     return title, description
 
+import re
+import random
+
+def detect_category(title="", description=""):
+    text = (title + " " + description).lower()
+    if re.search(r'খেলা|ক্রিকেট|ফুটবল|মেসি|রোনালদো|টি-২০|টি২০|আউট|রান|গোল|উইকেট|ম্যাচ|মেডেল|অলিম্পিক|বিপিএল|আইপিএল', text):
+        return 'Sports'
+    if re.search(r'রাজনীতি|নির্বাচন|ইসি|সংসদ|বিএনপি|আওয়ামী|লীগ|জামায়াত|উপজেলা|দলীয়|এমপি|মন্ত্রী|সরকার|ভোট', text):
+        return 'Politics'
+    if re.search(r'বিশ্ব|ইরান|যুক্তরাষ্ট্র|ট্রাম্প|বাইডেন|পুতিন|রাশিয়া|ইউক্রেন|চীন|ভারত|পাকিস্তান|ইসরায়েল|গাজা|হামাস|ফিলিস্তিন|আন্তর্জাতিক|জাতিসংঘ', text):
+        return 'International'
+    if re.search(r'অর্থনীতি|ব্যাংক|ডলার|মুদ্রাস্ফীতি|শেয়ারবাজার|বাজেট|বাণিজ্য|রপ্তানি|আমদানি|রাজস্ব|এনবিআর|টাকা|ঋণ', text):
+        return 'Economy'
+    if re.search(r'প্রযুক্তি|এআই|স্মার্টফোন|মোবাইল|স্যামসাং|অ্যাপল|গুগল|ইন্টারনেট|সাইবার|ফেসবুক|হয়াটসঅ্যাপ|গ্যাজেট', text):
+        return 'Technology'
+    if re.search(r'বিনোদন|চলচ্চিত্র|সিনেমা|নাটক|অভিনেতা|অভিনেত্রী|বলিউড|ঢালিউড|হলিউড|ওটিটি|গান|নায়ক|নায়িকা', text):
+        return 'Entertainment'
+    if re.search(r'শিক্ষা|পরীক্ষা|এইচএসসি|এসএসসি|বিশ্ববিদ্যালয়|ভর্তি|বুয়েট|ঢাকা বিশ্ববিদ্যালয়|প্রাথমিক|শিক্ষার্থী', text):
+        return 'Education'
+    if re.search(r'চাকরি|নিয়োগ|নিয়োগ|ক্যারিয়ার|সার্কুলার|আবেদন', text):
+        return 'Jobs'
+    if re.search(r'স্বাস্থ্য|লাইফস্টাইল|ভ্রমণ|রেসিপি|ফ্যাশন|রোগ|চিকিৎসা|খাবার', text):
+        return 'Lifestyle'
+    return 'Bangladesh'
+
+def slugify(text):
+    if not text:
+        return 'article'
+    s = text.lower().strip()
+    s = re.sub(r'\s+', '-', s)
+    s = re.sub(r'[^\w\u0980-\u09FF-]+', '', s)
+    s = re.sub(r'--+', '-', s)
+    s = re.sub(r'^-+', '', s)
+    s = re.sub(r'-+$', '', s)
+    return s or 'article'
+
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # 1. Fetch feeds concurrently
@@ -332,6 +368,48 @@ class handler(BaseHTTPRequestHandler):
                     try:
                         collection.insert_one(doc)
                         inserted_count += 1
+
+                        # Also publish directly into public 'articles' collection
+                        articles_col = db['articles']
+                        base_slug = slugify(title)
+                        if not articles_col.find_one({"$or": [{"title": title}, {"slug": base_slug}]}):
+                            category = detect_category(title, description)
+                            slug = base_slug
+                            count = 1
+                            while articles_col.find_one({"slug": slug}):
+                                slug = f"{base_slug}-{count}"
+                                count += 1
+                            
+                            source_attr = f'<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> {feed_name} (<a href="{link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>' if feed_name else ''
+                            content = f'<p>{description}</p>{source_attr}' if description else f'<p>{title}</p>{source_attr}'
+                            
+                            pub_article = {
+                                "title": title,
+                                "subtitle": f"উৎস: {feed_name}" if feed_name else "",
+                                "slug": slug,
+                                "content": content,
+                                "summary": description[:200] if description else title,
+                                "category": category,
+                                "subcategory": "",
+                                "tags": [category, feed_name] if feed_name else [category],
+                                "author": feed_name or "অনলাইন নিউজ",
+                                "authorId": "system",
+                                "status": "published",
+                                "publishDate": pub_date,
+                                "readingTime": max(1, len(description.split()) // 200) if description else 1,
+                                "views": random.randint(10, 80),
+                                "likes": random.randint(0, 15),
+                                "shares": random.randint(0, 10),
+                                "seo": {
+                                    "metaTitle": title,
+                                    "metaDescription": (description or title)[:150],
+                                    "keywords": category
+                                },
+                                "createdAt": datetime.now(timezone.utc),
+                                "updatedAt": datetime.now(timezone.utc)
+                            }
+                            articles_col.insert_one(pub_article)
+
                     except PyMongoError:
                         # Handle duplicate key or database write exception
                         duplicate_count += 1
