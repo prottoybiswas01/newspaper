@@ -221,13 +221,17 @@ const Dashboard = () => {
     try {
       const res = await api.get(`/auto-fetched?page=${autoFetchedPage}&limit=${autoFetchedLimit}&search=${encodeURIComponent(autoFetchedSearch)}`);
       if (res.success) {
-        setAutoFetchedArticles(res.articles);
-        setAutoFetchedTotal(res.pagination.total);
+        setAutoFetchedArticles(res.articles || []);
+        setAutoFetchedTotal(res.pagination ? res.pagination.total : 0);
         if (res.enabled !== undefined) {
           setAutoFetchEnabled(res.enabled);
         }
       } else {
-        toast.error(res.message || 'Failed to fetch automation data');
+        if (res.message && res.message.toLowerCase().includes('authorized')) {
+          toast.error('আপনার লগইন সেশনের মেয়াদ শেষ হয়েছে। পুনরায় লগইন করুন।');
+        } else {
+          toast.error(res.message || 'Failed to fetch automation data');
+        }
       }
     } catch (err) {
       console.error(err);

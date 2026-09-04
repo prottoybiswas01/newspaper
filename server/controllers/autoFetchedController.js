@@ -19,28 +19,48 @@ const isAutoFetchEnabled = async () => {
   }
 };
 
-// Helper RSS feeds list for Node-side fetching
+// Helper RSS feeds list for Node-side fetching (10 top Bengali portals)
 const RSS_SOURCES = [
-  { name: 'Prothom Alo', url: 'https://www.prothomalo.com/feed/' },
-  { name: 'Kaler Kantho', url: 'https://www.kalerkantho.com/rss.xml' },
-  { name: 'Jago News 24', url: 'https://www.jagonews24.com/rss/rss.xml' },
-  { name: 'bdnews24', url: 'https://bangla.bdnews24.com/?widgetName=rssfeed&widgetId=1151&getXmlFeed=true' },
-  { name: 'banglanews24', url: 'https://www.banglanews24.com/rss/rss.xml' },
-  { name: 'Daily Star Bangla', url: 'https://bangla.thedailystar.net/rss.xml' }
+  { name: 'প্রথম আলো (Prothom Alo)', url: 'https://www.prothomalo.com/feed/' },
+  { name: 'কালের কণ্ঠ (Kaler Kantho)', url: 'https://www.kalerkantho.com/rss.xml' },
+  { name: 'জাগো নিউজ ২৪ (Jago News 24)', url: 'https://www.jagonews24.com/rss/rss.xml' },
+  { name: 'বিডিনিউজ ২৪ (bdnews24)', url: 'https://bangla.bdnews24.com/?widgetName=rssfeed&widgetId=1151&getXmlFeed=true' },
+  { name: 'বাংলানিউজ ২৪ (banglanews24)', url: 'https://www.banglanews24.com/rss/rss.xml' },
+  { name: 'ডেইলি স্টার বাংলা (Daily Star)', url: 'https://bangla.thedailystar.net/rss.xml' },
+  { name: 'সময় টিভি (Somoy TV)', url: 'https://somoynews.tv/rss/rss.xml' },
+  { name: 'ডিবিসি নিউজ (DBC News)', url: 'https://dbcnews.tv/rss.xml' },
+  { name: 'বার্তা ২৪ (Barta24)', url: 'https://barta24.com/rss.xml' },
+  { name: 'ঢাকা পোস্ট (Dhaka Post)', url: 'https://www.dhakapost.com/rss' }
 ];
 
-// Automatically delete articles older than start of current day (Midnight reset)
+// Helper to decode HTML entities
+const cleanText = (str) => {
+  if (!str) return '';
+  return str
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&rsquo;/g, "'")
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rdquo;/g, '"')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+};
+
+// Automatically delete articles older than 24 hours
 const cleanupOldArticles = async () => {
   try {
-    const startOfToday = getStartOfToday();
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const result = await AutoFetchedArticle.deleteMany({
-      $or: [
-        { createdAt: { $lt: startOfToday } },
-        { pubDate: { $lt: startOfToday } }
-      ]
+      createdAt: { $lt: cutoff }
     });
     if (result && result.deletedCount > 0) {
-      console.log(`🧹 Midnight Cleanup: Removed ${result.deletedCount} old auto-fetched articles from previous days.`);
+      console.log(`🧹 24-Hour Cleanup: Removed ${result.deletedCount} old auto-fetched articles.`);
     }
   } catch (err) {
     console.error('Cleanup error:', err.message);
@@ -50,7 +70,7 @@ const cleanupOldArticles = async () => {
 // GET /api/auto-fetched - Fetch today's auto-fetched articles
 exports.getAutoFetchedArticles = async (req, res) => {
   try {
-    // 1. Perform 24-hour midnight cleanup first
+    // 1. Perform 24-hour cleanup
     await cleanupOldArticles();
 
     const enabled = await isAutoFetchEnabled();
@@ -59,12 +79,12 @@ exports.getAutoFetchedArticles = async (req, res) => {
     const skip = (page - 1) * limit;
     const search = req.query.search || '';
 
-    // Only show today's articles
-    const startOfToday = getStartOfToday();
+    // Show articles from the last 24 hours
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     let query = {
       $or: [
-        { createdAt: { $gte: startOfToday } },
-        { pubDate: { $gte: startOfToday } }
+        { createdAt: { $gte: cutoff } },
+        { pubDate: { $gte: cutoff } }
       ]
     };
 
@@ -156,51 +176,70 @@ exports.triggerAutoFetch = async (req, res) => {
       });
     }
 
-    // Perform midnight cleanup
+    // Perform cleanup
     await cleanupOldArticles();
 
     let newCount = 0;
-    for (const src of RSS_SOURCES) {
+
+    // Fetch all feeds concurrently
+    const feedPromises = RSS_SOURCES.map(async (src) => {
       try {
         const response = await fetch(src.url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-          signal: AbortSignal.timeout(4000)
+          headers: { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
+          },
+          signal: AbortSignal.timeout(5000)
         });
-        if (!response.ok) continue;
+        if (!response.ok) return [];
         const xml = await response.text();
         const itemMatches = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
 
+        const items = [];
         for (const itemXml of itemMatches) {
-          const titleMatch = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i);
-          const linkMatch = itemXml.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/i);
-          const descMatch = itemXml.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i);
-          const dateMatch = itemXml.match(/<pubDate>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/pubDate>/i);
+          const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/i);
+          const linkMatch = itemXml.match(/<link>([\s\S]*?)<\/link>/i);
+          const descMatch = itemXml.match(/<description>([\s\S]*?)<\/description>/i);
+          const dateMatch = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
 
-          const title = titleMatch ? titleMatch[1].trim() : '';
-          const link = linkMatch ? linkMatch[1].trim() : '';
-          let description = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').trim() : '';
-          const pubDate = dateMatch ? new Date(dateMatch[1]) : new Date();
+          const title = titleMatch ? cleanText(titleMatch[1]) : '';
+          const link = linkMatch ? cleanText(linkMatch[1]) : '';
+          let description = descMatch ? cleanText(descMatch[1]) : '';
+          const pubDate = dateMatch ? new Date(cleanText(dateMatch[1])) : new Date();
 
           if (!title || !link) continue;
 
           // Strip "আরও পড়ুন..." teaser links inside descriptions
           description = description.replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
 
-          // Check duplicate
-          const existing = await AutoFetchedArticle.findOne({ link });
-          if (!existing) {
-            await AutoFetchedArticle.create({
-              title,
-              link,
-              description: description.substring(0, 1000),
-              pubDate,
-              source: src.name
-            });
-            newCount++;
+          items.push({
+            title,
+            link,
+            description: description.substring(0, 1000),
+            pubDate: isNaN(pubDate.getTime()) ? new Date() : pubDate,
+            source: src.name
+          });
+        }
+        return items;
+      } catch (err) {
+        return [];
+      }
+    });
+
+    const results = await Promise.allSettled(feedPromises);
+    
+    for (const result of results) {
+      if (result.status === 'fulfilled' && Array.isArray(result.value)) {
+        for (const item of result.value) {
+          try {
+            const existing = await AutoFetchedArticle.findOne({ link: item.link });
+            if (!existing) {
+              await AutoFetchedArticle.create(item);
+              newCount++;
+            }
+          } catch (e) {
+            // Ignore duplicate collision
           }
         }
-      } catch (err) {
-        // Continue to next feed if one fails
       }
     }
 
@@ -208,7 +247,7 @@ exports.triggerAutoFetch = async (req, res) => {
       success: true,
       enabled: true,
       inserted: newCount,
-      message: `অটো-সার্চ সম্পন্ন হয়েছে! ${newCount}টি নতুন সংবাদ যুক্ত করা হয়েছে।`
+      message: `অটো-সার্চ সম্পন্ন হয়েছে! ${newCount}টি নতুন সংবাদ সংগৃহীত হয়েছে।`
     });
   } catch (error) {
     console.error('Trigger fetch error:', error);

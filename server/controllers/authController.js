@@ -3,8 +3,13 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Article = require('../models/Article');
 
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret_key', {
+const signToken = (user) => {
+  const userId = user._id ? user._id.toString() : (user.id || user);
+  const payload = typeof user === 'object' 
+    ? { id: userId, name: user.name, email: user.email, role: user.role }
+    : { id: userId };
+
+  return jwt.sign(payload, process.env.JWT_SECRET || 'super_secret_jwt_token_for_professional_news_portal', {
     expiresIn: '30d'
   });
 };
