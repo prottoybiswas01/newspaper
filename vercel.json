@@ -39,22 +39,18 @@
       "dest": "server/server.js"
     },
     {
-      "src": "/assets/(.*)",
-      "dest": "client/assets/$1"
-    },
-    {
-      "src": "/vite.svg",
-      "dest": "client/vite.svg"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "client/index.html"
+      "dest": "/index.html"
     }
   ],
   "crons": [
     {
       "path": "/api/cron",
-      "schedule": "*/2 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
+
