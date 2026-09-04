@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers, Camera, Video, MoreHorizontal, Calendar } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, MoreHorizontal } from 'lucide-react';
 import { api } from '../utils/api';
 import CategoryMegaMenu from './CategoryMegaMenu';
 
@@ -32,7 +32,7 @@ const BN_CATEGORY_NAMES = {
   videos: 'ভিডিও',
 };
 
-// Main visible categories in top navigation bar
+// Main visible categories in top navigation bar (Archive moved exclusively to 'সব বিভাগ' menu)
 const MAIN_NAV_ITEMS = [
   { name: 'সর্বশেষ', slug: 'latest', path: '/' },
   { name: 'বাংলাদেশ', slug: 'bangladesh', path: '/category/bangladesh' },
@@ -44,7 +44,6 @@ const MAIN_NAV_ITEMS = [
   { name: 'চাকরি', slug: 'jobs', path: '/category/jobs' },
   { name: 'মতামত', slug: 'opinion', path: '/category/opinion' },
   { name: 'জীবনযাপন', slug: 'lifestyle', path: '/category/lifestyle' },
-  { name: 'আর্কাইভ', slug: 'archive', path: '/archive' },
 ];
 
 const Header = () => {
@@ -111,7 +110,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 shadow-xs transition-all duration-300 no-print">
       
-      {/* Row 1: Logo & Top controls (Search, divider, Login, Photo/Video/Archive embeds) */}
+      {/* Row 1: Logo & Top controls (Search, divider, Login) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center space-x-3">
@@ -121,34 +120,6 @@ const Header = () => {
               {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
             </span>
           </Link>
-          
-          {/* Prothom-Alo Style Photo & Video Embed Badges */}
-          <div className="hidden lg:flex items-center space-x-1.5 pl-3 border-l border-gray-200 dark:border-neutral-800 text-xs font-bold text-gray-600 dark:text-neutral-400">
-            <Link 
-              to="/category/photo" 
-              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
-              title="ফটো স্টোরি ও ছবি"
-            >
-              <Camera className="h-3.5 w-3.5 text-red-600" />
-              <span>ছবি</span>
-            </Link>
-            <Link 
-              to="/media-center" 
-              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
-              title="ভিডিও ও মিডিয়া"
-            >
-              <Video className="h-3.5 w-3.5 text-red-600" />
-              <span>ভিডিও</span>
-            </Link>
-            <Link 
-              to="/archive" 
-              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
-              title="পুরোনো সংবাদ আর্কাইভ"
-            >
-              <Calendar className="h-3.5 w-3.5 text-red-600" />
-              <span>আর্কাইভ</span>
-            </Link>
-          </div>
         </div>
 
         {/* Right: Search, Divider, and Login Link */}
