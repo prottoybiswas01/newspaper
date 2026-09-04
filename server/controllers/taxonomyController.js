@@ -199,6 +199,31 @@ const DEFAULT_SUBCATEGORIES = {
   ]
 };
 
+const BN_NAME_BY_SLUG = {
+  latest: 'সর্বশেষ',
+  bangladesh: 'বাংলাদেশ',
+  politics: 'রাজনীতি',
+  international: 'বিশ্ব',
+  economy: 'বাণিজ্য',
+  opinion: 'মতামত',
+  sports: 'খেলা',
+  entertainment: 'বিনোদন',
+  jobs: 'চাকরি',
+  lifestyle: 'জীবনযাপন',
+  technology: 'তথ্যপ্রযুক্তি',
+  education: 'শিক্ষা',
+  religion: 'ধর্ম',
+  literature: 'সাহিত্য ও সংস্কৃতি',
+  interview: 'সাক্ষাৎকার',
+  agriculture: 'কৃষি ও প্রকৃতি',
+  photo: 'ছবি',
+  diaspora: 'প্রবাস',
+  'women-children': 'নারী ও শিশু',
+  exclusive: 'অনন্য',
+  videos: 'ভিডিও',
+  'media-center': 'ভিডিও',
+};
+
 const getCategories = async (req, res) => {
   try {
     const rawCategories = await Category.find({}).sort({ order: 1 });
@@ -208,13 +233,16 @@ const getCategories = async (req, res) => {
     if (rawCategories.length > 0) {
       finalCategories = rawCategories.map(raw => {
         const c = raw.toObject ? raw.toObject() : { ...raw };
+        const slugKey = (c.slug || '').toLowerCase();
         let subs = Array.isArray(c.subcategories) && c.subcategories.length > 0
           ? c.subcategories
-          : (DEFAULT_SUBCATEGORIES[c.slug ? c.slug.toLowerCase() : ''] || []);
+          : (DEFAULT_SUBCATEGORIES[slugKey] || []);
+
+        const bnName = BN_NAME_BY_SLUG[slugKey] || c.name || (c.slug ? c.slug.charAt(0).toUpperCase() + c.slug.slice(1) : 'বিভাগ');
 
         return {
           _id: c._id ? c._id.toString() : (c.id || c.slug),
-          name: c.name || (c.slug ? c.slug.charAt(0).toUpperCase() + c.slug.slice(1) : 'Category'),
+          name: bnName,
           slug: c.slug || '',
           order: c.order !== undefined ? c.order : 0,
           subcategories: subs.sort((a,b) => (a.order || 0) - (b.order || 0))

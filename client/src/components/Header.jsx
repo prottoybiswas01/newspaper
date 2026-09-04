@@ -3,21 +3,48 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers, Camera, Video, MoreHorizontal } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers, Camera, Video, MoreHorizontal, Calendar } from 'lucide-react';
 import { api } from '../utils/api';
 import CategoryMegaMenu from './CategoryMegaMenu';
 
-// Top 9 main visible categories as specified in audit PDF Page 5
+const BN_CATEGORY_NAMES = {
+  latest: 'সর্বশেষ',
+  bangladesh: 'বাংলাদেশ',
+  politics: 'রাজনীতি',
+  international: 'বিশ্ব',
+  economy: 'বাণিজ্য',
+  sports: 'খেলা',
+  entertainment: 'বিনোদন',
+  jobs: 'চাকরি',
+  lifestyle: 'জীবনযাপন',
+  opinion: 'মতামত',
+  technology: 'স্টার্টআপ ও প্রযুক্তি',
+  education: 'শিক্ষা',
+  religion: 'ধর্ম',
+  literature: 'অন্যপাঠ',
+  interview: 'সাক্ষাৎকার',
+  agriculture: 'কৃষি ও প্রকৃতি',
+  photo: 'ছবি',
+  diaspora: 'প্রবাস',
+  'women-children': 'শিশু ও নারী',
+  exclusive: 'অনন্য',
+  archive: 'আর্কাইভ',
+  videos: 'ভিডিও',
+};
+
+// Main visible categories in top navigation bar
 const MAIN_NAV_ITEMS = [
   { name: 'সর্বশেষ', slug: 'latest', path: '/' },
   { name: 'বাংলাদেশ', slug: 'bangladesh', path: '/category/bangladesh' },
   { name: 'রাজনীতি', slug: 'politics', path: '/category/politics' },
   { name: 'বিশ্ব', slug: 'international', path: '/category/international' },
   { name: 'বাণিজ্য', slug: 'economy', path: '/category/economy' },
+  { name: 'খেলা', slug: 'sports', path: '/category/sports' },
+  { name: 'বিনোদন', slug: 'entertainment', path: '/category/entertainment' },
   { name: 'চাকরি', slug: 'jobs', path: '/category/jobs' },
-  { name: 'ছবি', slug: 'photo', path: '/category/photo' },
   { name: 'মতামত', slug: 'opinion', path: '/category/opinion' },
   { name: 'জীবনযাপন', slug: 'lifestyle', path: '/category/lifestyle' },
+  { name: 'আর্কাইভ', slug: 'archive', path: '/archive' },
 ];
 
 const Header = () => {
@@ -32,6 +59,26 @@ const Header = () => {
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [allCategories, setAllCategories] = useState([]);
+
+  // Auto-close overlay menus on route change
+  useEffect(() => {
+    setMegaMenuOpen(false);
+    setMobileMenuOpen(false);
+    setSearchOpen(false);
+  }, [location.pathname]);
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMegaMenuOpen(false);
+        setMobileMenuOpen(false);
+        setSearchOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const fetchCats = async () => {
@@ -64,7 +111,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 shadow-xs transition-all duration-300 no-print">
       
-      {/* Row 1: Logo & Top controls (Search, divider, Login, Photo/Video embeds) */}
+      {/* Row 1: Logo & Top controls (Search, divider, Login, Photo/Video/Archive embeds) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center space-x-3">
@@ -93,6 +140,14 @@ const Header = () => {
               <Video className="h-3.5 w-3.5 text-red-600" />
               <span>ভিডিও</span>
             </Link>
+            <Link 
+              to="/archive" 
+              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
+              title="পুরোনো সংবাদ আর্কাইভ"
+            >
+              <Calendar className="h-3.5 w-3.5 text-red-600" />
+              <span>আর্কাইভ</span>
+            </Link>
           </div>
         </div>
 
@@ -101,14 +156,14 @@ const Header = () => {
           {/* Search Button Toggle */}
           <button 
             onClick={() => setSearchOpen(!searchOpen)} 
-            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors text-gray-600 dark:text-neutral-400"
+            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors text-gray-600 dark:text-neutral-400 cursor-pointer"
             title="Search"
           >
             <Search className="h-5 w-5" />
           </button>
 
           {/* Vertical Divider */}
-          <div className="h-4 w-px bg-gray-200 dark:bg-neutral-800"></div>
+          <div className="h-4 w-px bg-gray-200 dark:border-neutral-800"></div>
 
           {/* Profile / Auth Button (Only visible when logged in) */}
           {user && (
@@ -140,7 +195,7 @@ const Header = () => {
       <div className="border-t border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-3">
           
-          {/* Main 9 Categories List (PDF Page 5) */}
+          {/* Main Categories List */}
           <nav className="flex-1 overflow-x-auto scrollbar-none py-1">
             <ul className="flex items-center space-x-1.5 text-sm font-bold text-gray-800 dark:text-neutral-200 whitespace-nowrap">
               {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
@@ -161,7 +216,7 @@ const Header = () => {
                   : currentPath === item.path || currentPath.startsWith(`${item.path}/`);
                 
                 // Match subcategories for this item if available in allCategories
-                const categoryObj = allCategories.find(c => c.slug?.toLowerCase() === item.slug.toLowerCase());
+                const categoryObj = allCategories.find(c => (c.slug || '').toLowerCase() === item.slug.toLowerCase());
                 const subs = categoryObj?.subcategories || [];
 
                 return (
@@ -169,6 +224,7 @@ const Header = () => {
                     <div className="flex items-center">
                       <Link 
                         to={item.path} 
+                        onClick={handleCategoryClick}
                         className={`inline-flex items-center space-x-1 px-3 py-1 rounded-md transition-all duration-150 ${
                           isItemActive 
                             ? 'bg-red-600 text-white font-black shadow-xs' 
@@ -192,6 +248,7 @@ const Header = () => {
                               <Link
                                 key={sub._id || sub.slug}
                                 to={`/category/${item.slug}/${sub.slug}`}
+                                onClick={handleCategoryClick}
                                 className={`block px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                   isSubActive
                                     ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 font-bold'
@@ -209,11 +266,15 @@ const Header = () => {
                 );
               })}
 
-              {/* 3-Dot All Beat / Mega Menu button at the end (PDF Page 1, Page 5) */}
+              {/* 3-Dot All Beat / Mega Menu button at the end */}
               <li>
                 <button 
                   onClick={() => setMegaMenuOpen(!megaMenuOpen)}
-                  className={`flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-neutral-800 hover:bg-red-600 hover:text-white text-gray-800 dark:text-neutral-200 font-extrabold'}`}
+                  className={`flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors cursor-pointer ${
+                    megaMenuOpen 
+                      ? 'bg-red-600 text-white font-extrabold ring-2 ring-red-400' 
+                      : 'bg-gray-100 dark:bg-neutral-800 hover:bg-red-600 hover:text-white text-gray-800 dark:text-neutral-200 font-extrabold'
+                  }`}
                   title="সকল ২০টি বিভাগ (All Beats - ৩ ডট)"
                 >
                   <MoreHorizontal className="h-4 w-4" />
@@ -229,7 +290,7 @@ const Header = () => {
             {/* Theme Toggle (Light Default, Optional Dark Mode) */}
             <button 
               onClick={toggleTheme} 
-              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors cursor-pointer"
               title="Toggle Light/Dark Theme"
             >
               {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-gray-700" />}
@@ -238,7 +299,7 @@ const Header = () => {
             {/* Language Switcher */}
             <button 
               onClick={toggleLanguage} 
-              className="flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300 transition-colors"
+              className="flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300 transition-colors cursor-pointer"
               title="Switch Language"
             >
               <Globe className="h-3.5 w-3.5 text-gray-400" />
@@ -248,7 +309,7 @@ const Header = () => {
             {/* Mobile Drawer Toggle */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors"
+              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors cursor-pointer"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -257,10 +318,18 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mega Menu Overlay */}
+      {/* Mega Menu Full Backdrop Overlay */}
       {megaMenuOpen && (
-        <div className="border-b border-gray-200 dark:border-neutral-800 shadow-md animate-in slide-in-from-top duration-200">
-          <CategoryMegaMenu />
+        <div 
+          className="fixed inset-0 top-[96px] sm:top-[102px] z-50 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setMegaMenuOpen(false)}
+        >
+          <div 
+            className="max-w-7xl mx-auto my-0 bg-white dark:bg-[#121212] shadow-2xl border-b border-gray-200 dark:border-neutral-800 animate-in slide-in-from-top duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CategoryMegaMenu onClose={() => setMegaMenuOpen(false)} />
+          </div>
         </div>
       )}
 
@@ -278,7 +347,7 @@ const Header = () => {
             />
             <button 
               type="submit" 
-              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-bold"
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-bold cursor-pointer"
             >
               {t('search')}
             </button>
@@ -288,7 +357,7 @@ const Header = () => {
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[100px] z-40 bg-black/50 backdrop-blur-xs animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
+        <div className="md:hidden fixed inset-0 top-[96px] z-40 bg-black/50 backdrop-blur-xs animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
           <div 
             className="w-4/5 max-w-sm h-full bg-white dark:bg-[#0f0f0f] shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-gray-200 dark:border-neutral-800"
             onClick={(e) => e.stopPropagation()}
@@ -316,8 +385,22 @@ const Header = () => {
               >
                 {t('home')}
               </Link>
-              {categories.map((cat) => {
-                const catName = cat.name || (cat.slug ? (cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1)) : 'বিভাগ');
+              
+              <Link 
+                to="/archive" 
+                onClick={handleCategoryClick} 
+                className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
+                  currentPath === '/archive' 
+                    ? 'bg-red-600 text-white font-black' 
+                    : 'text-gray-700 dark:text-neutral-300 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800'
+                }`}
+              >
+                📅 {t('archive') || 'আর্কাইভ'}
+              </Link>
+
+              {allCategories.map((cat) => {
+                const slugKey = (cat.slug || '').toLowerCase();
+                const catName = BN_CATEGORY_NAMES[slugKey] || cat.name || (cat.slug ? (cat.slug.charAt(0).toUpperCase() + cat.slug.slice(1)) : 'বিভাগ');
                 const isCatActive = currentPath === `/category/${cat.slug}` || currentPath.startsWith(`/category/${cat.slug}/`) || (cat.slug === 'media-center' && currentPath === '/media-center');
                 const hasSubs = cat.subcategories && cat.subcategories.length > 0;
 
@@ -358,22 +441,11 @@ const Header = () => {
                   </div>
                 );
               })}
-              <Link 
-                to="/archive" 
-                onClick={handleCategoryClick} 
-                className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
-                  currentPath === '/archive' 
-                    ? 'bg-red-600 text-white font-black' 
-                    : 'text-gray-700 dark:text-neutral-300 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800'
-                }`}
-              >
-                {t('archive')}
-              </Link>
               
               {user && (
                 <button 
                   onClick={() => { logout(); setMobileMenuOpen(false); }} 
-                  className="flex items-center space-x-2 text-red-600 font-bold p-2 text-sm"
+                  className="flex items-center space-x-2 text-red-600 font-bold p-2 text-sm cursor-pointer"
                 >
                   <User className="h-5 w-5" />
                   <span>{t('signOut')}</span>

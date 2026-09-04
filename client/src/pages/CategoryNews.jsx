@@ -13,6 +13,31 @@ const imgSrc = (art) => {
   return `${API_HOST}${art.featuredImage}`;
 };
 
+const BN_CATEGORY_NAMES = {
+  latest: 'সর্বশেষ',
+  bangladesh: 'বাংলাদেশ',
+  politics: 'রাজনীতি',
+  international: 'বিশ্ব',
+  economy: 'বাণিজ্য',
+  sports: 'খেলা',
+  entertainment: 'বিনোদন',
+  jobs: 'চাকরি',
+  lifestyle: 'জীবনযাপন',
+  opinion: 'মতামত',
+  technology: 'স্টার্টআপ ও প্রযুক্তি',
+  education: 'শিক্ষা',
+  religion: 'ধর্ম',
+  literature: 'অন্যপাঠ',
+  interview: 'সাক্ষাৎকার',
+  agriculture: 'কৃষি ও প্রকৃতি',
+  photo: 'ছবি',
+  diaspora: 'প্রবাস',
+  'women-children': 'শিশু ও নারী',
+  exclusive: 'অনন্য',
+  archive: 'আর্কাইভ',
+  videos: 'ভিডিও',
+};
+
 const CategoryNews = () => {
   const { categorySlug, subSlug } = useParams();
   const [searchParams] = useSearchParams();
@@ -40,7 +65,7 @@ const CategoryNews = () => {
     fetchCategoryTaxonomy();
   }, [categorySlug]);
 
-  const catName = categoryInfo ? categoryInfo.name : categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1);
+  const catName = categoryInfo?.name || BN_CATEGORY_NAMES[categorySlug?.toLowerCase()] || (categorySlug ? categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1) : 'বিভাগ');
   const activeSubInfo = categoryInfo?.subcategories?.find(s => s.slug.toLowerCase() === activeSubSlug.toLowerCase());
   const subName = activeSubInfo ? activeSubInfo.name : activeSubSlug;
 

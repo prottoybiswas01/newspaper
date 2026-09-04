@@ -20,6 +20,51 @@ const calculateReadingTime = (text) => {
   return Math.max(1, Math.ceil(minutes));
 };
 
+const CATEGORY_SYNONYMS = {
+  'bangladesh': ['bangladesh', 'বাংলাদেশ'],
+  'বাংলাদেশ': ['bangladesh', 'বাংলাদেশ'],
+  'politics': ['politics', 'রাজনীতি'],
+  'রাজনীতি': ['politics', 'রাজনীতি'],
+  'international': ['international', 'বিশ্ব', 'আন্তর্জাতিক'],
+  'বিশ্ব': ['international', 'বিশ্ব', 'আন্তর্জাতিক'],
+  'economy': ['economy', 'বাণিজ্য', 'অর্থনীতি'],
+  'বাণিজ্য': ['economy', 'বাণিজ্য', 'অর্থনীতি'],
+  'sports': ['sports', 'খেলা', 'খেলাধুলা'],
+  'খেলা': ['sports', 'খেলা', 'খেলাধুলা'],
+  'entertainment': ['entertainment', 'বিনোদন'],
+  'বিনোদন': ['entertainment', 'বিনোদন'],
+  'jobs': ['jobs', 'চাকরি', 'চাকরি-বাকরি'],
+  'চাকরি': ['jobs', 'চাকরি', 'চাকরি-বাকরি'],
+  'lifestyle': ['lifestyle', 'জীবনযাপন', 'লাইফস্টাইল'],
+  'জীবনযাপন': ['lifestyle', 'জীবনযাপন', 'লাইফস্টাইল'],
+  'opinion': ['opinion', 'মতামত'],
+  'মতামত': ['opinion', 'মতামত'],
+  'technology': ['technology', 'প্রযুক্তি', 'স্টার্টআপ ও প্রযুক্তি', 'তথ্যপ্রযুক্তি'],
+  'প্রযুক্তি': ['technology', 'প্রযুক্তি', 'স্টার্টআপ ও প্রযুক্তি', 'তথ্যপ্রযুক্তি'],
+  'স্টার্টআপ ও প্রযুক্তি': ['technology', 'প্রযুক্তি', 'স্টার্টআপ ও প্রযুক্তি', 'তথ্যপ্রযুক্তি'],
+  'education': ['education', 'শিক্ষা'],
+  'শিক্ষা': ['education', 'শিক্ষা'],
+  'religion': ['religion', 'ধর্ম'],
+  'ধর্ম': ['religion', 'ধর্ম'],
+  'literature': ['literature', 'সাহিত্য', 'অন্যপাঠ', 'সাহিত্য ও সংস্কৃতি'],
+  'অন্যপাঠ': ['literature', 'সাহিত্য', 'অন্যপাঠ', 'সাহিত্য ও সংস্কৃতি'],
+  'interview': ['interview', 'সাক্ষাৎকার'],
+  'সাক্ষাৎকার': ['interview', 'সাক্ষাৎকার'],
+  'agriculture': ['agriculture', 'কৃষি', 'কৃষি ও প্রকৃতি', 'কৃষি ও পরিবেশ'],
+  'কৃষি ও প্রকৃতি': ['agriculture', 'কৃষি', 'কৃষি ও প্রকৃতি', 'কৃষি ও পরিবেশ'],
+  'photo': ['photo', 'ছবি', 'ফটো'],
+  'ছবি': ['photo', 'ছবি', 'ফটো'],
+  'diaspora': ['diaspora', 'প্রবাস'],
+  'প্রবাস': ['diaspora', 'প্রবাস'],
+  'women-children': ['women-children', 'নারী ও শিশু', 'শিশু ও নারী'],
+  'শিশু ও নারী': ['women-children', 'নারী ও শিশু', 'শিশু ও নারী'],
+  'exclusive': ['exclusive', 'অনন্য', 'বিশেষ আয়োজন', 'বিশেষ প্রতিবেদন'],
+  'অনন্য': ['exclusive', 'অনন্য', 'বিশেষ আয়োজন', 'বিশেষ প্রতিবেদন'],
+  'videos': ['videos', 'ভিডিও', 'media-center'],
+  'ভিডিও': ['videos', 'ভিডিও', 'media-center'],
+};
+
+
 // @desc    Create a new article
 // @route   POST /api/articles
 const createArticle = async (req, res) => {
@@ -108,7 +153,12 @@ const getArticles = async (req, res) => {
       query.status = 'published';
     }
 
-    if (category) query.category = { $regex: new RegExp('^' + category.trim() + '$', 'i') };
+    if (category) {
+      const trimmedCat = category.trim();
+      const synonyms = CATEGORY_SYNONYMS[trimmedCat.toLowerCase()] || CATEGORY_SYNONYMS[trimmedCat] || [trimmedCat];
+      const pattern = synonyms.map(s => `^${s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`).join('|');
+      query.category = { $regex: new RegExp(pattern, 'i') };
+    }
     if (subcategory) query.subcategory = { $regex: new RegExp('^' + subcategory.trim() + '$', 'i') };
     if (tag) query.tags = tag; // Matches tag in the tags array
     if (authorId) query.authorId = authorId;
