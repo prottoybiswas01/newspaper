@@ -184,6 +184,7 @@ const getArticles = async (req, res) => {
     const skipNum = parseInt(skip, 10) || 0;
 
     const articles = await Article.find(query)
+      .select('title subtitle slug summary category subcategory tags author authorId status featuredImage videoUrl source sourceUrl publishDate readingTime views likes createdAt')
       .sort(sortOption)
       .skip(skipNum)
       .limit(limitNum);
@@ -432,21 +433,23 @@ const getHomepageData = async (req, res) => {
     
     // 1. Fetch top articles (latest 10)
     const topArticles = await Article.find({ status: 'published' })
+      .select('title subtitle slug summary category subcategory tags author featuredImage videoUrl source sourceUrl publishDate readingTime views likes createdAt')
       .sort({ publishDate: -1, createdAt: -1 })
       .limit(10);
       
     // 2. Fetch popular articles (most read 5)
     const mostRead = await Article.find({ status: 'published' })
+      .select('title subtitle slug summary category subcategory tags author featuredImage videoUrl source sourceUrl publishDate readingTime views likes createdAt')
       .sort({ views: -1, publishDate: -1 })
       .limit(5);
       
     // 3. Fetch homepage layout settings
     const layoutSetting = await Setting.findOne({ key: 'homepage_layout' });
     let cfg = layoutSetting ? layoutSetting.value : [
-      { category: 'Bangladesh', layout: 'grid' },
-      { category: 'Politics',   layout: 'hero' },
-      { category: 'Sports',     layout: 'grid' },
-      { category: 'Technology', layout: 'list' },
+      { category: 'বাংলাদেশ', layout: 'grid' },
+      { category: 'রাজনীতি',   layout: 'hero' },
+      { category: 'খেলা',     layout: 'grid' },
+      { category: 'বিনোদন',   layout: 'list' },
     ];
     
     if (!Array.isArray(cfg)) {
@@ -456,10 +459,15 @@ const getHomepageData = async (req, res) => {
     // 4. Fetch articles for each category row in parallel
     const layoutSections = await Promise.all(cfg.map(async (sec) => {
       const limit = sec.layout === 'list' ? 5 : 4;
+      const trimmedCat = (sec.category || '').trim();
+      const synonyms = CATEGORY_SYNONYMS[trimmedCat.toLowerCase()] || CATEGORY_SYNONYMS[trimmedCat] || [trimmedCat];
+      const pattern = synonyms.map(s => `^${s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`).join('|');
+
       const articles = await Article.find({ 
         status: 'published',
-        category: { $regex: new RegExp('^' + sec.category.trim() + '$', 'i') }
+        category: { $regex: new RegExp(pattern, 'i') }
       })
+      .select('title subtitle slug summary category subcategory tags author featuredImage videoUrl source sourceUrl publishDate readingTime views likes createdAt')
       .sort({ publishDate: -1, createdAt: -1 })
       .limit(limit);
       
