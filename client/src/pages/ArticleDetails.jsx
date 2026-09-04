@@ -239,8 +239,8 @@ const ArticleDetails = () => {
       {/* Header Info */}
       <header className="mb-6">
         <div className="flex items-center space-x-2 text-xs font-extrabold text-red-600 dark:text-red-400 mb-3 uppercase tracking-wider no-print">
-          <Link to={`/category/${displayArticle.category.toLowerCase()}`} className="hover:underline">
-            {t(displayArticle.category.toLowerCase())}
+          <Link to={`/category/${encodeURIComponent(displayArticle.category || 'latest')}`} className="hover:underline">
+            {displayArticle.category || 'বাংলাদেশ'}
           </Link>
         </div>
 

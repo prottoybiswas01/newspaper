@@ -288,9 +288,9 @@ const Dashboard = () => {
   const handleImportToEditor = async (fetchedArt) => {
     resetEditorForm();
     setEditingArticleId(null);
-    setArticleTitle(fetchedArt.title);
+    setArticleTitle(fetchedArt.title || '');
     setArticleSubtitle(fetchedArt.source ? `তথ্যসূত্র: ${fetchedArt.source}` : '');
-    setArticleImage(fetchedArt.featuredImage || '');
+    setArticleFeaturedImage(fetchedArt.featuredImage || '');
     
     // Initial source attribution footer
     const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
@@ -302,14 +302,15 @@ const Dashboard = () => {
     setArticleContent(initialContent);
     setArticleSummary(initialDesc ? initialDesc.substring(0, 200) : '');
     setArticleCategory('বাংলাদেশ');
-    setArticleTags(fetchedArt.source ? [fetchedArt.source] : ['জাতীয়']);
+    setArticleTags(fetchedArt.source ? fetchedArt.source : 'জাতীয়');
     setArticleStatus('draft');
     
-    setArticleSeoTitle(fetchedArt.title);
+    setArticleSeoTitle(fetchedArt.title || '');
     setArticleSeoDesc(initialDesc ? initialDesc.substring(0, 150) : '');
     setArticleSeoKeywords(fetchedArt.source || '');
     
     setActiveTab('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     toast.info('সংবাদটির মূল ছবি ও সম্পূর্ণ তথ্য এক্সট্রাক্ট করা হচ্ছে...');
 
     // Attempt to extract 100% full complete text, high-res image & official title from target news URL
@@ -321,7 +322,7 @@ const Dashboard = () => {
           setArticleSeoTitle(extRes.title);
         }
         if (extRes.featuredImage) {
-          setArticleImage(extRes.featuredImage);
+          setArticleFeaturedImage(extRes.featuredImage);
         }
         const updatedAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${extRes.source || fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
         if (extRes.content) {
@@ -499,23 +500,26 @@ const Dashboard = () => {
   };
 
   const handleEditArticle = (art) => {
+    if (!art) return;
     setEditingArticleId(art._id);
-    setArticleTitle(art.title);
+    setArticleTitle(art.title || '');
     setArticleSubtitle(art.subtitle || '');
-    setArticleContent(art.content);
+    setArticleContent(art.content || '<p><br></p>');
     setArticleSummary(art.summary || '');
-    setArticleCategory(art.category || 'Bangladesh');
+    setArticleCategory(art.category || 'বাংলাদেশ');
     setArticleSubcategory(art.subcategory || '');
-    setArticleTags((art.tags || []).join(', '));
-    setArticleStatus(art.status);
+    setArticleTags(Array.isArray(art.tags) ? art.tags.join(', ') : (art.tags || ''));
+    setArticleStatus(art.status || 'draft');
     setArticleFeaturedImage(art.featuredImage || '');
     setArticleVideoUrl(art.videoUrl || '');
     setArticleScheduledDate(art.scheduledDate ? art.scheduledDate.substring(0, 16) : '');
-    setArticleSeoTitle(art.seo?.metaTitle || '');
-    setArticleSeoDesc(art.seo?.metaDescription || '');
+    setArticleSeoTitle(art.seo?.metaTitle || art.title || '');
+    setArticleSeoDesc(art.seo?.metaDescription || art.summary || '');
     setArticleSeoKeywords(art.seo?.keywords || '');
     
     setActiveTab('editor');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    toast.info('সংবাদটি এডিটরে ওপেন করা হয়েছে।');
   };
 
   const handleDeleteArticle = async (id) => {

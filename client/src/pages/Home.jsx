@@ -5,7 +5,7 @@ import AdPlacement from '../components/AdPlacement';
 import PollWidget from '../components/PollWidget';
 import CategoryMegaMenu from '../components/CategoryMegaMenu';
 import { useLanguage } from '../context/LanguageContext';
-import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight, Inbox } from 'lucide-react';
+import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight, Inbox, Camera } from 'lucide-react';
 
 // ── helpers ────────────────────────────────────────────────
 const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');

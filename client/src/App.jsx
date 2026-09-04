@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ToastProvider } from './components/Toast';
+import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import BreakingTicker from './components/BreakingTicker';
@@ -22,37 +23,39 @@ import Dashboard from './pages/admin/Dashboard';
 
 function App() {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AuthProvider>
-          <ToastProvider>
-            <Router>
-              <div className="flex flex-col min-h-screen transition-colors duration-300">
-                <Header />
-                <BreakingTicker />
-                <div className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/category/:categorySlug" element={<CategoryNews />} />
-                    <Route path="/category/:categorySlug/:subSlug" element={<CategoryNews />} />
-                    <Route path="/article/:slug" element={<ArticleDetails />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/reporter/:id" element={<ReporterProfile />} />
-                    <Route path="/archive" element={<Archive />} />
-                    <Route path="/media-center" element={<MediaCenter />} />
-                    <Route path="/profile" element={<UserProfile />} />
-                    <Route path="/login-admin" element={<Login />} />
-                    <Route path="/admin" element={<Dashboard />} />
-                  </Routes>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <Router>
+                <div className="flex flex-col min-h-screen transition-colors duration-300">
+                  <Header />
+                  <BreakingTicker />
+                  <div className="flex-grow">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/category/:categorySlug" element={<CategoryNews />} />
+                      <Route path="/category/:categorySlug/:subSlug" element={<CategoryNews />} />
+                      <Route path="/article/:slug" element={<ArticleDetails />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/reporter/:id" element={<ReporterProfile />} />
+                      <Route path="/archive" element={<Archive />} />
+                      <Route path="/media-center" element={<MediaCenter />} />
+                      <Route path="/profile" element={<UserProfile />} />
+                      <Route path="/login-admin" element={<Login />} />
+                      <Route path="/admin" element={<Dashboard />} />
+                    </Routes>
+                  </div>
+                  <Footer />
+                  <SpeedInsights />
                 </div>
-                <Footer />
-                <SpeedInsights />
-              </div>
-            </Router>
-          </ToastProvider>
-        </AuthProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+              </Router>
+            </ToastProvider>
+          </AuthProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
