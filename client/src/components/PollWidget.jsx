@@ -63,13 +63,13 @@ const PollWidget = () => {
   const totalVotes = poll.options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm no-print">
-      <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 mb-4">
+    <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs no-print">
+      <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 mb-4">
         <BarChart3 className="h-5 w-5" />
         <span className="text-xs uppercase font-extrabold tracking-widest">আজকের জনমত জরিপ</span>
       </div>
 
-      <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-5 leading-relaxed">
+      <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 mb-5 leading-relaxed">
         {poll.question}
       </h3>
 
@@ -81,14 +81,14 @@ const PollWidget = () => {
             const percentage = totalVotes > 0 ? Math.round((votesCount / totalVotes) * 100) : 0;
             return (
               <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                <div className="flex justify-between text-xs font-semibold text-gray-700 dark:text-neutral-300">
                   <span>{opt.option}</span>
                   <span>{percentage}% ({votesCount} ভোট)</span>
                 </div>
                 {/* Visual Bar */}
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+                <div className="w-full bg-gray-100 dark:bg-neutral-800 h-3 rounded-full overflow-hidden">
                   <div 
-                    className="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-1000"
+                    className="bg-red-600 dark:bg-red-500 h-full rounded-full transition-all duration-1000"
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -96,7 +96,7 @@ const PollWidget = () => {
             );
           })}
           
-          <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-neutral-800 text-xs text-gray-500 dark:text-neutral-400">
             <span>সর্বমোট ভোট: {totalVotes}</span>
             <div className="flex items-center text-green-600 font-semibold space-x-1">
               <CheckCircle className="h-3.5 w-3.5" />
@@ -111,10 +111,10 @@ const PollWidget = () => {
             {poll.options.map((opt, idx) => (
               <label 
                 key={idx} 
-                className={`flex items-center space-x-3 p-3 rounded-xl border cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors ${
+                className={`flex items-center space-x-3 p-3 rounded-xl border cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800/40 transition-colors ${
                   selectedOption === idx 
-                    ? 'border-blue-500 bg-blue-50/20 dark:border-blue-500/50' 
-                    : 'border-slate-200 dark:border-slate-800'
+                    ? 'border-red-500 bg-red-50/30 dark:border-red-500/50 dark:bg-red-950/20' 
+                    : 'border-gray-200 dark:border-neutral-800'
                 }`}
               >
                 <input 
@@ -123,15 +123,15 @@ const PollWidget = () => {
                   value={idx} 
                   checked={selectedOption === idx}
                   onChange={() => setSelectedOption(idx)}
-                  className="h-4 w-4 text-blue-600 border-slate-300 dark:border-slate-700" 
+                  className="h-4 w-4 text-red-600 border-gray-300 dark:border-neutral-700 focus:ring-red-500" 
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{opt.option}</span>
+                <span className="text-sm font-medium text-gray-800 dark:text-neutral-200">{opt.option}</span>
               </label>
             ))}
           </div>
 
           {message && (
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 text-center">
+            <p className="text-xs font-semibold text-gray-600 dark:text-neutral-400 text-center">
               {message}
             </p>
           )}
@@ -139,7 +139,7 @@ const PollWidget = () => {
           <button 
             type="submit" 
             disabled={selectedOption === null || submitting}
-            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 text-white font-bold text-sm transition-colors shadow-sm"
+            className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-gray-200 dark:disabled:bg-neutral-800 disabled:text-gray-400 text-white font-bold text-sm transition-colors shadow-xs"
           >
             <Vote className="h-4.5 w-4.5" />
             <span>ভোট দিন</span>

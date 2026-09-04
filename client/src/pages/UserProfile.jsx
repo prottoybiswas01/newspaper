@@ -90,55 +90,55 @@ const UserProfile = () => {
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 mb-8 border-b pb-2 flex items-center space-x-2">
-        <User className="h-7 w-7 text-blue-650" />
+      <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white mb-8 border-b border-gray-200 dark:border-neutral-800 pb-2 flex items-center space-x-2">
+        <User className="h-7 w-7 text-red-600" />
         <span>প্রোফাইল সেটিংস (Profile Settings)</span>
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Edit Form */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs space-y-6">
-          <h2 className="text-sm font-black uppercase text-slate-800 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">ব্যক্তিগত তথ্য</h2>
+        <div className="lg:col-span-2 bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs space-y-6">
+          <h2 className="text-sm font-black uppercase text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-neutral-800">ব্যক্তিগত তথ্য</h2>
           
           {successMsg && <p className="text-xs font-semibold text-green-600 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">{successMsg}</p>}
 
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-600 block mb-1">পূর্ণ নাম *</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">পূর্ণ নাম *</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-xl text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-600 block mb-1">ইমেইল ঠিকানা (Email - readonly)</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">ইমেইল ঠিকানা (Email - readonly)</label>
               <input
                 type="email"
                 readOnly
                 value={user.email}
-                className="w-full px-4 py-2 border rounded-xl text-sm bg-slate-100 dark:bg-slate-800 text-slate-450 focus:outline-none cursor-not-allowed"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm bg-gray-100 dark:bg-neutral-800 text-gray-500 dark:text-neutral-400 focus:outline-none cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-600 block mb-1">লেখক পরিচিতি (Bio)</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">লেখক পরিচিতি (Bio)</label>
               <textarea
                 rows="4"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="নিজের সম্পর্কে কিছু লিখুন..."
-                className="w-full px-4 py-2 border rounded-xl text-sm bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-xl text-sm bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
               />
             </div>
 
             {/* Social settings */}
             <div className="space-y-3 pt-2">
-              <label className="text-xs font-bold text-slate-700 block">সামাজিক যোগাযোগ মাধ্যম লিংক (Social Links)</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block">সামাজিক যোগাযোগ মাধ্যম লিংক (Social Links)</label>
               
               <div className="flex items-center space-x-2">
                 <Facebook className="h-5 w-5 text-blue-600 shrink-0" />
@@ -147,7 +147,7 @@ const UserProfile = () => {
                   placeholder="https://facebook.com/username"
                   value={facebook}
                   onChange={(e) => setFacebook(e.target.value)}
-                  className="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-800 focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
@@ -158,7 +158,7 @@ const UserProfile = () => {
                   placeholder="https://twitter.com/username"
                   value={twitter}
                   onChange={(e) => setTwitter(e.target.value)}
-                  className="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-800 focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
 
@@ -169,7 +169,7 @@ const UserProfile = () => {
                   placeholder="https://linkedin.com/in/username"
                   value={linkedin}
                   onChange={(e) => setLinkedin(e.target.value)}
-                  className="w-full px-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-800 focus:outline-none"
+                  className="w-full px-3 py-1.5 border border-gray-300 dark:border-neutral-700 rounded-lg text-xs bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none"
                 />
               </div>
             </div>
@@ -177,7 +177,7 @@ const UserProfile = () => {
             <button
               type="submit"
               disabled={updating}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-sm transition-colors"
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
             >
               {updating ? 'আপডেট হচ্ছে...' : 'প্রোফাইল সংরক্ষণ করুন'}
             </button>
@@ -188,21 +188,21 @@ const UserProfile = () => {
         <div className="space-y-6">
           
           {/* Bookmarks Card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs">
-            <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center space-x-2 mb-4">
-              <Bookmark className="h-4.5 w-4.5 text-blue-600" />
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
+            <h3 className="text-sm font-black uppercase text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-neutral-800 flex items-center space-x-2 mb-4">
+              <Bookmark className="h-4.5 w-4.5 text-red-600" />
               <span>বুকমার্ক করা সংবাদ ({bookmarks.length})</span>
             </h3>
             
             {bookmarks.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">কোনো বুকমার্ক করা খবর নেই।</p>
+              <p className="text-xs text-gray-400 dark:text-neutral-500 italic">কোনো বুকমার্ক করা খবর নেই।</p>
             ) : (
               <div className="space-y-3">
                 {bookmarks.map(art => (
                   <Link 
                     key={art._id} 
                     to={`/article/${art.slug}`}
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 border-b border-slate-100 dark:border-slate-800/50 pb-2 last:border-b-0"
+                    className="block text-xs font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800/50 pb-2 last:border-b-0"
                   >
                     {art.title}
                   </Link>
@@ -212,9 +212,9 @@ const UserProfile = () => {
           </div>
 
           {/* Reading history Card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs">
-            <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center space-x-2 mb-4">
-              <BookOpen className="h-4.5 w-4.5 text-teal-650" />
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs">
+            <h3 className="text-sm font-black uppercase text-gray-900 dark:text-white pb-3 border-b border-gray-100 dark:border-neutral-800 flex items-center space-x-2 mb-4">
+              <BookOpen className="h-4.5 w-4.5 text-red-600" />
               <span>পঠিত সংবাদ ইতিহাস (History)</span>
             </h3>
             <div className="space-y-3">
@@ -222,7 +222,7 @@ const UserProfile = () => {
                 <Link 
                   key={art._id} 
                   to={`/article/${art.slug}`}
-                  className="block text-xs font-bold text-slate-650 dark:text-slate-400 hover:text-blue-600 border-b border-slate-100 dark:border-slate-800/50 pb-2 last:border-b-0"
+                  className="block text-xs font-bold text-gray-700 dark:text-neutral-300 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800/50 pb-2 last:border-b-0"
                 >
                   {art.title}
                 </Link>

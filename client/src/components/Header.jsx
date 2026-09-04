@@ -56,31 +56,31 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-[#0b0f19] border-b border-slate-100 dark:border-slate-800 shadow-xs transition-all duration-300 no-print">
+    <header className="sticky top-0 z-50 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 shadow-xs transition-all duration-300 no-print">
       
       {/* Row 1: Logo & Top controls (Search, divider, Login) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         {/* Left: Brand Logo & Title */}
-        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-black tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
-          <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-blue-600 dark:text-blue-500 shrink-0" />
-          <span className="font-sans bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-400 bg-clip-text text-transparent">
+        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
+          <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-red-600 shrink-0" />
+          <span className="font-sans text-gray-950 dark:text-white tracking-tight">
             {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
           </span>
         </Link>
 
         {/* Right: Search, Divider, and Login Link */}
-        <div className="flex items-center space-x-3 text-slate-500 dark:text-slate-400">
+        <div className="flex items-center space-x-3 text-gray-600 dark:text-neutral-400">
           {/* Search Button Toggle */}
           <button 
             onClick={() => setSearchOpen(!searchOpen)} 
-            className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
+            className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors text-gray-600 dark:text-neutral-400"
             title="Search"
           >
             <Search className="h-5 w-5" />
           </button>
 
           {/* Vertical Divider */}
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
+          <div className="h-4 w-px bg-gray-200 dark:bg-neutral-800"></div>
 
           {/* Profile / Auth Button (Only visible when logged in) */}
           {user && (
@@ -88,20 +88,20 @@ const Header = () => {
               {hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <Link 
                   to="/admin" 
-                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-colors shadow-sm"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-black transition-colors shadow-sm"
                   title="এডমিন প্যানেল ড্যাশবোর্ডে যান"
                 >
                   <Shield className="h-4 w-4 text-amber-300 shrink-0" />
-                  <span>ড্যাশবোর্ড (Dashboard)</span>
+                  <span>ড্যাশবোর্ড</span>
                 </Link>
               )}
-              <Link to="/profile" className="flex items-center space-x-1.5 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <Link to="/profile" className="flex items-center space-x-1.5 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors">
                 <img 
                   src={user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`} 
                   alt={user.name} 
-                  className="h-6 w-6 rounded-full border border-slate-300 dark:border-slate-700 bg-white" 
+                  className="h-6 w-6 rounded-full border border-gray-300 dark:border-neutral-700 bg-white" 
                 />
-                <span className="hidden sm:inline-block text-xs font-bold text-slate-700 dark:text-slate-300">{user.name.split(' ')[0]}</span>
+                <span className="hidden sm:inline-block text-xs font-bold text-gray-700 dark:text-neutral-300">{user.name.split(' ')[0]}</span>
               </Link>
             </div>
           )}
@@ -109,17 +109,17 @@ const Header = () => {
       </div>
 
       {/* Row 2: Category Scroll Bar + Theme/Language Toggles (Visible on all screens) */}
-      <div className="border-t border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md">
+      <div className="border-t border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-4">
           
           {/* Scrollable Categories List */}
           <nav className="flex-1 overflow-x-auto scrollbar-none py-1.5">
-            <ul className="flex items-center space-x-4 text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+            <ul className="flex items-center space-x-2 text-sm font-bold text-gray-800 dark:text-neutral-200 whitespace-nowrap">
               {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <li>
                   <Link 
                     to="/admin" 
-                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-blue-600 text-white rounded-md text-xs font-black hover:bg-blue-700 transition-colors shadow-xs"
+                    className="inline-flex items-center space-x-1 px-2.5 py-1 bg-red-600 text-white rounded-md text-xs font-black hover:bg-red-700 transition-colors shadow-xs"
                   >
                     <Shield className="h-3.5 w-3.5 text-amber-300" />
                     <span>ড্যাশবোর্ড</span>
@@ -130,10 +130,10 @@ const Header = () => {
               <li>
                 <Link 
                   to="/" 
-                  className={`inline-block px-3 py-1 rounded-full transition-all duration-200 ${
+                  className={`inline-block px-3 py-1 rounded-md transition-all duration-150 ${
                     currentPath === '/' 
                       ? 'bg-red-600 text-white font-black shadow-xs' 
-                      : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
                   }`}
                 >
                   {t('home')}
@@ -148,15 +148,15 @@ const Header = () => {
                     <div className="flex items-center space-x-0.5">
                       <Link 
                         to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
-                        className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full transition-all duration-200 ${
+                        className={`inline-flex items-center space-x-1 px-3 py-1 rounded-md transition-all duration-150 ${
                           isCatActive 
                             ? 'bg-red-600 text-white font-black shadow-xs' 
-                            : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                            : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
                         }`}
                       >
                         <span>{cat.name}</span>
                         {hasSubs && (
-                          <ChevronDown className={`h-3 w-3 transition-transform group-hover:rotate-180 ${isCatActive ? 'text-white' : 'text-slate-400 group-hover:text-red-600'}`} />
+                          <ChevronDown className={`h-3 w-3 transition-transform group-hover:rotate-180 ${isCatActive ? 'text-white' : 'text-gray-400 group-hover:text-red-600'}`} />
                         )}
                       </Link>
                     </div>
@@ -164,7 +164,7 @@ const Header = () => {
                     {/* Hover Dropdown for Subcategories */}
                     {hasSubs && (
                       <div className="absolute left-0 top-full hidden group-hover:block z-50 pt-2 animate-in fade-in slide-in-from-top-1 duration-150">
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-2 px-1 min-w-[180px]">
+                        <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl shadow-xl py-2 px-1 min-w-[180px]">
                           {cat.subcategories.map(sub => {
                             const isSubActive = currentPath === `/category/${cat.slug}/${sub.slug}`;
                             return (
@@ -174,7 +174,7 @@ const Header = () => {
                                 className={`block px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                   isSubActive
                                     ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 font-bold'
-                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600'
+                                    : 'text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-red-600'
                                 }`}
                               >
                                 {sub.name}
@@ -191,10 +191,10 @@ const Header = () => {
               <li>
                 <Link 
                   to="/archive" 
-                  className={`inline-block px-3 py-1 rounded-full transition-all duration-200 ${
+                  className={`inline-block px-3 py-1 rounded-md transition-all duration-150 ${
                     currentPath === '/archive' 
                       ? 'bg-red-600 text-white font-black shadow-xs' 
-                      : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold'
+                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
                   }`}
                 >
                   {t('archive')}
@@ -205,7 +205,7 @@ const Header = () => {
               <li>
                 <button 
                   onClick={() => setMegaMenuOpen(!megaMenuOpen)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-slate-200/80 dark:bg-slate-800 hover:bg-red-600 hover:text-white text-slate-800 dark:text-slate-200 font-extrabold'}`}
+                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-neutral-800 hover:bg-red-600 hover:text-white text-gray-800 dark:text-neutral-200 font-extrabold'}`}
                   title="সকল বিভাগ (All Categories)"
                 >
                   <Layers className="h-3.5 w-3.5" />
@@ -217,30 +217,30 @@ const Header = () => {
           </nav>
 
           {/* Right: Theme Toggle, Language button, Hamburger toggle */}
-          <div className="flex items-center space-x-2 shrink-0 border-l border-slate-200 dark:border-slate-800 pl-3 py-1">
+          <div className="flex items-center space-x-2 shrink-0 border-l border-gray-200 dark:border-neutral-800 pl-3 py-1">
             {/* Theme Toggle */}
             <button 
               onClick={toggleTheme} 
-              className="p-1.5 rounded-lg hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors"
               title="Toggle Theme"
             >
-              {isDark ? <Sun className="h-4 w-4 text-amber-500" /> : <Moon className="h-4 w-4 text-indigo-650" />}
+              {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-gray-700" />}
             </button>
 
             {/* Language Switcher */}
             <button 
               onClick={toggleLanguage} 
-              className="flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-250 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+              className="flex items-center space-x-1 px-2.5 py-1 text-xs font-bold rounded-lg border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-700 dark:text-neutral-300 transition-colors"
               title="Switch Language"
             >
-              <Globe className="h-3.5 w-3.5 text-slate-400" />
+              <Globe className="h-3.5 w-3.5 text-gray-400" />
               <span className="text-[10px] uppercase font-bold">{language === 'bn' ? 'Eng' : 'বাং'}</span>
             </button>
 
             {/* Mobile Drawer Toggle */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="md:hidden p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors"
+              className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -251,26 +251,26 @@ const Header = () => {
 
       {/* Mega Menu Overlay */}
       {megaMenuOpen && (
-        <div className="border-b border-slate-200 dark:border-slate-800 shadow-md animate-in slide-in-from-top duration-200">
+        <div className="border-b border-gray-200 dark:border-neutral-800 shadow-md animate-in slide-in-from-top duration-200">
           <CategoryMegaMenu />
         </div>
       )}
 
       {/* Search Input Bar (Dropdown) */}
       {searchOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 shadow-lg transition-all duration-300 animate-in slide-in-from-top">
+        <div className="absolute top-full left-0 right-0 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 p-4 shadow-lg transition-all duration-300 animate-in slide-in-from-top">
           <form onSubmit={handleSearchSubmit} className="max-w-3xl mx-auto flex items-center space-x-2">
             <input 
               type="text" 
               placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#161616] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
               autoFocus
             />
             <button 
               type="submit" 
-              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-bold"
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-bold"
             >
               {t('search')}
             </button>
@@ -280,9 +280,9 @@ const Header = () => {
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 top-[100px] z-40 bg-slate-950/20 backdrop-blur-sm animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
+        <div className="md:hidden fixed inset-0 top-[100px] z-40 bg-black/50 backdrop-blur-xs animate-in fade-in" onClick={() => setMobileMenuOpen(false)}>
           <div 
-            className="w-4/5 max-w-sm h-full bg-white dark:bg-slate-900 shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-right duration-300"
+            className="w-4/5 max-w-sm h-full bg-white dark:bg-[#0f0f0f] shadow-2xl p-6 overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-gray-200 dark:border-neutral-800"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-col space-y-4">
@@ -290,7 +290,7 @@ const Header = () => {
                 <Link 
                   to="/admin" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center space-x-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-sm"
+                  className="flex items-center space-x-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-sm"
                 >
                   <Shield className="h-5 w-5" />
                   <span>{t('dashboard')}</span>
@@ -303,7 +303,7 @@ const Header = () => {
                 className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
                   currentPath === '/' 
                     ? 'bg-red-600 text-white font-black' 
-                    : 'text-slate-800 dark:text-slate-100 hover:text-red-600 border-b border-slate-100 dark:border-slate-800'
+                    : 'text-gray-800 dark:text-neutral-100 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800'
                 }`}
               >
                 {t('home')}
@@ -314,14 +314,14 @@ const Header = () => {
                 const hasSubs = cat.subcategories && cat.subcategories.length > 0;
 
                 return (
-                  <div key={cat._id || cat.slug} className="border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div key={cat._id || cat.slug} className="border-b border-gray-100 dark:border-neutral-800 pb-2">
                     <Link 
                       to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`}
                       onClick={handleCategoryClick}
                       className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
                         isCatActive 
                           ? 'bg-red-600 text-white font-black' 
-                          : 'text-slate-800 dark:text-slate-100 hover:text-red-600'
+                          : 'text-gray-800 dark:text-neutral-100 hover:text-red-600'
                       }`}
                     >
                       {catName}
@@ -338,7 +338,7 @@ const Header = () => {
                               className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
                                 isSubActive
                                   ? 'bg-red-600 text-white font-bold'
-                                  : 'text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:text-red-600'
+                                  : 'text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 hover:text-red-600'
                               }`}
                             >
                               {sub.name}
@@ -356,7 +356,7 @@ const Header = () => {
                 className={`text-base font-bold p-2 px-3 rounded-xl block transition-colors ${
                   currentPath === '/archive' 
                     ? 'bg-red-600 text-white font-black' 
-                    : 'text-slate-700 dark:text-slate-300 hover:text-red-600 border-b border-slate-100 dark:border-slate-800'
+                    : 'text-gray-700 dark:text-neutral-300 hover:text-red-600 border-b border-gray-100 dark:border-neutral-800'
                 }`}
               >
                 {t('archive')}

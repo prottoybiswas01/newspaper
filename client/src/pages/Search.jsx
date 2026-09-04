@@ -79,24 +79,24 @@ const Search = () => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 mb-8 flex items-center space-x-2">
-        <SearchIcon className="h-7 w-7 text-blue-600" />
+      <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white mb-8 flex items-center space-x-2">
+        <SearchIcon className="h-7 w-7 text-red-600" />
         <span>সংবাদ অনুসন্ধান (Advanced Search)</span>
       </h1>
 
       {/* Filter panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs mb-8 space-y-4">
+      <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-6 rounded-2xl shadow-xs mb-8 space-y-4">
         <form onSubmit={handleSearchSubmit} className="flex gap-2">
           <input
             type="text"
             placeholder="কীওয়ার্ড লিখুন (যেমন: ক্রিকেট, রাজনীতি, বিমান)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-4 py-2.5 border border-slate-350 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500/20"
           />
           <button
             type="submit"
-            className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow transition-colors"
+            className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow transition-colors"
           >
             Search
           </button>
@@ -106,11 +106,11 @@ const Search = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
           {/* Category Filter */}
           <div>
-            <label className="text-xs font-bold text-slate-505 block mb-1">বিভাগ (Category)</label>
+            <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">বিভাগ (Category)</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-250 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-250 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-800 dark:text-neutral-200 rounded-lg text-xs font-semibold focus:outline-none"
             >
               <option value="">সকল বিভাগ</option>
               {categories.map(cat => (
@@ -121,11 +121,11 @@ const Search = () => {
 
           {/* Author/Reporter Filter */}
           <div>
-            <label className="text-xs font-bold text-slate-505 block mb-1">লেখক (Author)</label>
+            <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">লেখক (Author)</label>
             <select
               value={authorId}
               onChange={(e) => setAuthorId(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-250 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-250 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-800 dark:text-neutral-200 rounded-lg text-xs font-semibold focus:outline-none"
             >
               <option value="">সকল লেখক</option>
               {reporters.map(rep => (
@@ -136,11 +136,11 @@ const Search = () => {
 
           {/* Sorting */}
           <div>
-            <label className="text-xs font-bold text-slate-505 block mb-1">সাজান (Sorting)</label>
+            <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">সাজান (Sorting)</label>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-250 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
+              className="w-full px-3 py-2 border border-gray-250 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-800 dark:text-neutral-200 rounded-lg text-xs font-semibold focus:outline-none"
             >
               <option value="latest">নতুন প্রথম</option>
               <option value="popular">জনপ্রিয় প্রথম</option>
@@ -152,7 +152,7 @@ const Search = () => {
             <button
               type="button"
               onClick={() => { setSearchTerm(''); setCategory(''); setAuthorId(''); setSort('latest'); }}
-              className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-lg text-xs transition-colors"
+              className="w-full py-2 bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-700 dark:text-neutral-300 font-bold rounded-lg text-xs transition-colors"
             >
               Reset Filters
             </button>
@@ -164,19 +164,19 @@ const Search = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-slate-200 dark:bg-slate-800 h-64 rounded-xl" />
+            <div key={i} className="bg-gray-100 dark:bg-neutral-800 h-64 rounded-xl" />
           ))}
         </div>
       ) : articles.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-slate-900 border rounded-2xl border-slate-200/50">
-          <p className="text-slate-500 font-semibold">দুঃখিত, আপনার অনুসন্ধানকৃত বিষয়ের কোনো সংবাদ পাওয়া যায়নি।</p>
+        <div className="text-center py-16 bg-white dark:bg-[#121212] border rounded-2xl border-gray-200 dark:border-neutral-800">
+          <p className="text-gray-500 dark:text-neutral-400 font-semibold">দুঃখিত, আপনার অনুসন্ধানকৃত বিষয়ের কোনো সংবাদ পাওয়া যায়নি।</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {articles.map((art) => {
             const img = imgSrc(art);
             return (
-              <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800/40 shadow-xs hover:shadow-lg transition-all duration-300">
+              <div key={art._id} className="group bg-white dark:bg-[#121212] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-xs hover:shadow-lg transition-all duration-300">
                 <Link to={`/article/${art.slug}`}>
                   {img && (
                     <img
@@ -189,11 +189,11 @@ const Search = () => {
                     />
                   )}
                   <div className="p-4 space-y-2">
-                    <span className="text-[10px] uppercase font-extrabold text-blue-600 dark:text-blue-400">{art.category}</span>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug">
+                    <span className="text-[10px] uppercase font-extrabold text-red-600 dark:text-red-400">{art.category}</span>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 transition-colors leading-snug">
                       {art.title}
                     </h3>
-                    <div className="flex items-center justify-between text-[9px] text-slate-400 pt-2 font-semibold border-t border-slate-100 dark:border-slate-800/60">
+                    <div className="flex items-center justify-between text-[9px] text-gray-400 dark:text-neutral-500 pt-2 font-semibold border-t border-gray-100 dark:border-neutral-800">
                       <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
                       <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
                     </div>

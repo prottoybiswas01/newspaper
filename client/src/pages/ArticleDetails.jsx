@@ -238,35 +238,35 @@ const ArticleDetails = () => {
       </Helmet>
       {/* Header Info */}
       <header className="mb-6">
-        <div className="flex items-center space-x-2 text-xs font-extrabold text-blue-600 dark:text-blue-400 mb-3 uppercase tracking-wider no-print">
+        <div className="flex items-center space-x-2 text-xs font-extrabold text-red-600 dark:text-red-400 mb-3 uppercase tracking-wider no-print">
           <Link to={`/category/${displayArticle.category.toLowerCase()}`} className="hover:underline">
             {t(displayArticle.category.toLowerCase())}
           </Link>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight mb-4">
+        <h1 className="text-2xl sm:text-4xl font-black text-gray-950 dark:text-white leading-tight mb-4">
           {displayArticle.title}
         </h1>
 
         {displayArticle.subtitle && (
-          <h2 className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-medium mb-6 leading-relaxed">
+          <h2 className="text-base sm:text-lg text-gray-600 dark:text-neutral-400 font-medium mb-6 leading-relaxed">
             {displayArticle.subtitle}
           </h2>
         )}
 
         {/* Action Controls & Reporter Card */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-y border-slate-200/60 dark:border-slate-800/40 py-4 gap-4 no-print">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-y border-gray-200 dark:border-neutral-800 py-4 gap-4 no-print">
           
           {/* Author/Reporter info */}
           <div className="flex items-center space-x-3">
-            <div className="bg-blue-100 dark:bg-slate-800 rounded-full p-2 text-blue-600 dark:text-blue-400">
+            <div className="bg-red-50 dark:bg-neutral-800 rounded-full p-2 text-red-600 dark:text-red-400">
               <User className="h-5 w-5" />
             </div>
             <div>
-              <Link to={`/reporter/${displayArticle.authorId}`} className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600">
+              <Link to={`/reporter/${displayArticle.authorId}`} className="text-sm font-bold text-gray-900 dark:text-neutral-100 hover:text-red-600">
                 {displayArticle.author}
               </Link>
-              <div className="flex items-center text-xs text-slate-400 space-x-2 mt-0.5">
+              <div className="flex items-center text-xs text-gray-500 dark:text-neutral-400 space-x-2 mt-0.5">
                 <span className="flex items-center"><Calendar className="h-3.5 w-3.5 mr-1" /> {new Date(displayArticle.publishDate || displayArticle.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}</span>
                 <span className="flex items-center"><Clock className="h-3.5 w-3.5 mr-1" /> {displayArticle.readingTime || 3} {language === 'bn' ? 'মিনিট পাঠ' : 'min read'}</span>
               </div>
@@ -274,27 +274,27 @@ const ArticleDetails = () => {
           </div>
 
           {/* Controls: Zoom, Print, Share, Like */}
-          <div className="flex items-center flex-wrap gap-2 text-slate-500 dark:text-slate-400">
+          <div className="flex items-center flex-wrap gap-2 text-gray-600 dark:text-neutral-400">
             {/* Font Zoom Controls */}
-            <div className="flex items-center space-x-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-2 text-xs font-bold">
-              <span className="text-slate-400 px-1">{language === 'bn' ? 'ফন্ট:' : 'Font:'}</span>
+            <div className="flex items-center space-x-1.5 bg-gray-100 dark:bg-neutral-800 rounded-lg p-1 mr-2 text-xs font-bold">
+              <span className="text-gray-500 dark:text-neutral-400 px-1">{language === 'bn' ? 'ফন্ট:' : 'Font:'}</span>
               <button 
                 onClick={() => setFontSize(prev => Math.min(prev + 2, 24))} 
-                className="px-2 py-1 bg-white dark:bg-slate-700 rounded hover:text-blue-600 dark:hover:text-blue-400 shadow-xs" 
+                className="px-2 py-1 bg-white dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 rounded hover:text-red-600 dark:hover:text-red-400 shadow-xs" 
                 title="Zoom In"
               >
                 A+
               </button>
               <button 
                 onClick={() => setFontSize(prev => Math.max(prev - 2, 12))} 
-                className="px-2 py-1 bg-white dark:bg-slate-700 rounded hover:text-blue-600 dark:hover:text-blue-400 shadow-xs" 
+                className="px-2 py-1 bg-white dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 rounded hover:text-red-600 dark:hover:text-red-400 shadow-xs" 
                 title="Zoom Out"
               >
                 A-
               </button>
               <button 
                 onClick={() => setFontSize(16)} 
-                className="p-1 hover:text-slate-800 dark:hover:text-slate-100" 
+                className="p-1 hover:text-gray-900 dark:hover:text-white" 
                 title="Reset Size"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
@@ -308,7 +308,7 @@ const ArticleDetails = () => {
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
                 isLiked 
                   ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/20 dark:border-red-900/50' 
-                  : 'hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800'
+                  : 'hover:bg-gray-100 dark:hover:bg-neutral-800 border-gray-200 dark:border-neutral-800'
               }`}
             >
               <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-600 text-red-600' : ''}`} />
@@ -322,7 +322,7 @@ const ArticleDetails = () => {
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                 title="Share on Facebook"
               >
                 <Facebook className="h-4 w-4" />
@@ -333,7 +333,7 @@ const ArticleDetails = () => {
                 href={`https://api.whatsapp.com/send?text=${encodeURIComponent(displayArticle.title + ' ' + window.location.href)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 flex items-center justify-center"
+                className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 flex items-center justify-center"
                 title="Share on WhatsApp"
               >
                 <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
@@ -346,7 +346,7 @@ const ArticleDetails = () => {
                 href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(displayArticle.title)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-gray-800 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-800"
                 title="Share on Twitter/X"
               >
                 <Twitter className="h-4 w-4" />
@@ -355,7 +355,7 @@ const ArticleDetails = () => {
               {/* Copy Link */}
               <button 
                 onClick={handleShare}
-                className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500"
+                className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500"
                 title="Copy link to share"
               >
                 <Share2 className="h-4 w-4" />
@@ -365,7 +365,7 @@ const ArticleDetails = () => {
             {/* Print */}
             <button 
               onClick={triggerPrint}
-              className="p-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-800"
               title="Print article"
             >
               <Printer className="h-4 w-4" />
@@ -387,7 +387,7 @@ const ArticleDetails = () => {
 
       {/* Video Embed Player */}
       {ytId && (
-        <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 border border-slate-200/50 dark:border-slate-800/50 shadow-md">
+        <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 border border-gray-200 dark:border-neutral-800 shadow-md">
           <iframe
             src={`https://www.youtube.com/embed/${ytId}`}
             title="YouTube video player"
@@ -401,23 +401,23 @@ const ArticleDetails = () => {
 
       {/* Article Body Content */}
       <div 
-        className="prose prose-lg dark:prose-invert max-w-none mb-10 leading-loose font-sans"
+        className="prose prose-lg dark:prose-invert max-w-none mb-10 leading-loose font-sans text-gray-900 dark:text-neutral-100"
         style={{ fontSize: `${fontSize}px` }}
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayArticle.content) }}
       />
 
       {/* Article Tags */}
       {displayArticle.tags && displayArticle.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8 pt-4 border-t border-slate-100 dark:border-slate-800/60 no-print">
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 mr-2 flex items-center">
-            <Tags className="h-4 w-4 mr-1 text-slate-400" />
+        <div className="flex flex-wrap gap-2 mb-8 pt-4 border-t border-gray-200 dark:border-neutral-800 no-print">
+          <span className="text-xs font-bold text-gray-500 dark:text-neutral-400 mr-2 flex items-center">
+            <Tags className="h-4 w-4 mr-1 text-gray-400" />
             {language === 'bn' ? 'ট্যাগসমূহ:' : 'Tags:'}
           </span>
           {displayArticle.tags.map((tag, idx) => (
             <Link 
               key={idx} 
               to={`/search?q=${encodeURIComponent(tag)}`}
-              className="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950 hover:text-blue-600 dark:hover:text-blue-400 text-slate-600 dark:text-slate-300 rounded-full text-[11px] font-semibold transition-all"
+              className="px-3 py-1 bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 dark:hover:text-red-400 text-gray-700 dark:text-neutral-300 rounded-full text-[11px] font-semibold transition-all"
             >
               #{tag}
             </Link>
@@ -429,30 +429,30 @@ const ArticleDetails = () => {
       <AdPlacement placement="article" />
 
       {/* Comments Section */}
-      <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
-        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 flex items-center space-x-2 mb-6">
-          <MessageSquare className="h-5 w-5 text-blue-600" />
+      <section className="mt-12 pt-8 border-t border-gray-200 dark:border-neutral-800 no-print">
+        <h3 className="text-lg font-black text-gray-950 dark:text-white flex items-center space-x-2 mb-6">
+          <MessageSquare className="h-5 w-5 text-red-600" />
           <span>{t('comments')} ({comments.length})</span>
         </h3>
 
         {/* List of comments */}
         <div className="space-y-4 mb-8">
           {comments.length === 0 ? (
-            <p className="text-sm text-slate-400 italic">{language === 'bn' ? 'এই সংবাদের প্রথম মন্তব্যকারী হোন।' : 'Be the first to comment on this article.'}</p>
+            <p className="text-sm text-gray-400 dark:text-neutral-500 italic">{language === 'bn' ? 'এই সংবাদের প্রথম মন্তব্যকারী হোন।' : 'Be the first to comment on this article.'}</p>
           ) : (
             comments.map((comm) => (
-              <div key={comm._id} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 p-4 rounded-xl flex items-start space-x-3">
+              <div key={comm._id} className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-4 rounded-xl flex items-start space-x-3">
                 <img 
                   src={comm.authorAvatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${comm.authorName}`} 
                   alt={comm.authorName} 
-                  className="h-9 w-9 rounded-full bg-slate-100" 
+                  className="h-9 w-9 rounded-full bg-gray-100 dark:bg-neutral-800" 
                 />
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{comm.authorName}</span>
-                    <span className="text-[10px] text-slate-450">{new Date(comm.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-neutral-100">{comm.authorName}</span>
+                    <span className="text-[10px] text-gray-400 dark:text-neutral-500">{new Date(comm.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}</span>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-350 mt-1">{comm.content}</p>
+                  <p className="text-sm text-gray-700 dark:text-neutral-300 mt-1">{comm.content}</p>
                 </div>
               </div>
             ))
@@ -460,8 +460,8 @@ const ArticleDetails = () => {
         </div>
 
         {/* Add Comment Form */}
-        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
-          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">{language === 'bn' ? 'আপনার মন্তব্য প্রকাশ করুন' : 'Leave a Comment'}</h4>
+        <div className="bg-gray-50 dark:bg-[#121212] p-6 rounded-2xl border border-gray-200 dark:border-neutral-800">
+          <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 mb-4">{language === 'bn' ? 'আপনার মন্তব্য প্রকাশ করুন' : 'Leave a Comment'}</h4>
           
           {commentSuccess && <p className="text-sm text-green-600 mb-4 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">{commentSuccess}</p>}
           {commentError && <p className="text-sm text-red-500 mb-4 bg-red-50 dark:bg-red-950/20 p-3 rounded-lg">{commentError}</p>}
@@ -469,42 +469,42 @@ const ArticleDetails = () => {
           <form onSubmit={handleCommentSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'নাম *' : 'Name *'}</label>
+                <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">{language === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input 
                   type="text" 
                   value={commentName} 
                   onChange={(e) => setCommentName(e.target.value)} 
                   required
                   placeholder={language === 'bn' ? 'আপনার নাম...' : 'Your name...'}
-                  className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'ইমেইল ঠিকানা *' : 'Email Address *'}</label>
+                <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">{language === 'bn' ? 'ইমেইল ঠিকানা *' : 'Email Address *'}</label>
                 <input 
                   type="email" 
                   value={commentEmail} 
                   onChange={(e) => setCommentEmail(e.target.value)} 
                   required
                   placeholder="name@example.com"
-                  className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                 />
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">{language === 'bn' ? 'মন্তব্য *' : 'Comment *'}</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">{language === 'bn' ? 'মন্তব্য *' : 'Comment *'}</label>
               <textarea 
                 rows="4" 
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
+                value={commentContent} 
+                onChange={(e) => setCommentContent(e.target.value)} 
                 required
                 placeholder={language === 'bn' ? 'এখানে আপনার মন্তব্য লিখুন...' : 'Write your comment here...'}
-                className="w-full px-4 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-4 py-2 text-sm border border-gray-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
               />
             </div>
             <button 
-              type="submit"
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold transition-colors"
+              type="submit" 
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors"
             >
               {language === 'bn' ? 'মন্তব্য জমা দিন' : 'Submit Comment'}
             </button>
@@ -514,14 +514,14 @@ const ArticleDetails = () => {
 
       {/* Related News */}
       {related.length > 0 && (
-        <section className="mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/40 no-print">
-          <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-6">{language === 'bn' ? 'সম্পর্কিত সংবাদ' : 'Related News'}</h3>
+        <section className="mt-12 pt-8 border-t border-gray-200 dark:border-neutral-800 no-print">
+          <h3 className="text-lg font-black text-gray-950 dark:text-white mb-6">{language === 'bn' ? 'সম্পর্কিত সংবাদ' : 'Related News'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {related.map(art => (
-              <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 p-3 hover:shadow-md transition-shadow">
+              <div key={art._id} className="group bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 p-3 hover:shadow-md transition-shadow">
                 <Link to={`/article/${art.slug}`}>
                   <img src={art.featuredImage} alt={art.title} loading="lazy" decoding="async" className="w-full h-36 object-cover rounded-lg mb-3" />
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 leading-snug transition-colors line-clamp-2">{art.title}</h4>
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-neutral-200 group-hover:text-red-600 leading-snug transition-colors line-clamp-2">{art.title}</h4>
                 </Link>
               </div>
             ))}

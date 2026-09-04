@@ -42,37 +42,37 @@ const MediaCenter = () => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 mb-8 border-b pb-2 flex items-center space-x-2">
-        <Film className="h-7 w-7 text-blue-600" />
+      <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white mb-8 border-b border-gray-200 dark:border-neutral-800 pb-2 flex items-center space-x-2">
+        <Film className="h-7 w-7 text-red-600" />
         <span>মিডিয়া সেন্টার (Media Center)</span>
       </h1>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-slate-200 dark:bg-slate-800 h-64 rounded-xl" />
+            <div key={i} className="bg-gray-100 dark:bg-neutral-800 h-64 rounded-xl" />
           ))}
         </div>
       ) : (
         <>
           {/* Video Gallery Section */}
           <section className="mb-12">
-            <h2 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-6 flex items-center space-x-2">
-              <PlayCircle className="h-5 w-5 text-red-500" />
+            <h2 className="text-lg font-black text-gray-900 dark:text-neutral-100 mb-6 flex items-center space-x-2">
+              <PlayCircle className="h-5 w-5 text-red-600" />
               <span>ভিডিও গ্যালারি (Video Gallery)</span>
             </h2>
             {videoArticles.length === 0 ? (
-              <div className="text-center py-10 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
-                <Inbox className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                <p className="text-slate-500 font-semibold text-sm">কোনো ভিডিও সংবাদ পাওয়া যায়নি।</p>
+              <div className="text-center py-10 bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl">
+                <Inbox className="h-10 w-10 text-gray-300 dark:text-neutral-700 mx-auto mb-2" />
+                <p className="text-gray-500 dark:text-neutral-400 font-semibold text-sm">কোনো ভিডিও সংবাদ পাওয়া যায়নি।</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {videoArticles.map((vid) => {
                   const img = imgSrc(vid);
                   return (
-                    <Link key={vid._id} to={`/article/${vid.slug}`} className="group bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 block">
-                      <div className="relative aspect-video bg-slate-800">
+                    <Link key={vid._id} to={`/article/${vid.slug}`} className="group bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 block">
+                      <div className="relative aspect-video bg-neutral-900">
                         {img && (
                           <img src={img} alt={vid.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                         )}
@@ -81,7 +81,7 @@ const MediaCenter = () => {
                         </div>
                       </div>
                       <div className="p-4">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">{vid.title}</h3>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 transition-colors leading-snug line-clamp-2">{vid.title}</h3>
                       </div>
                     </Link>
                   );
@@ -92,28 +92,28 @@ const MediaCenter = () => {
 
           {/* Photo Gallery Section */}
           <section>
-            <h2 className="text-lg font-black text-slate-800 dark:text-slate-200 mb-6 flex items-center space-x-2">
-              <ImageIcon className="h-5 w-5 text-blue-500" />
+            <h2 className="text-lg font-black text-gray-900 dark:text-neutral-100 mb-6 flex items-center space-x-2">
+              <ImageIcon className="h-5 w-5 text-red-600" />
               <span>আলোকচিত্র গ্যালারি (Photo Gallery)</span>
             </h2>
             {photoArticles.length === 0 ? (
-              <div className="text-center py-10 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
-                <Inbox className="h-10 w-10 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
-                <p className="text-slate-500 font-semibold text-sm">কোনো আলোকচিত্র পাওয়া যায়নি।</p>
+              <div className="text-center py-10 bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl">
+                <Inbox className="h-10 w-10 text-gray-300 dark:text-neutral-700 mx-auto mb-2" />
+                <p className="text-gray-500 dark:text-neutral-400 font-semibold text-sm">কোনো আলোকচিত্র পাওয়া যায়নি।</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {photoArticles.map((ph) => {
                   const img = imgSrc(ph);
                   return (
-                    <Link key={ph._id} to={`/article/${ph.slug}`} className="group bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 block">
-                      <div className="relative aspect-video overflow-hidden bg-slate-800">
+                    <Link key={ph._id} to={`/article/${ph.slug}`} className="group bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 block">
+                      <div className="relative aspect-video overflow-hidden bg-neutral-900">
                         {img && (
                           <img src={img} alt={ph.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         )}
                       </div>
                       <div className="p-4">
-                        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">{ph.title}</h3>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 transition-colors leading-snug line-clamp-2">{ph.title}</h3>
                       </div>
                     </Link>
                   );

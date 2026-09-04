@@ -47,20 +47,20 @@ const AdPlacement = ({ placement }) => {
 
   // Handle Image Ads
   const dimensionsClass = {
-    header: 'w-full max-w-5xl h-24 sm:h-28 my-4 rounded-xl border border-slate-200/60 dark:border-slate-800/40 shadow-sm overflow-hidden flex justify-center',
-    sidebar: 'w-full max-w-sm h-[400px] sm:h-[500px] my-4 rounded-xl border border-slate-200/60 dark:border-slate-800/40 shadow-sm overflow-hidden flex justify-center',
-    article: 'w-full max-w-2xl h-36 my-6 rounded-xl border border-slate-200/60 dark:border-slate-800/40 shadow-sm overflow-hidden flex justify-center',
-    sticky: 'fixed bottom-0 left-0 right-0 bg-slate-900/90 dark:bg-slate-950/90 text-white z-40 py-2 border-t border-slate-800 flex justify-center h-20 shadow-xl',
-    popup: 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'
+    header: 'w-full max-w-5xl h-24 sm:h-28 my-4 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs overflow-hidden flex justify-center',
+    sidebar: 'w-full max-w-sm h-[400px] sm:h-[500px] my-4 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs overflow-hidden flex justify-center',
+    article: 'w-full max-w-2xl h-36 my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs overflow-hidden flex justify-center',
+    sticky: 'fixed bottom-0 left-0 right-0 bg-neutral-900/95 dark:bg-[#0a0a0a]/95 text-white z-40 py-2 border-t border-neutral-800 flex justify-center h-20 shadow-xl',
+    popup: 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs'
   };
 
   if (placement === 'popup') {
     return (
       <div className={dimensionsClass.popup}>
-        <div className="relative bg-white dark:bg-slate-950 p-4 rounded-2xl max-w-lg w-11/12 border border-slate-200 dark:border-slate-800 shadow-2xl">
+        <div className="relative bg-white dark:bg-[#121212] p-4 rounded-2xl max-w-lg w-11/12 border border-gray-200 dark:border-neutral-800 shadow-2xl">
           <button 
             onClick={() => setAd(null)}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold"
+            className="absolute top-2 right-2 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-800 dark:text-neutral-200 text-xs font-bold"
           >
             ✕
           </button>
@@ -73,14 +73,14 @@ const AdPlacement = ({ placement }) => {
           >
             <img src={ad.imageUrl} alt={ad.title} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-300" />
           </a>
-          <span className="text-[9px] uppercase tracking-wider text-slate-400 mt-2 block text-center">SPONSORED ADVERTISEMENT</span>
+          <span className="text-[9px] uppercase tracking-wider text-gray-400 dark:text-neutral-500 mt-2 block text-center">SPONSORED ADVERTISEMENT</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`${dimensionsClass[placement]} relative bg-slate-100 dark:bg-slate-900/50 flex flex-col justify-center items-center no-print`}>
+    <div className={`${dimensionsClass[placement]} relative bg-gray-50 dark:bg-[#121212] flex flex-col justify-center items-center no-print`}>
       <a 
         href={ad.linkUrl} 
         target="_blank" 
@@ -94,7 +94,7 @@ const AdPlacement = ({ placement }) => {
           className="w-full h-full object-cover hover:opacity-95 transition-opacity" 
         />
       </a>
-      <span className="absolute bottom-1 right-2 bg-slate-950/60 text-white text-[8px] px-1 rounded-sm tracking-widest pointer-events-none">AD</span>
+      <span className="absolute bottom-1 right-2 bg-black/70 text-white text-[8px] px-1 rounded-xs tracking-widest pointer-events-none">AD</span>
     </div>
   );
 };

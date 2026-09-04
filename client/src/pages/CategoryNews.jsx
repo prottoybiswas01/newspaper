@@ -68,10 +68,10 @@ const CategoryNews = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumbs */}
-      <div className="text-xs text-slate-400 font-bold mb-4 uppercase tracking-wider flex items-center space-x-1.5">
+      <div className="text-xs text-gray-400 dark:text-neutral-500 font-bold mb-4 uppercase tracking-wider flex items-center space-x-1.5">
         <Link to="/" className="hover:underline">Home</Link>
         <span>➔</span>
-        <Link to={`/category/${categorySlug}`} className="hover:underline text-slate-700 dark:text-slate-300">{catName}</Link>
+        <Link to={`/category/${categorySlug}`} className="hover:underline text-gray-700 dark:text-neutral-300">{catName}</Link>
         {activeSubSlug && (
           <>
             <span>➔</span>
@@ -81,20 +81,20 @@ const CategoryNews = () => {
       </div>
 
       <div className="flex flex-wrap items-baseline justify-between gap-4 mb-4 border-b-2 border-red-600 pb-3">
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 capitalize">
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white capitalize">
           {catName} {subName ? `➔ ${subName}` : 'সংবাদ'}
         </h1>
       </div>
 
       {/* Subcategory Pills Navigation Bar */}
       {categoryInfo && categoryInfo.subcategories && categoryInfo.subcategories.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-4 mb-6 border-b border-gray-200 dark:border-neutral-800">
           <Link
             to={`/category/${categorySlug}`}
             className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
               !activeSubSlug 
                 ? 'bg-red-600 text-white shadow-xs' 
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700'
             }`}
           >
             সকল (All)
@@ -108,7 +108,7 @@ const CategoryNews = () => {
                 className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
                   activeSubSlug.toLowerCase() === sub.slug.toLowerCase()
                     ? 'bg-red-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 hover:bg-gray-200 dark:hover:bg-neutral-700'
                 }`}
               >
                 {sub.name}
@@ -124,19 +124,19 @@ const CategoryNews = () => {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-slate-200 dark:bg-slate-800 h-64 rounded-xl" />
+                <div key={i} className="bg-gray-100 dark:bg-neutral-800 h-64 rounded-xl" />
               ))}
             </div>
           ) : articles.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-250/10">
-              <p className="text-slate-500">এই বিভাগে বর্তমানে কোনো সংবাদ পাওয়া যায়নি।</p>
+            <div className="text-center py-16 bg-white dark:bg-[#121212] rounded-2xl border border-gray-200 dark:border-neutral-800">
+              <p className="text-gray-500 dark:text-neutral-400">এই বিভাগে বর্তমানে কোনো সংবাদ পাওয়া যায়নি।</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {articles.map((art) => {
                 const img = imgSrc(art);
                 return (
-                  <div key={art._id} className="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-800/40 shadow-xs hover:shadow-lg transition-all duration-300">
+                  <div key={art._id} className="group bg-white dark:bg-[#121212] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-xs hover:shadow-lg transition-all duration-300">
                     <Link to={`/article/${art.slug}`}>
                       {img && (
                         <img 
@@ -149,13 +149,13 @@ const CategoryNews = () => {
                         />
                       )}
                       <div className="p-4 space-y-2">
-                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 transition-colors leading-snug">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug">
                           {art.title}
                         </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                        <p className="text-xs text-gray-600 dark:text-neutral-400 line-clamp-2">
                           {art.summary}
                         </p>
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold pt-2 border-t border-slate-100 dark:border-slate-800/60 mt-2">
+                        <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500 font-semibold pt-2 border-t border-gray-100 dark:border-neutral-800 mt-2">
                           <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
                           <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
                         </div>

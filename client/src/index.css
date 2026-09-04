@@ -6,10 +6,10 @@
 
 @layer base {
   body {
-    @apply bg-[#f8fafc] text-slate-900 font-sans antialiased transition-colors duration-300;
+    @apply bg-white text-gray-900 font-sans antialiased selection:bg-red-600 selection:text-white transition-colors duration-200;
   }
   body.dark {
-    @apply bg-[#0f172a] text-slate-100;
+    @apply bg-[#0a0a0a] text-gray-100 selection:bg-red-600 selection:text-white;
   }
 }
 
@@ -19,29 +19,29 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100 dark:bg-slate-900;
+  @apply bg-gray-100 dark:bg-[#121212];
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full hover:bg-slate-400 dark:hover:bg-slate-600;
+  @apply bg-gray-300 dark:bg-neutral-700 rounded-full hover:bg-gray-400 dark:hover:bg-neutral-600;
 }
 
 /* Custom premium styles */
 .glass {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .dark .glass {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(18, 18, 18, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glow-card {
-  @apply transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-500/10 hover:-translate-y-0.5;
+  @apply transition-all duration-300 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-black/40 hover:-translate-y-0.5;
 }
 
 /* Newspaper Breaking Ticker Animation */

@@ -59,17 +59,17 @@ const Login = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-8 rounded-2xl shadow-sm">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 p-8 rounded-2xl shadow-xs">
         
         {/* Brand logo header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center p-3 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mb-4">
+          <div className="inline-flex items-center justify-center p-3 rounded-full bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 mb-4">
             <Newspaper className="h-10 w-10 stroke-[2.5]" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-black text-gray-950 dark:text-white">
             {isLoginMode ? 'দৈনিক দর্পণ অ্যাকাউন্টে লগইন' : 'নতুন অ্যাকাউন্ট তৈরি করুন'}
           </h2>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
             {isLoginMode ? 'প্যানেল অ্যাক্সেস করতে আপনার পরিচয় দিন' : 'আমাদের নিউজ পরিবারের অংশ হোন'}
           </p>
         </div>
@@ -84,54 +84,54 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLoginMode && (
             <div>
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">পূর্ণ নাম *</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">পূর্ণ নাম *</label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4.5 w-4.5 text-slate-400" />
+                <User className="absolute left-3 top-2.5 h-4.5 w-4.5 text-gray-400" />
                 <input
                   type="text"
                   required
                   placeholder="আপনার নাম..."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-full text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">ইমেইল ঠিকানা *</label>
+            <label className="text-xs font-bold text-gray-700 dark:text-neutral-300 block mb-1">ইমেইল ঠিকানা *</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-2.5 h-4.5 w-4.5 text-slate-400" />
+              <Mail className="absolute left-3 top-2.5 h-4.5 w-4.5 text-gray-400" />
               <input
                 type="email"
                 required
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-9 pr-4 py-2 w-full text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
               />
             </div>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">পাসওয়ার্ড *</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-neutral-300">পাসওয়ার্ড *</label>
               {isLoginMode && (
-                <a href="#" className="text-[10px] font-bold text-blue-650 hover:underline">
+                <a href="#" className="text-[10px] font-bold text-red-600 dark:text-red-400 hover:underline">
                   পাসওয়ার্ড ভুলে গেছেন?
                 </a>
               )}
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-2.5 h-4.5 w-4.5 text-slate-400" />
+              <Lock className="absolute left-3 top-2.5 h-4.5 w-4.5 text-gray-400" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-9 pr-4 py-2 w-full text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="pl-9 pr-4 py-2 w-full text-sm border border-gray-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-[#18181b] text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-red-500/20"
               />
             </div>
           </div>
@@ -139,24 +139,24 @@ const Login = () => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 font-bold text-sm rounded-xl shadow hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors"
+            className="w-full py-2.5 bg-red-600 text-white hover:bg-red-700 font-bold text-sm rounded-xl shadow transition-colors"
           >
             {submitting ? '...' : (isLoginMode ? 'লগইন করুন' : 'নিবন্ধন করুন')}
           </button>
         </form>
 
-        <div className="text-center pt-4 border-t border-slate-100 dark:border-slate-800 text-xs">
+        <div className="text-center pt-4 border-t border-gray-200 dark:border-neutral-800 text-xs">
           <button
             onClick={() => setIsLoginMode(!isLoginMode)}
-            className="font-bold text-blue-650 hover:underline"
+            className="font-bold text-red-600 dark:text-red-400 hover:underline"
           >
             {isLoginMode ? 'নতুন অ্যাকাউন্ট তৈরি করতে চান?' : 'ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন'}
           </button>
         </div>
         
         {/* Hint for readers / testers */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/50 text-[10px] text-slate-500 leading-normal">
-          <p className="font-extrabold uppercase mb-1 text-slate-600">Tester Credentials (Seeded):</p>
+        <div className="p-4 bg-gray-50 dark:bg-[#18181b] rounded-xl border border-gray-200 dark:border-neutral-800 text-[10px] text-gray-600 dark:text-neutral-400 leading-normal">
+          <p className="font-extrabold uppercase mb-1 text-gray-800 dark:text-neutral-200">Tester Credentials (Seeded):</p>
           <ul className="list-disc pl-4 space-y-0.5">
             <li><strong>Super Admin:</strong> superadmin@news.com (password123)</li>
             <li><strong>Editor:</strong> editor@news.com (password123)</li>

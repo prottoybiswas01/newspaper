@@ -36,7 +36,7 @@ const HeroCard = ({ art, lang }) => {
   if (!art) return null;
   const img = imgSrc(art);
   return (
-    <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 hover:shadow-xl transition-shadow duration-300 w-full">
+    <Link to={`/article/${art.slug}`} className="group block relative overflow-hidden rounded-xl bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 hover:shadow-xl transition-shadow duration-300 w-full">
       {img && (
         <div className="relative h-72 md:h-96 overflow-hidden">
           <img src={img} alt={art.title}
@@ -55,11 +55,11 @@ const HeroCard = ({ art, lang }) => {
             {art.category}
           </span>
         )}
-        <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-3">
+        <h2 className="text-lg sm:text-xl font-black text-gray-900 dark:text-neutral-100 leading-tight group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-3">
           {art.title}
         </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{art.summary}</p>
-        <div className="flex items-center gap-3 mt-4 text-[11px] text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800/40 pt-3">
+        <p className="text-xs text-gray-600 dark:text-neutral-400 mt-2 line-clamp-2">{art.summary}</p>
+        <div className="flex items-center gap-3 mt-4 text-[11px] text-gray-400 dark:text-neutral-500 font-semibold border-t border-gray-100 dark:border-neutral-800 pt-3">
           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
           <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
           <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{art.likes || 0}</span>
@@ -74,7 +74,7 @@ const SecondaryCard = ({ art, lang }) => {
   if (!art) return null;
   const img = imgSrc(art);
   return (
-    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-all duration-300 h-full">
+    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden hover:shadow-md transition-all duration-300 h-full">
       <div>
         {img && (
           <div className="relative h-40 overflow-hidden flex-shrink-0">
@@ -90,16 +90,16 @@ const SecondaryCard = ({ art, lang }) => {
               {art.category}
             </span>
           )}
-          <h3 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+          <h3 className="text-sm font-extrabold text-gray-900 dark:text-neutral-100 leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
             {art.title}
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-gray-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
             {art.summary}
           </p>
         </div>
       </div>
       <div className="p-3.5 pt-0">
-        <div className="text-[10px] text-slate-400 font-semibold mt-1">
+        <div className="text-[10px] text-gray-400 dark:text-neutral-500 font-semibold mt-1">
           {timeAgo(art.publishDate || art.createdAt, lang)}
         </div>
       </div>
@@ -112,7 +112,7 @@ const RowCard = ({ art, lang, index }) => {
   if (!art) return null;
   const img = imgSrc(art);
   return (
-    <Link to={`/article/${art.slug}`} className="group flex gap-3 items-start py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/60 dark:hover:bg-slate-800/20 rounded-lg px-2 -mx-2 transition-colors">
+    <Link to={`/article/${art.slug}`} className="group flex gap-3 items-start py-3 border-b border-gray-100 dark:border-neutral-800 last:border-0 hover:bg-gray-50 dark:hover:bg-neutral-800/40 rounded-lg px-2 -mx-2 transition-colors">
       {img && (
         <div className="relative w-20 h-16 flex-shrink-0 overflow-hidden rounded-lg">
           <img src={img} alt={art.title}
@@ -122,10 +122,10 @@ const RowCard = ({ art, lang, index }) => {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+        <h3 className="text-sm font-bold text-gray-800 dark:text-neutral-200 leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2">
           {art.title}
         </h3>
-        <span className="text-[10px] text-slate-400 mt-1 block">
+        <span className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1 block">
           {timeAgo(art.publishDate || art.createdAt, lang)}
           {index !== undefined && <span className="text-red-500 font-black ml-2">#{index + 1}</span>}
         </span>
@@ -139,7 +139,7 @@ const GridCard = ({ art, lang }) => {
   if (!art) return null;
   const img = imgSrc(art);
   return (
-    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 overflow-hidden hover:shadow-md transition-shadow h-full">
+    <Link to={`/article/${art.slug}`} className="group flex flex-col justify-between bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden hover:shadow-md transition-shadow h-full">
       <div>
         {img && (
           <div className="relative h-44 overflow-hidden">
@@ -147,24 +147,24 @@ const GridCard = ({ art, lang }) => {
               loading="lazy" decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               onError={e => { e.target.style.display = 'none'; }} />
-            <span className="absolute top-2 left-2 bg-blue-700/90 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
+            <span className="absolute top-2 left-2 bg-red-600 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider">
               {art.category}
             </span>
           </div>
         )}
         <div className="p-3.5">
           {!img && (
-            <span className="inline-block bg-blue-700/90 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">
+            <span className="inline-block bg-red-600 text-white text-[8px] font-black uppercase px-2 py-0.5 rounded-full tracking-wider mb-2">
               {art.category}
             </span>
           )}
-          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-neutral-100 leading-snug line-clamp-3 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
             {art.title}
           </h3>
         </div>
       </div>
       <div className="p-3.5 pt-0">
-        <div className="flex items-center gap-2 text-[10px] text-slate-400 font-semibold">
+        <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-neutral-500 font-semibold">
           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(art.publishDate || art.createdAt, lang)}</span>
           <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{art.views || 0}</span>
         </div>
@@ -176,8 +176,8 @@ const GridCard = ({ art, lang }) => {
 /** Section header with View More */
 const SectionHead = ({ label, slug, lang }) => (
   <div className="flex items-center justify-between border-b-2 border-red-600 pb-2 mb-4">
-    <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 uppercase tracking-wide flex items-center gap-2">
-      <span className="block w-1 h-4 bg-red-600 rounded-full" />
+    <h2 className="text-sm sm:text-base font-black text-gray-950 dark:text-white uppercase tracking-wide flex items-center gap-2">
+      <span className="block w-1.5 h-4 bg-red-600 rounded-xs" />
       {label}
     </h2>
     <Link to={`/category/${slug}`} className="flex items-center gap-0.5 text-[11px] font-bold text-red-600 dark:text-red-400 hover:underline">
@@ -232,38 +232,38 @@ const Home = () => {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10 animate-pulse">
         {/* Header Ad skeleton */}
-        <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-24 bg-gray-100 dark:bg-neutral-800 rounded-2xl w-full" />
 
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Hero skeleton */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="h-72 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-            <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-md w-3/4" />
-            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
-            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-5/6" />
+            <div className="h-72 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
+            <div className="h-6 bg-gray-100 dark:bg-neutral-800 rounded-md w-3/4" />
+            <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
+            <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-5/6" />
           </div>
 
           {/* Row list skeleton */}
-          <div className="lg:col-span-4 space-y-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
+          <div className="lg:col-span-4 space-y-4 p-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex gap-3 items-center">
-                <div className="w-20 h-16 bg-slate-200 dark:bg-slate-800 rounded-lg flex-shrink-0" />
+                <div className="w-20 h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg flex-shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
-                  <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/3" />
+                  <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
+                  <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/3" />
                 </div>
               </div>
             ))}
           </div>
 
           {/* Sidebar skeleton */}
-          <div className="lg:col-span-3 space-y-4 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/40">
-            <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2 mb-4" />
+          <div className="lg:col-span-3 space-y-4 p-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800">
+            <div className="h-5 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/2 mb-4" />
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="space-y-2 border-b border-slate-100 dark:border-slate-800/40 pb-3 last:border-0">
-                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
-                <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/4" />
+              <div key={i} className="space-y-2 border-b border-gray-100 dark:border-neutral-800 pb-3 last:border-0">
+                <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
+                <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/4" />
               </div>
             ))}
           </div>
@@ -273,9 +273,9 @@ const Home = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="space-y-3">
-              <div className="h-40 bg-slate-200 dark:bg-slate-800 rounded-xl" />
-              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-full" />
-              <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-md w-1/2" />
+              <div className="h-40 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
+              <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
+              <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/2" />
             </div>
           ))}
         </div>
@@ -287,12 +287,12 @@ const Home = () => {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         <AdPlacement placement="header" />
-        <div className="text-center py-20 bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
-          <Inbox className="h-12 w-12 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">
+        <div className="text-center py-20 bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-2xl">
+          <Inbox className="h-12 w-12 text-gray-300 dark:text-neutral-700 mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-gray-800 dark:text-neutral-200 mb-1">
             {lang === 'bn' ? 'বর্তমানে কোনো প্রকাশিত সংবাদ নেই' : 'No Published News Available'}
           </h2>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-gray-500 dark:text-neutral-400">
             {lang === 'bn' ? 'অ্যাডমিন বা রিপোর্টার দ্বারা সংবাদ প্রকাশিত হলে বা অটো-ফেচ করা হলে তা এখানে স্বয়ংক্রিয়ভাবে দেখাবে।' : 'Articles created or auto-fetched into database will automatically show up here.'}
           </p>
         </div>
@@ -321,19 +321,19 @@ const Home = () => {
         </div>
 
         {/* Right: Latest News sidebar — 3/12 */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-700/40 p-4">
-          <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 border-b-2 border-red-600 pb-2 mb-3 uppercase tracking-wide">
+        <div className="lg:col-span-3 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 p-4">
+          <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 border-b-2 border-red-600 pb-2 mb-3 uppercase tracking-wide">
             {lang === 'bn' ? 'সর্বশেষ সংবাদ' : 'Latest News'}
           </h2>
           <div className="space-y-0">
             {latestArticles.slice(0, 7).map((art, i) => (
-              <div key={art._id} className="flex gap-2.5 items-start py-2.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                <span className="text-base font-black text-slate-200 dark:text-slate-700 w-5 flex-shrink-0 leading-none">{String(i+1).padStart(2,'0')}</span>
+              <div key={art._id} className="flex gap-2.5 items-start py-2.5 border-b border-gray-100 dark:border-neutral-800 last:border-0">
+                <span className="text-base font-black text-gray-300 dark:text-neutral-700 w-5 flex-shrink-0 leading-none">{String(i+1).padStart(2,'0')}</span>
                 <div className="min-w-0">
-                  <Link to={`/article/${art.slug}`} className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 leading-snug block line-clamp-2 transition-colors">
+                  <Link to={`/article/${art.slug}`} className="text-xs font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 leading-snug block line-clamp-2 transition-colors">
                     {art.title}
                   </Link>
-                  <span className="text-[9px] text-slate-400 mt-0.5 block">{timeAgo(art.publishDate || art.createdAt, lang)}</span>
+                  <span className="text-[9px] text-gray-400 dark:text-neutral-500 mt-0.5 block">{timeAgo(art.publishDate || art.createdAt, lang)}</span>
                 </div>
               </div>
             ))}
@@ -376,7 +376,7 @@ const Home = () => {
                     <div className="md:col-span-2">
                       <GridCard art={sec.articles[0]} lang={lang} />
                     </div>
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 rounded-xl p-4 space-y-0">
+                    <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-4 space-y-0">
                       {sec.articles.slice(1,5).map(a => (
                         <RowCard key={a._id} art={a} lang={lang} />
                       ))}
@@ -386,7 +386,7 @@ const Home = () => {
 
                 {/* LIST: thumbnail rows */}
                 {sec.layout === 'list' && (
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700/40 rounded-xl p-4 space-y-0">
+                  <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-4 space-y-0">
                     {sec.articles.slice(0,5).map(a => (
                       <RowCard key={a._id} art={a} lang={lang} />
                     ))}
@@ -398,8 +398,8 @@ const Home = () => {
 
           {/* Media center */}
           {topArticles.filter(a => a.featuredImage || a.videoUrl).length > 0 && (
-            <div className="bg-slate-900 text-white p-5 rounded-2xl">
-              <h2 className="text-base font-black border-b border-slate-700 pb-3 mb-4 flex items-center gap-2">
+            <div className="bg-[#111111] text-white p-5 rounded-2xl border border-neutral-800">
+              <h2 className="text-base font-black border-b border-neutral-800 pb-3 mb-4 flex items-center gap-2">
                 <PlayCircle className="h-5 w-5 text-red-500" />
                 {lang === 'bn' ? 'ভিডিও ও ছবি কেন্দ্র' : 'Media Center'}
               </h2>
@@ -407,7 +407,7 @@ const Home = () => {
                 {topArticles.filter(a => a.featuredImage || a.videoUrl).slice(0, 3).map((art) => {
                   const img = imgSrc(art);
                   return (
-                    <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-slate-800 block">
+                    <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-neutral-900 block">
                       {img && (
                         <img src={img} alt={art.title}
                           loading="lazy" decoding="async"
@@ -436,19 +436,19 @@ const Home = () => {
           <PollWidget />
 
           {/* Most Read */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700/40 rounded-xl p-5">
-            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 border-b-2 border-red-600 pb-2 mb-4 uppercase tracking-wide">
+          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-5">
+            <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 border-b-2 border-red-600 pb-2 mb-4 uppercase tracking-wide">
               {lang === 'bn' ? 'পাঠকপ্রিয় সংবাদ' : 'Most Read'}
             </h2>
             <div className="space-y-0">
               {mostRead.map((art, i) => (
-                <div key={art._id} className="flex gap-3 items-start py-3 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                  <span className="text-2xl font-black text-slate-100 dark:text-slate-800 leading-none w-7 flex-shrink-0">{i+1}</span>
+                <div key={art._id} className="flex gap-3 items-start py-3 border-b border-gray-100 dark:border-neutral-800 last:border-0">
+                  <span className="text-2xl font-black text-gray-200 dark:text-neutral-800 leading-none w-7 flex-shrink-0">{i+1}</span>
                   <div className="min-w-0">
-                    <Link to={`/article/${art.slug}`} className="text-sm font-bold text-slate-800 dark:text-slate-200 hover:text-red-600 leading-snug block line-clamp-2 transition-colors">
+                    <Link to={`/article/${art.slug}`} className="text-sm font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 leading-snug block line-clamp-2 transition-colors">
                       {art.title}
                     </Link>
-                    <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                    <span className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1 flex items-center gap-1">
                       <Eye className="h-3 w-3"/>{art.views} {lang==='bn'?'বার পঠিত':'views'}
                     </span>
                   </div>
