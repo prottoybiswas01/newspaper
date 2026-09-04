@@ -170,19 +170,41 @@ class JSONModel {
     return builder;
   }
 
-  async find(query = {}) {
+  find(query = {}) {
     const docs = this._read();
     const matched = docs.filter(doc => this._match(doc, query));
     return this._queryBuilder(matched);
   }
 
-  async findOne(query = {}) {
+  findOne(query = {}) {
     const docs = this._read();
-    const matched = docs.find(doc => this._match(doc, query));
-    return matched || null;
+    const matched = docs.filter(doc => this._match(doc, query));
+    const baseBuilder = this._queryBuilder(matched);
+    const singleBuilder = {
+      ...baseBuilder,
+      sort(sortObj) {
+        baseBuilder.sort(sortObj);
+        return this;
+      },
+      select(fields) {
+        baseBuilder.select(fields);
+        return this;
+      },
+      populate(fields) {
+        baseBuilder.populate(fields);
+        return this;
+      },
+      then(resolve) {
+        resolve(baseBuilder.docs.length > 0 ? baseBuilder.docs[0] : null);
+      },
+      catch(reject) {
+        return this;
+      }
+    };
+    return singleBuilder;
   }
 
-  async findById(id) {
+  findById(id) {
     return this.findOne({ _id: id });
   }
 
