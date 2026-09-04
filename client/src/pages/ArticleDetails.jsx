@@ -375,13 +375,30 @@ const ArticleDetails = () => {
       </header>
 
       {displayArticle.featuredImage && (
-        <div className="rounded-2xl overflow-hidden mb-8 border border-slate-200/50 dark:border-slate-800/50 shadow-xs">
+        <div className="relative rounded-2xl overflow-hidden mb-8 border border-slate-200/50 dark:border-slate-800/50 shadow-xs group">
           <img 
             src={displayArticle.featuredImage} 
             alt={displayArticle.title} 
             decoding="async"
             className="w-full h-auto max-h-[500px] object-cover" 
           />
+          {displayArticle.source && (
+            <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-xs text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg border border-white/20 flex items-center space-x-1.5 transition-opacity duration-300">
+              <span className="text-gray-300">ছবি ও কৃতজ্ঞতা:</span>
+              {displayArticle.sourceUrl ? (
+                <a 
+                  href={displayArticle.sourceUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-red-400 hover:text-red-300 underline font-black"
+                >
+                  {displayArticle.source}
+                </a>
+              ) : (
+                <span className="text-red-400 font-black">{displayArticle.source}</span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -401,10 +418,28 @@ const ArticleDetails = () => {
 
       {/* Article Body Content */}
       <div 
-        className="prose prose-lg dark:prose-invert max-w-none mb-10 leading-loose font-sans text-gray-900 dark:text-neutral-100"
+        className="prose prose-lg dark:prose-invert max-w-none mb-6 leading-loose font-sans text-gray-900 dark:text-neutral-100"
         style={{ fontSize: `${fontSize}px` }}
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(displayArticle.content) }}
       />
+
+      {/* Source Attribution Box */}
+      {displayArticle.sourceUrl && (
+        <div className="my-6 p-4 rounded-xl bg-gray-50 dark:bg-[#18181b] border-l-4 border-red-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm no-print shadow-xs">
+          <div>
+            <span className="font-bold text-gray-900 dark:text-white">সংবাদের মূল উৎস:</span>{' '}
+            <span className="text-gray-700 dark:text-neutral-300 font-semibold">{displayArticle.source || 'অনলাইন নিউজ পোর্টাল'}</span>
+          </div>
+          <a
+            href={displayArticle.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center space-x-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-black underline text-xs sm:text-sm"
+          >
+            <span>মূল সংবাদটি সরাসরি পড়ুন ➔</span>
+          </a>
+        </div>
+      )}
 
       {/* Article Tags */}
       {displayArticle.tags && displayArticle.tags.length > 0 && (

@@ -21,19 +21,19 @@ const isAutoFetchEnabled = async () => {
 
 // Helper RSS feeds list for Node-side fetching (10 top Bengali portals)
 const RSS_SOURCES = [
-  { name: 'প্রথম আলো (Prothom Alo)', url: 'https://www.prothomalo.com/feed/' },
-  { name: 'কালের কণ্ঠ (Kaler Kantho)', url: 'https://www.kalerkantho.com/rss.xml' },
-  { name: 'জাগো নিউজ ২৪ (Jago News 24)', url: 'https://www.jagonews24.com/rss/rss.xml' },
-  { name: 'বিডিনিউজ ২৪ (bdnews24)', url: 'https://bangla.bdnews24.com/?widgetName=rssfeed&widgetId=1151&getXmlFeed=true' },
-  { name: 'বাংলানিউজ ২৪ (banglanews24)', url: 'https://www.banglanews24.com/rss/rss.xml' },
-  { name: 'ডেইলি স্টার বাংলা (Daily Star)', url: 'https://bangla.thedailystar.net/rss.xml' },
-  { name: 'সময় টিভি (Somoy TV)', url: 'https://somoynews.tv/rss/rss.xml' },
-  { name: 'ডিবিসি নিউজ (DBC News)', url: 'https://dbcnews.tv/rss.xml' },
-  { name: 'বার্তা ২৪ (Barta24)', url: 'https://barta24.com/rss.xml' },
-  { name: 'ঢাকা পোস্ট (Dhaka Post)', url: 'https://www.dhakapost.com/rss' }
+  { name: 'প্রথম আলো', url: 'https://www.prothomalo.com/feed/' },
+  { name: 'কালের কণ্ঠ', url: 'https://www.kalerkantho.com/rss.xml' },
+  { name: 'জাগো নিউজ ২৪', url: 'https://www.jagonews24.com/rss/rss.xml' },
+  { name: 'বিডিনিউজ ২৪', url: 'https://bangla.bdnews24.com/?widgetName=rssfeed&widgetId=1151&getXmlFeed=true' },
+  { name: 'বাংলানিউজ ২৪', url: 'https://www.banglanews24.com/rss/rss.xml' },
+  { name: 'ডেইলি স্টার বাংলা', url: 'https://bangla.thedailystar.net/rss.xml' },
+  { name: 'সময় টিভি', url: 'https://somoynews.tv/rss/rss.xml' },
+  { name: 'ডিবিসি নিউজ', url: 'https://dbcnews.tv/rss.xml' },
+  { name: 'বার্তা ২৪', url: 'https://barta24.com/rss.xml' },
+  { name: 'ঢাকা পোস্ট', url: 'https://www.dhakapost.com/rss' }
 ];
 
-// Helper to decode HTML entities
+// Helper to decode HTML entities and clean titles
 const cleanText = (str) => {
   if (!str) return '';
   return str
@@ -52,6 +52,15 @@ const cleanText = (str) => {
     .trim();
 };
 
+// Strip portal suffixes from official headline
+const cleanOfficialTitle = (rawTitle) => {
+  if (!rawTitle) return '';
+  let title = cleanText(rawTitle);
+  // Remove portal names appended at the end of headlines
+  title = title.replace(/\s*[\|\-–—]\s*(প্রথম\s*আলো|Prothom\s*Alo|কালের\s*কণ্ঠ|Kaler\s*Kantho|জাগো\s*নিউজ\s*২৪|Jago\s*News\s*24|বিডিনিউজ\s*২৪|bdnews24(\.com)?|বাংলানিউজ\s*২৪|banglanews24(\.com)?|ডেইলি\s*স্টার\s*বাংলা|Daily\s*Star|সময়\s*টিভি|Somoy\s*TV|ডিবিসি\s*নিউজ|DBC\s*News|ঢাকা\s*পোস্ট|Dhaka\s*Post|যুগান্তর|Jugantor|ইত্তেফাক|Ittefaq|সমকাল|Samakal|নয়া\s*দিগন্ত|বাংলা\s*ট্রিবিউন|মানবজমিন)[\s\S]*$/gi, '').trim();
+  return title;
+};
+
 // Automatically delete articles older than 24 hours
 const cleanupOldArticles = async () => {
   try {
@@ -65,6 +74,29 @@ const cleanupOldArticles = async () => {
   } catch (err) {
     console.error('Cleanup error:', err.message);
   }
+};
+
+// Extract image url from RSS XML item block
+const extractImageFromXmlItem = (itemXml) => {
+  if (!itemXml) return '';
+  
+  // 1. Check enclosure tag
+  const encMatch = itemXml.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (encMatch && encMatch[1]) return encMatch[1];
+
+  // 2. Check media:content tag
+  const mediaMatch = itemXml.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (mediaMatch && mediaMatch[1]) return mediaMatch[1];
+
+  // 3. Check media:thumbnail tag
+  const thumbMatch = itemXml.match(/<media:thumbnail[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (thumbMatch && thumbMatch[1]) return thumbMatch[1];
+
+  // 4. Check img tag inside description or content:encoded
+  const imgMatch = itemXml.match(/<img[^>]*src=["']([^"']+)["'][^>]*>/i);
+  if (imgMatch && imgMatch[1]) return imgMatch[1];
+
+  return '';
 };
 
 // GET /api/auto-fetched - Fetch today's auto-fetched articles
@@ -188,7 +220,7 @@ exports.triggerAutoFetch = async (req, res) => {
           headers: { 
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' 
           },
-          signal: AbortSignal.timeout(5000)
+          signal: AbortSignal.timeout(6000)
         });
         if (!response.ok) return [];
         const xml = await response.text();
@@ -201,10 +233,12 @@ exports.triggerAutoFetch = async (req, res) => {
           const descMatch = itemXml.match(/<description>([\s\S]*?)<\/description>/i);
           const dateMatch = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/i);
 
-          const title = titleMatch ? cleanText(titleMatch[1]) : '';
+          const rawTitle = titleMatch ? cleanText(titleMatch[1]) : '';
+          const title = cleanOfficialTitle(rawTitle);
           const link = linkMatch ? cleanText(linkMatch[1]) : '';
           let description = descMatch ? cleanText(descMatch[1]) : '';
           const pubDate = dateMatch ? new Date(cleanText(dateMatch[1])) : new Date();
+          const featuredImage = extractImageFromXmlItem(itemXml);
 
           if (!title || !link) continue;
 
@@ -215,6 +249,7 @@ exports.triggerAutoFetch = async (req, res) => {
             title,
             link,
             description: description.substring(0, 1000),
+            featuredImage: featuredImage || '',
             pubDate: isNaN(pubDate.getTime()) ? new Date() : pubDate,
             source: src.name
           });
@@ -235,6 +270,8 @@ exports.triggerAutoFetch = async (req, res) => {
             if (!existing) {
               await AutoFetchedArticle.create(item);
               newCount++;
+            } else if (!existing.featuredImage && item.featuredImage) {
+              await AutoFetchedArticle.findByIdAndUpdate(existing._id, { $set: { featuredImage: item.featuredImage } });
             }
           } catch (e) {
             // Ignore duplicate collision
@@ -255,7 +292,7 @@ exports.triggerAutoFetch = async (req, res) => {
   }
 };
 
-// POST /api/auto-fetched/extract - Scrape/extract complete full article text from link
+// POST /api/auto-fetched/extract - Scrape/extract complete full article text, high-res image & official headline
 exports.extractFullArticleContent = async (req, res) => {
   try {
     const { url } = req.body;
@@ -267,7 +304,7 @@ exports.extractFullArticleContent = async (req, res) => {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       },
-      signal: AbortSignal.timeout(6000)
+      signal: AbortSignal.timeout(8000)
     });
 
     if (!response.ok) {
@@ -291,12 +328,57 @@ exports.extractFullArticleContent = async (req, res) => {
         .replace(/&gt;/g, '>');
     };
 
+    // 1. Extract Official Title from OpenGraph meta or H1
+    let officialTitle = '';
+    const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["'][^>]*>/i);
+    if (ogTitleMatch && ogTitleMatch[1]) {
+      officialTitle = cleanOfficialTitle(ogTitleMatch[1]);
+    }
+    if (!officialTitle) {
+      const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
+      if (h1Match && h1Match[1]) {
+        officialTitle = cleanOfficialTitle(h1Match[1]);
+      }
+    }
+
+    // 2. Extract Featured Image from OpenGraph meta or Twitter meta
+    let featuredImage = '';
+    const ogImgMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i) ||
+                       html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                       html.match(/<link[^>]*rel=["']image_src["'][^>]*href=["']([^"']+)["'][^>]*>/i);
+    if (ogImgMatch && ogImgMatch[1]) {
+      featuredImage = decodeHtmlEntities(ogImgMatch[1]).trim();
+    }
+
+    // 3. Extract Portal / Source name from og:site_name or domain
+    let sourceName = '';
+    const ogSiteMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+    if (ogSiteMatch && ogSiteMatch[1]) {
+      sourceName = decodeHtmlEntities(ogSiteMatch[1]).trim();
+    }
+    if (!sourceName) {
+      if (url.includes('prothomalo')) sourceName = 'প্রথম আলো';
+      else if (url.includes('kalerkantho')) sourceName = 'কালের কণ্ঠ';
+      else if (url.includes('jagonews24')) sourceName = 'জাগো নিউজ ২৪';
+      else if (url.includes('bdnews24')) sourceName = 'বিডিনিউজ ২৪';
+      else if (url.includes('banglanews24')) sourceName = 'বাংলানিউজ ২৪';
+      else if (url.includes('thedailystar')) sourceName = 'ডেইলি স্টার বাংলা';
+      else if (url.includes('somoynews')) sourceName = 'সময় টিভি';
+      else if (url.includes('dhakapost')) sourceName = 'ঢাকা পোস্ট';
+      else if (url.includes('jugantor')) sourceName = 'যুগান্তর';
+      else if (url.includes('samakal')) sourceName = 'সমকাল';
+      else if (url.includes('ittefaq')) sourceName = 'ইত্তেফাক';
+    }
+
+    // 4. Extract clean article paragraphs
     const pMatches = html.match(/<p[^\>]*>[\s\S]*?<\/p>/gi) || [];
     const badPatterns = [
       /আরও\s*পড়ুন/i, /আরও\s*দেখুন/i, /READ\s*MORE/i, /পাঠকপ্রিয়/i, /লিখতে\s*পারেন/i,
       /আজই\s*আপনার\s*লেখাটি/i, /সম্পাদক\s*:/i, /সর্বস্বত্ব/i, /কমফোর্ট/i, /প্রগতি\s*সরণি/i,
       /বিজ্ঞাপন/i, /ফাইল\s*ছবি/i, /সর্বশেষ\s*-/i, /শেয়ার\s*করুন/i, /লাইক\s*দিন/i,
-      /ফলো\s*করুন/i, /সাবস্ক্রাইব/i, /Copyright/i
+      /ফলো\s*করুন/i, /সাবস্ক্রাইব/i, /Copyright/i, /মন্তব্য\s*করুন/i, /গোপনীয়তা\s*নীতি/i
     ];
 
     const cleanParagraphs = pMatches
@@ -304,7 +386,14 @@ exports.extractFullArticleContent = async (req, res) => {
       .filter(p => p.length > 25 && !badPatterns.some(pattern => pattern.test(p)));
 
     if (cleanParagraphs.length === 0) {
-      return res.json({ success: false, message: 'Could not extract full text' });
+      return res.json({ 
+        success: false, 
+        message: 'Could not extract full text',
+        title: officialTitle,
+        featuredImage,
+        source: sourceName,
+        sourceUrl: url
+      });
     }
 
     const htmlContent = cleanParagraphs.map(p => `<p>${p}</p>`).join('\n');
@@ -312,6 +401,10 @@ exports.extractFullArticleContent = async (req, res) => {
 
     res.json({
       success: true,
+      title: officialTitle,
+      featuredImage,
+      source: sourceName,
+      sourceUrl: url,
       content: htmlContent,
       summary,
       paragraphCount: cleanParagraphs.length

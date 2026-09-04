@@ -69,7 +69,7 @@ const CATEGORY_SYNONYMS = {
 // @route   POST /api/articles
 const createArticle = async (req, res) => {
   try {
-    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
+    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo, source, sourceUrl } = req.body;
 
     if (!title || !content || !category) {
       return res.status(400).json({ success: false, message: 'Title, content, and category are required' });
@@ -102,6 +102,8 @@ const createArticle = async (req, res) => {
       status: status || 'draft',
       featuredImage: featuredImage || '',
       videoUrl: videoUrl || '',
+      source: source || '',
+      sourceUrl: sourceUrl || '',
       readingTime,
       seo: seo || { metaTitle: title, metaDescription: summary || '', keywords: (tags || []).join(', ') }
     };
@@ -224,7 +226,7 @@ const getArticleBySlug = async (req, res) => {
 // @route   PUT /api/articles/:id
 const updateArticle = async (req, res) => {
   try {
-    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo } = req.body;
+    const { title, subtitle, content, summary, category, subcategory, tags, status, featuredImage, videoUrl, scheduledDate, seo, source, sourceUrl } = req.body;
     
     const article = await Article.findById(req.params.id);
     if (!article) {
@@ -266,6 +268,8 @@ const updateArticle = async (req, res) => {
     if (tags) updateData.tags = tags;
     if (featuredImage !== undefined) updateData.featuredImage = featuredImage;
     if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
+    if (source !== undefined) updateData.source = source;
+    if (sourceUrl !== undefined) updateData.sourceUrl = sourceUrl;
     if (seo) updateData.seo = seo;
 
     if (status) {

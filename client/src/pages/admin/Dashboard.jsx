@@ -289,10 +289,11 @@ const Dashboard = () => {
     resetEditorForm();
     setEditingArticleId(null);
     setArticleTitle(fetchedArt.title);
-    setArticleSubtitle(fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '');
+    setArticleSubtitle(fetchedArt.source ? `তথ্যসূত্র: ${fetchedArt.source}` : '');
+    setArticleImage(fetchedArt.featuredImage || '');
     
     // Initial source attribution footer
-    const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} (<a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>`;
+    const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
     
     // Initial fallback text cleaned of teaser snippets
     let initialDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
@@ -300,8 +301,8 @@ const Dashboard = () => {
     
     setArticleContent(initialContent);
     setArticleSummary(initialDesc ? initialDesc.substring(0, 200) : '');
-    setArticleCategory('Bangladesh');
-    setArticleTags(fetchedArt.source || '');
+    setArticleCategory('বাংলাদেশ');
+    setArticleTags(fetchedArt.source ? [fetchedArt.source] : ['জাতীয়']);
     setArticleStatus('draft');
     
     setArticleSeoTitle(fetchedArt.title);
@@ -309,18 +310,28 @@ const Dashboard = () => {
     setArticleSeoKeywords(fetchedArt.source || '');
     
     setActiveTab('editor');
-    toast.info('সংবাদটির সম্পূর্ণ মূল প্যারাগ্রাফ এক্সট্রাক্ট করা হচ্ছে...');
+    toast.info('সংবাদটির মূল ছবি ও সম্পূর্ণ তথ্য এক্সট্রাক্ট করা হচ্ছে...');
 
-    // Attempt to extract 100% full complete text from the target news URL
+    // Attempt to extract 100% full complete text, high-res image & official title from target news URL
     try {
       const extRes = await api.post('/auto-fetched/extract', { url: fetchedArt.link });
-      if (extRes.success && extRes.content) {
-        setArticleContent(`${extRes.content}\n${sourceAttribution}`);
+      if (extRes.success) {
+        if (extRes.title) {
+          setArticleTitle(extRes.title);
+          setArticleSeoTitle(extRes.title);
+        }
+        if (extRes.featuredImage) {
+          setArticleImage(extRes.featuredImage);
+        }
+        const updatedAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${extRes.source || fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
+        if (extRes.content) {
+          setArticleContent(`${extRes.content}\n${updatedAttribution}`);
+        }
         if (extRes.summary) {
           setArticleSummary(extRes.summary);
           setArticleSeoDesc(extRes.summary.substring(0, 150));
         }
-        toast.success(`সম্পূর্ণ ${extRes.paragraphCount || ''}টি প্যারাগ্রাফ সফলভাবে লোড করা হয়েছে!`);
+        toast.success(`ছবি ও সম্পূর্ণ ${extRes.paragraphCount || ''}টি প্যারাগ্রাফ সফলভাবে লোড করা হয়েছে!`);
       } else {
         toast.success('সংবাদটি এডিটরে লোড করা হয়েছে।');
       }
@@ -331,50 +342,61 @@ const Dashboard = () => {
 
   // Instantly publish a fetched article directly onto the live site with FULL article extraction
   const handlePublishFetchedArticle = async (fetchedArt) => {
-    if (!window.confirm('আপনি কি এই খবরটি সরাসরি লাইভ ওয়েবসাইটে পাবলিশ করতে চান?')) return;
+    if (!window.confirm('আপনি কি এই খবরটি সরাসরি লাইভ ওয়েবসাইটে সম্পূর্ণ ছবি ও টেক্সটসহ পাবলিশ করতে চান?')) return;
     try {
-      const sourceAttribution = `<br/><hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;"/><p style="font-size: 12px; color: #64748b;"><strong>তথ্যসূত্র:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} (<a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">মূল লিংক</a>)</p>`;
-
+      toast.info('সংবাদটির মূল ছবি ও সম্পূর্ণ তথ্য সংগ্রহ করা হচ্ছে...');
+      let finalTitle = fetchedArt.title;
+      let finalImage = fetchedArt.featuredImage || '';
+      let finalSource = fetchedArt.source || 'অনলাইন নিউজ পোর্টাল';
       let fullContent = '';
       let fullSummary = '';
 
       // Try full extraction
       try {
         const extRes = await api.post('/auto-fetched/extract', { url: fetchedArt.link });
-        if (extRes.success && extRes.content) {
-          fullContent = `${extRes.content}\n${sourceAttribution}`;
-          fullSummary = extRes.summary || '';
+        if (extRes.success) {
+          if (extRes.title) finalTitle = extRes.title;
+          if (extRes.featuredImage) finalImage = extRes.featuredImage;
+          if (extRes.source) finalSource = extRes.source;
+          if (extRes.content) fullContent = extRes.content;
+          if (extRes.summary) fullSummary = extRes.summary;
         }
       } catch (e) {
         // Ignore fallback to snippet
       }
 
+      const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${finalSource} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
+
       if (!fullContent) {
         let cleanDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
         fullContent = cleanDesc ? `<p>${cleanDesc}</p>${sourceAttribution}` : sourceAttribution;
         fullSummary = cleanDesc ? cleanDesc.substring(0, 200) : '';
+      } else {
+        fullContent = `${fullContent}\n${sourceAttribution}`;
       }
 
       const payload = {
-        title: fetchedArt.title,
-        subtitle: fetchedArt.source ? `উৎস: ${fetchedArt.source}` : '',
+        title: finalTitle,
+        subtitle: `উৎস: ${finalSource}`,
         content: fullContent,
         summary: fullSummary,
-        category: 'Bangladesh',
-        tags: fetchedArt.source ? [fetchedArt.source] : [],
+        category: 'বাংলাদেশ',
+        tags: [finalSource, 'জাতীয়'],
         status: 'published',
-        featuredImage: '',
+        featuredImage: finalImage,
+        source: finalSource,
+        sourceUrl: fetchedArt.link,
         videoUrl: '',
         seo: {
-          metaTitle: fetchedArt.title,
+          metaTitle: finalTitle,
           metaDescription: fullSummary.substring(0, 150),
-          keywords: fetchedArt.source || ''
+          keywords: finalSource
         }
       };
 
       const res = await api.post('/articles', payload);
       if (res.success) {
-        toast.success('খবরটি সফলভাবে সম্পূর্ণ টেক্সটসহ সরাসরি পাবলিশ করা হয়েছে!');
+        toast.success('খবরটি সফলভাবে আসল ছবি ও পূর্ণাঙ্গ টেক্সটসহ সরাসরি পাবলিশ করা হয়েছে!');
         // Delete log after publishing
         await api.delete(`/auto-fetched/${fetchedArt._id}`);
         loadAutoFetchedArticles();

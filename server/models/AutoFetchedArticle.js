@@ -4,6 +4,7 @@ const AutoFetchedArticleSchema = {
   title: { type: String, required: true },
   link: { type: String, required: true, unique: true },
   description: { type: String, default: '' },
+  featuredImage: { type: String, default: '' },
   pubDate: { type: Date },
   source: { type: String, default: '' }
 };

@@ -19,6 +19,8 @@ const ArticleSchema = {
   featuredImage: { type: String, default: '' },
   images: { type: [String], default: [] },
   videoUrl: { type: String, default: '' },
+  source: { type: String, default: '' },       // Original portal source name (e.g., প্রথম আলো)
+  sourceUrl: { type: String, default: '' },    // Original portal news URL
   publishDate: { type: Date },
   scheduledDate: { type: Date },
   readingTime: { type: Number, default: 1 },
