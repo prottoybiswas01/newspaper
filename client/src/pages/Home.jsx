@@ -4,6 +4,7 @@ import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
 import PollWidget from '../components/PollWidget';
 import CategoryMegaMenu from '../components/CategoryMegaMenu';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useLanguage } from '../context/LanguageContext';
 import { Eye, Heart, Clock, PlayCircle, Image as ImageIcon, ChevronRight, Inbox, Camera } from 'lucide-react';
 
@@ -415,153 +416,175 @@ const Home = () => {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
-      {/* Header Ad */}
-      <AdPlacement placement="header" />
+      {/* ═══ SECTION PARTITION: Header Advertisement ═══ */}
+      <ErrorBoundary isSection={true} sectionName="হেডার বিজ্ঞাপন">
+        <AdPlacement placement="header" />
+      </ErrorBoundary>
 
-      {/* ══ TOP SECTION: Hero (L) + Row cards (M) + Latest sidebar (R) ══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* ═══ SECTION PARTITION: Top Hero & Latest News Grid ═══ */}
+      <ErrorBoundary isSection={true} sectionName="প্রধান সংবাদ ও সর্বশেষ তালিকা">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        {/* Hero card — left 5/12 */}
-        <div className="lg:col-span-5">
-          <HeroCard art={hero} lang={lang} />
-        </div>
-
-        {/* Middle strip: 3 secondary cards — middle 4/12 */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          {secondary.map(art => (
-            <SecondaryCard key={art._id} art={art} lang={lang} />
-          ))}
-        </div>
-
-        {/* Right: Latest News sidebar — 3/12 */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 p-4">
-          <div className="flex items-center justify-between border-b-2 border-red-600 pb-2 mb-3">
-            <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 uppercase tracking-wide">
-              {lang === 'bn' ? 'সর্বশেষ সংবাদ' : 'Latest News'}
-            </h2>
-            <Link to="/category/latest" className="text-[10px] font-bold text-red-600 hover:underline flex items-center">
-              {lang === 'bn' ? 'আরও' : 'More'} <ChevronRight className="h-3 w-3" />
-            </Link>
+          {/* Hero card — left 5/12 */}
+          <div className="lg:col-span-5">
+            <HeroCard art={hero} lang={lang} />
           </div>
-          <div className="space-y-0">
-            {latestArticles.slice(0, 7).map((art, i) => (
-              <div key={art._id} className="flex gap-2.5 items-start py-2.5 border-b border-gray-100 dark:border-neutral-800 last:border-0">
-                <span className="text-base font-black text-gray-300 dark:text-neutral-700 w-5 flex-shrink-0 leading-none">{String(i+1).padStart(2,'0')}</span>
-                <div className="min-w-0">
-                  <Link to={`/article/${art.slug}`} className="text-xs font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 leading-snug block line-clamp-2 transition-colors">
-                    {art.title}
-                  </Link>
-                  <span className="text-[9px] text-gray-400 dark:text-neutral-500 mt-0.5 block">{timeAgo(art.publishDate || art.createdAt, lang)}</span>
-                </div>
-              </div>
+
+          {/* Middle strip: 3 secondary cards — middle 4/12 */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            {secondary.map(art => (
+              <SecondaryCard key={art._id} art={art} lang={lang} />
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Ad strip */}
-      <AdPlacement placement="mid" />
-
-      {/* ══ 4-CARD GRID ROW ══ */}
-      {gridRow.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {gridRow.map(art => <GridCard key={art._id} art={art} lang={lang} />)}
-        </div>
-      )}
-
-      {/* ══ PROTHOM-ALO STYLE PHOTO GALLERY SECTION (PDF Page 3) ══ */}
-      <PhotoGallerySection articles={topArticles} lang={lang} />
-
-      {/* ══ MAIN BODY: Dynamic sections (L 8/12) + Sidebar (R 4/12) ══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-        {/* Left: dynamic category sections */}
-        <div className="lg:col-span-8 space-y-10">
-          {layoutSections.map((sec, idx) => {
-            const slug  = sec.category.toLowerCase().replace(/\s+/g,'-');
-            const label = t(slug) || sec.category;
-            return (
-              <section key={`${sec.category}-${idx}`} className="bg-white dark:bg-[#121212] p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-neutral-800">
-                <SectionHead label={label} slug={slug} lang={lang} />
-
-                {/* Prothom-Alo Style Layout (PDF Page 2): Big featured left + 4-Grid right */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                  <div className="md:col-span-6">
-                    <GridCard art={sec.articles[0]} lang={lang} />
-                  </div>
-                  <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {sec.articles.slice(1, 5).map(a => (
-                      <SecondaryCard key={a._id} art={a} lang={lang} />
-                    ))}
+          {/* Right: Latest News sidebar — 3/12 */}
+          <div className="lg:col-span-3 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 p-4">
+            <div className="flex items-center justify-between border-b-2 border-red-600 pb-2 mb-3">
+              <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 uppercase tracking-wide">
+                {lang === 'bn' ? 'সর্বশেষ সংবাদ' : 'Latest News'}
+              </h2>
+              <Link to="/category/latest" className="text-[10px] font-bold text-red-600 hover:underline flex items-center">
+                {lang === 'bn' ? 'আরও' : 'More'} <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="space-y-0">
+              {latestArticles.slice(0, 7).map((art, i) => (
+                <div key={art._id} className="flex gap-2.5 items-start py-2.5 border-b border-gray-100 dark:border-neutral-800 last:border-0">
+                  <span className="text-base font-black text-gray-300 dark:text-neutral-700 w-5 flex-shrink-0 leading-none">{String(i+1).padStart(2,'0')}</span>
+                  <div className="min-w-0">
+                    <Link to={`/article/${art.slug}`} className="text-xs font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 dark:hover:text-red-400 leading-snug block line-clamp-2 transition-colors">
+                      {art.title}
+                    </Link>
+                    <span className="text-[9px] text-gray-400 dark:text-neutral-500 mt-0.5 block">{timeAgo(art.publishDate || art.createdAt, lang)}</span>
                   </div>
                 </div>
-              </section>
-            );
-          })}
+              ))}
+            </div>
+          </div>
+        </div>
+      </ErrorBoundary>
+
+      {/* ═══ SECTION PARTITION: Middle Advertisement ═══ */}
+      <ErrorBoundary isSection={true} sectionName="মধ্যবর্তী বিজ্ঞাপন">
+        <AdPlacement placement="mid" />
+      </ErrorBoundary>
+
+      {/* ═══ SECTION PARTITION: 4-Card Grid Row ═══ */}
+      {gridRow.length > 0 && (
+        <ErrorBoundary isSection={true} sectionName="সংবাদ গ্রিড বিভাগ">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {gridRow.map(art => <GridCard key={art._id} art={art} lang={lang} />)}
+          </div>
+        </ErrorBoundary>
+      )}
+
+      {/* ═══ SECTION PARTITION: Photo Gallery Section (Prothom-Alo Style) ═══ */}
+      <ErrorBoundary isSection={true} sectionName="ছবি গ্যালারি বিভাগ">
+        <PhotoGallerySection articles={topArticles} lang={lang} />
+      </ErrorBoundary>
+
+      {/* ═══ SECTION PARTITION: Category Sections & Interactive Sidebar ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        {/* Left: Dynamic category sections */}
+        <div className="lg:col-span-8 space-y-10">
+          <ErrorBoundary isSection={true} sectionName="ক্যাটাগরি ভিত্তিক সংবাদ">
+            <div className="space-y-10">
+              {layoutSections.map((sec, idx) => {
+                const slug  = sec.category.toLowerCase().replace(/\s+/g,'-');
+                const label = t(slug) || sec.category;
+                return (
+                  <section key={`${sec.category}-${idx}`} className="bg-white dark:bg-[#121212] p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-neutral-800">
+                    <SectionHead label={label} slug={slug} lang={lang} />
+
+                    {/* Prothom-Alo Style Layout: Big featured left + 4-Grid right */}
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                      <div className="md:col-span-6">
+                        <GridCard art={sec.articles[0]} lang={lang} />
+                      </div>
+                      <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        {sec.articles.slice(1, 5).map(a => (
+                          <SecondaryCard key={a._id} art={a} lang={lang} />
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          </ErrorBoundary>
 
           {/* Media Center / Video block */}
           {topArticles.filter(a => a.videoUrl).length > 0 && (
-            <div className="bg-[#111111] text-white p-5 rounded-2xl border border-neutral-800">
-              <div className="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
-                <h2 className="text-base font-black flex items-center gap-2">
-                  <PlayCircle className="h-5 w-5 text-red-500" />
-                  <span>{lang === 'bn' ? 'ভিডিও গ্যালারি' : 'Video Gallery'}</span>
-                </h2>
-                <Link to="/media-center" className="text-xs font-bold text-red-400 hover:underline flex items-center">
-                  {lang === 'bn' ? 'সব ভিডিও' : 'All Videos'} <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
+            <ErrorBoundary isSection={true} sectionName="ভিডিও গ্যালারি">
+              <div className="bg-[#111111] text-white p-5 rounded-2xl border border-neutral-800">
+                <div className="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
+                  <h2 className="text-base font-black flex items-center gap-2">
+                    <PlayCircle className="h-5 w-5 text-red-500" />
+                    <span>{lang === 'bn' ? 'ভিডিও গ্যালারি' : 'Video Gallery'}</span>
+                  </h2>
+                  <Link to="/media-center" className="text-xs font-bold text-red-400 hover:underline flex items-center">
+                    {lang === 'bn' ? 'সব ভিডিও' : 'All Videos'} <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {topArticles.filter(a => a.videoUrl).slice(0, 3).map((art) => {
+                    const img = imgSrc(art);
+                    return (
+                      <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-neutral-900 block">
+                        {img && (
+                          <img src={img} alt={art.title}
+                            loading="lazy" decoding="async"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
+                        </div>
+                        <div className="absolute bottom-2 left-2 right-2 text-xs font-bold truncate">{art.title}</div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {topArticles.filter(a => a.videoUrl).slice(0, 3).map((art) => {
-                  const img = imgSrc(art);
-                  return (
-                    <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-neutral-900 block">
-                      {img && (
-                        <img src={img} alt={art.title}
-                          loading="lazy" decoding="async"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
-                      )}
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
-                      </div>
-                      <div className="absolute bottom-2 left-2 right-2 text-xs font-bold truncate">{art.title}</div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+            </ErrorBoundary>
           )}
         </div>
 
         {/* Right: Sidebar */}
         <div className="lg:col-span-4 space-y-6">
           {/* Sidebar Ad */}
-          <AdPlacement placement="sidebar" />
+          <ErrorBoundary isSection={true} sectionName="সাইডবার বিজ্ঞাপন">
+            <AdPlacement placement="sidebar" />
+          </ErrorBoundary>
 
-          {/* Poll */}
-          <PollWidget />
+          {/* Poll Widget */}
+          <ErrorBoundary isSection={true} sectionName="অনলাইন জরিপ ও মতামত">
+            <PollWidget />
+          </ErrorBoundary>
 
-          {/* Most Read */}
-          <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-5">
-            <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 border-b-2 border-red-600 pb-2 mb-4 uppercase tracking-wide">
-              {lang === 'bn' ? 'পাঠকপ্রিয় সংবাদ' : 'Most Read'}
-            </h2>
-            <div className="space-y-0">
-              {mostRead.map((art, i) => (
-                <div key={art._id} className="flex gap-3 items-start py-3 border-b border-gray-100 dark:border-neutral-800 last:border-0">
-                  <span className="text-2xl font-black text-gray-200 dark:text-neutral-800 leading-none w-7 flex-shrink-0">{i+1}</span>
-                  <div className="min-w-0">
-                    <Link to={`/article/${art.slug}`} className="text-sm font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 leading-snug block line-clamp-2 transition-colors">
-                      {art.title}
-                    </Link>
-                    <span className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1 flex items-center gap-1">
-                      <Eye className="h-3 w-3"/>{art.views} {lang==='bn'?'বার পঠিত':'views'}
-                    </span>
+          {/* Most Read Sidebar */}
+          <ErrorBoundary isSection={true} sectionName="পাঠকপ্রিয় সংবাদ তালিকা">
+            <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-5">
+              <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 border-b-2 border-red-600 pb-2 mb-4 uppercase tracking-wide">
+                {lang === 'bn' ? 'পাঠকপ্রিয় সংবাদ' : 'Most Read'}
+              </h2>
+              <div className="space-y-0">
+                {mostRead.map((art, i) => (
+                  <div key={art._id} className="flex gap-3 items-start py-3 border-b border-gray-100 dark:border-neutral-800 last:border-0">
+                    <span className="text-2xl font-black text-gray-200 dark:text-neutral-800 leading-none w-7 flex-shrink-0">{i+1}</span>
+                    <div className="min-w-0">
+                      <Link to={`/article/${art.slug}`} className="text-sm font-bold text-gray-800 dark:text-neutral-200 hover:text-red-600 leading-snug block line-clamp-2 transition-colors">
+                        {art.title}
+                      </Link>
+                      <span className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1 flex items-center gap-1">
+                        <Eye className="h-3 w-3"/>{art.views} {lang==='bn'?'বার পঠিত':'views'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          </ErrorBoundary>
         </div>
       </div>
     </main>
