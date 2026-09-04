@@ -186,6 +186,143 @@ const SectionHead = ({ label, slug, lang }) => (
   </div>
 );
 
+/** Prothom-Alo Style Photo Gallery Section (PDF Page 3) */
+const PhotoGallerySection = ({ articles = [], lang }) => {
+  const photoArticles = articles.filter(a => a.featuredImage).slice(0, 5);
+  if (photoArticles.length === 0) return null;
+
+  const featured = photoArticles[0];
+  const sidePhotos = photoArticles.slice(1, 5);
+  const featuredImg = imgSrc(featured);
+
+  return (
+    <section className="bg-slate-50 dark:bg-[#121212] p-5 sm:p-7 rounded-2xl border border-gray-200 dark:border-neutral-800 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-neutral-800 pb-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center shadow-xs">
+            <Camera className="h-4 w-4" />
+          </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-black text-gray-950 dark:text-white tracking-tight">
+              {lang === 'bn' ? 'ফটো গ্যালারি' : 'Photo Gallery'}
+            </h2>
+            <p className="text-[11px] text-gray-500 dark:text-neutral-400">
+              {lang === 'bn' ? 'ছবির গল্প ও আলোচিত মুহূর্ত' : 'Stories in Pictures'}
+            </p>
+          </div>
+        </div>
+
+        <Link 
+          to="/category/photo" 
+          className="flex items-center space-x-1 text-xs font-bold text-red-600 dark:text-red-400 hover:underline bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-neutral-700 shadow-xs"
+        >
+          <span>{lang === 'bn' ? 'আরও' : 'More'}</span>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+
+      {/* Gallery Grid: Big Hero (L) + 4 Mini Cards (R) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        
+        {/* Left: Big Featured Photo Card */}
+        {featured && (
+          <div className="lg:col-span-7">
+            <Link 
+              to={`/article/${featured.slug}`} 
+              className="group relative block h-80 sm:h-96 rounded-xl overflow-hidden shadow-md bg-neutral-900"
+            >
+              {featuredImg && (
+                <img 
+                  src={featuredImg} 
+                  alt={featured.title} 
+                  loading="lazy" 
+                  decoding="async"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                />
+              )}
+              {/* Dark Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+              
+              {/* Photo Count Badge (Top-Left) */}
+              <div className="absolute top-3 left-3 flex items-center space-x-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold border border-white/20">
+                <Camera className="h-3 w-3 text-red-400" />
+                <span>১/{photoArticles.length} ছবি</span>
+              </div>
+
+              {/* Title & Description (Bottom) */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 space-y-1.5 text-white">
+                <span className="inline-block px-2 py-0.5 rounded-sm bg-red-600 text-[10px] font-black uppercase tracking-wider">
+                  {featured.category}
+                </span>
+                <h3 className="text-base sm:text-lg font-black leading-snug group-hover:text-red-300 transition-colors line-clamp-2">
+                  {featured.title}
+                </h3>
+                {featured.summary && (
+                  <p className="text-xs text-neutral-300 line-clamp-2 hidden sm:block">
+                    {featured.summary}
+                  </p>
+                )}
+              </div>
+            </Link>
+          </div>
+        )}
+
+        {/* Right: 4 Smaller Photo Cards (2x2 Grid) */}
+        <div className="lg:col-span-5 grid grid-cols-2 gap-3.5">
+          {sidePhotos.map((art, idx) => {
+            const sideImg = imgSrc(art);
+            return (
+              <Link 
+                key={art._id || idx} 
+                to={`/article/${art.slug}`} 
+                className="group flex flex-col bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="relative aspect-video sm:h-28 overflow-hidden bg-neutral-800">
+                  {sideImg && (
+                    <img 
+                      src={sideImg} 
+                      alt={art.title} 
+                      loading="lazy" 
+                      decoding="async"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                  )}
+                  <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold flex items-center gap-1 border border-white/10">
+                    <Camera className="h-2.5 w-2.5 text-red-400" />
+                    <span>১টি ছবি</span>
+                  </div>
+                </div>
+                <div className="p-2.5 flex-1 flex flex-col justify-between">
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 line-clamp-2 leading-snug">
+                    {art.title}
+                  </h4>
+                  <span className="text-[10px] text-gray-400 dark:text-neutral-500 mt-1 block">
+                    {timeAgo(art.publishDate || art.createdAt, lang)}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+      </div>
+
+      {/* Bottom CTA Button (PDF Page 3: সব ছবি দেখুন) */}
+      <div className="pt-2 text-center">
+        <Link 
+          to="/category/photo" 
+          className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-black transition-transform hover:scale-105 shadow-md shadow-red-600/20"
+        >
+          <Camera className="h-4 w-4" />
+          <span>{lang === 'bn' ? 'সব ছবি দেখুন' : 'View All Photos'}</span>
+          <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
+  );
+};
+
 // ── main component ──────────────────────────────────────────
 const Home = () => {
   const [topArticles, setTopArticles]       = useState([]);   // first 10 latest (for top grid)
@@ -236,48 +373,24 @@ const Home = () => {
 
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Hero skeleton */}
           <div className="lg:col-span-5 space-y-4">
             <div className="h-72 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
             <div className="h-6 bg-gray-100 dark:bg-neutral-800 rounded-md w-3/4" />
             <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
-            <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-5/6" />
           </div>
-
-          {/* Row list skeleton */}
           <div className="lg:col-span-4 space-y-4 p-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="flex gap-3 items-center">
                 <div className="w-20 h-16 bg-gray-100 dark:bg-neutral-800 rounded-lg flex-shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
-                  <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/3" />
                 </div>
               </div>
             ))}
           </div>
-
-          {/* Sidebar skeleton */}
           <div className="lg:col-span-3 space-y-4 p-4 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800">
             <div className="h-5 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/2 mb-4" />
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="space-y-2 border-b border-gray-100 dark:border-neutral-800 pb-3 last:border-0">
-                <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
-                <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/4" />
-              </div>
-            ))}
           </div>
-        </div>
-
-        {/* Grid Row skeleton */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="space-y-3">
-              <div className="h-40 bg-gray-100 dark:bg-neutral-800 rounded-xl" />
-              <div className="h-4 bg-gray-100 dark:bg-neutral-800 rounded-md w-full" />
-              <div className="h-3 bg-gray-100 dark:bg-neutral-800 rounded-md w-1/2" />
-            </div>
-          ))}
         </div>
       </main>
     );
@@ -293,7 +406,7 @@ const Home = () => {
             {lang === 'bn' ? 'বর্তমানে কোনো প্রকাশিত সংবাদ নেই' : 'No Published News Available'}
           </h2>
           <p className="text-xs text-gray-500 dark:text-neutral-400">
-            {lang === 'bn' ? 'অ্যাডমিন বা রিপোর্টার দ্বারা সংবাদ প্রকাশিত হলে বা অটো-ফেচ করা হলে তা এখানে স্বয়ংক্রিয়ভাবে দেখাবে।' : 'Articles created or auto-fetched into database will automatically show up here.'}
+            {lang === 'bn' ? 'অ্যাডমিন বা রিপোর্টার দ্বারা সংবাদ প্রকাশিত হলে তা এখানে স্বয়ংক্রিয়ভাবে দেখাবে।' : 'Articles will show up here as soon as published.'}
           </p>
         </div>
       </main>
@@ -322,9 +435,14 @@ const Home = () => {
 
         {/* Right: Latest News sidebar — 3/12 */}
         <div className="lg:col-span-3 bg-white dark:bg-[#121212] rounded-xl border border-gray-200 dark:border-neutral-800 p-4">
-          <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 border-b-2 border-red-600 pb-2 mb-3 uppercase tracking-wide">
-            {lang === 'bn' ? 'সর্বশেষ সংবাদ' : 'Latest News'}
-          </h2>
+          <div className="flex items-center justify-between border-b-2 border-red-600 pb-2 mb-3">
+            <h2 className="text-sm font-black text-gray-900 dark:text-neutral-100 uppercase tracking-wide">
+              {lang === 'bn' ? 'সর্বশেষ সংবাদ' : 'Latest News'}
+            </h2>
+            <Link to="/category/latest" className="text-[10px] font-bold text-red-600 hover:underline flex items-center">
+              {lang === 'bn' ? 'আরও' : 'More'} <ChevronRight className="h-3 w-3" />
+            </Link>
+          </div>
           <div className="space-y-0">
             {latestArticles.slice(0, 7).map((art, i) => (
               <div key={art._id} className="flex gap-2.5 items-start py-2.5 border-b border-gray-100 dark:border-neutral-800 last:border-0">
@@ -351,6 +469,9 @@ const Home = () => {
         </div>
       )}
 
+      {/* ══ PROTHOM-ALO STYLE PHOTO GALLERY SECTION (PDF Page 3) ══ */}
+      <PhotoGallerySection articles={topArticles} lang={lang} />
+
       {/* ══ MAIN BODY: Dynamic sections (L 8/12) + Sidebar (R 4/12) ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -360,51 +481,38 @@ const Home = () => {
             const slug  = sec.category.toLowerCase().replace(/\s+/g,'-');
             const label = t(slug) || sec.category;
             return (
-              <section key={`${sec.category}-${idx}`}>
+              <section key={`${sec.category}-${idx}`} className="bg-white dark:bg-[#121212] p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-neutral-800">
                 <SectionHead label={label} slug={slug} lang={lang} />
 
-                {/* GRID: 2×2 cards */}
-                {sec.layout === 'grid' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {sec.articles.slice(0,4).map(a => <GridCard key={a._id} art={a} lang={lang} />)}
+                {/* Prothom-Alo Style Layout (PDF Page 2): Big featured left + 4-Grid right */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                  <div className="md:col-span-6">
+                    <GridCard art={sec.articles[0]} lang={lang} />
                   </div>
-                )}
-
-                {/* HERO: big card left + list right */}
-                {sec.layout === 'hero' && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div className="md:col-span-2">
-                      <GridCard art={sec.articles[0]} lang={lang} />
-                    </div>
-                    <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-4 space-y-0">
-                      {sec.articles.slice(1,5).map(a => (
-                        <RowCard key={a._id} art={a} lang={lang} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* LIST: thumbnail rows */}
-                {sec.layout === 'list' && (
-                  <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl p-4 space-y-0">
-                    {sec.articles.slice(0,5).map(a => (
-                      <RowCard key={a._id} art={a} lang={lang} />
+                  <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {sec.articles.slice(1, 5).map(a => (
+                      <SecondaryCard key={a._id} art={a} lang={lang} />
                     ))}
                   </div>
-                )}
+                </div>
               </section>
             );
           })}
 
-          {/* Media center */}
-          {topArticles.filter(a => a.featuredImage || a.videoUrl).length > 0 && (
+          {/* Media Center / Video block */}
+          {topArticles.filter(a => a.videoUrl).length > 0 && (
             <div className="bg-[#111111] text-white p-5 rounded-2xl border border-neutral-800">
-              <h2 className="text-base font-black border-b border-neutral-800 pb-3 mb-4 flex items-center gap-2">
-                <PlayCircle className="h-5 w-5 text-red-500" />
-                {lang === 'bn' ? 'ভিডিও ও ছবি কেন্দ্র' : 'Media Center'}
-              </h2>
+              <div className="flex items-center justify-between border-b border-neutral-800 pb-3 mb-4">
+                <h2 className="text-base font-black flex items-center gap-2">
+                  <PlayCircle className="h-5 w-5 text-red-500" />
+                  <span>{lang === 'bn' ? 'ভিডিও গ্যালারি' : 'Video Gallery'}</span>
+                </h2>
+                <Link to="/media-center" className="text-xs font-bold text-red-400 hover:underline flex items-center">
+                  {lang === 'bn' ? 'সব ভিডিও' : 'All Videos'} <ChevronRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {topArticles.filter(a => a.featuredImage || a.videoUrl).slice(0, 3).map((art) => {
+                {topArticles.filter(a => a.videoUrl).slice(0, 3).map((art) => {
                   const img = imgSrc(art);
                   return (
                     <Link key={art._id} to={`/article/${art.slug}`} className="relative rounded-lg overflow-hidden group aspect-video bg-neutral-900 block">
@@ -414,9 +522,7 @@ const Home = () => {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"/>
                       )}
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        {art.videoUrl
-                          ? <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
-                          : <ImageIcon className="h-9 w-9 text-white drop-shadow"/>}
+                        <PlayCircle className="h-10 w-10 text-white fill-red-600 stroke-none drop-shadow"/>
                       </div>
                       <div className="absolute bottom-2 left-2 right-2 text-xs font-bold truncate">{art.title}</div>
                     </Link>

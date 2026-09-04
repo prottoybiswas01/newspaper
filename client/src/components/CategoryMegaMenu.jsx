@@ -3,15 +3,38 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { api } from '../utils/api';
 
+const FALLBACK_CATEGORIES = [
+  { name: 'সর্বশেষ', slug: 'latest', order: 0, subcategories: [{ name: 'আজকের খবর', slug: 'ajker-khobor' }, { name: 'প্রধান খবর', slug: 'prodhan-khobor' }] },
+  { name: 'বাংলাদেশ', slug: 'bangladesh', order: 1, subcategories: [{ name: 'রাজধানী', slug: 'rajdhani' }, { name: 'জেলা', slug: 'jila' }, { name: 'পরিবেশ', slug: 'poribesh' }, { name: 'অপরাধ', slug: 'oporadh' }] },
+  { name: 'রাজনীতি', slug: 'politics', order: 2, subcategories: [{ name: 'জাতীয়', slug: 'jatiyo' }, { name: 'সংসদ', slug: 'songshod' }, { name: 'দলীয় সংবাদ', slug: 'doliyo-songbad' }] },
+  { name: 'বিশ্ব', slug: 'international', order: 3, subcategories: [{ name: 'ইরান যুদ্ধ', slug: 'iran-yuddho' }, { name: 'ভারত', slug: 'bharat' }, { name: 'যুক্তরাষ্ট্র', slug: 'joktorashtro' }, { name: 'মধ্যপ্রাচ্য', slug: 'moddhoprachyo' }] },
+  { name: 'বাণিজ্য', slug: 'economy', order: 4, subcategories: [{ name: 'শেয়ারবাজার', slug: 'sheyerbajar' }, { name: 'ব্যাংক', slug: 'bank' }, { name: 'শিল্প', slug: 'shilpo' }, { name: 'অর্থনীতি', slug: 'orthoniti' }] },
+  { name: 'মতামত', slug: 'opinion', order: 5, subcategories: [{ name: 'সম্পাদকীয়', slug: 'shompadokiyo' }, { name: 'কলাম', slug: 'kolam' }, { name: 'সাক্ষাৎকার', slug: 'shakshatkar' }] },
+  { name: 'খেলা', slug: 'sports', order: 6, subcategories: [{ name: 'বিশ্বকাপ ফুটবল', slug: 'worldcup-football' }, { name: 'ক্রিকেট', slug: 'cricket' }, { name: 'টেনিস', slug: 'tennis' }] },
+  { name: 'বিনোদন', slug: 'entertainment', order: 7, subcategories: [{ name: 'টেলিভিশন', slug: 'television' }, { name: 'ওটিটি', slug: 'ott' }, { name: 'চলচ্চিত্র', slug: 'dhallywood' }] },
+  { name: 'চাকরি', slug: 'jobs', order: 8, subcategories: [{ name: 'খবর', slug: 'khobor' }, { name: 'নিয়োগ', slug: 'niyog' }, { name: 'পরামর্শ', slug: 'poramorsho' }] },
+  { name: 'জীবনযাপন', slug: 'lifestyle', order: 9, subcategories: [{ name: 'ভ্রমণ', slug: 'bhromon' }, { name: 'সম্পর্ক', slug: 'shomporo' }, { name: 'সুস্থতা', slug: 'shusthota' }, { name: 'ফ্যাশন', slug: 'fashion' }] },
+  { name: 'স্টার্টআপ ও প্রযুক্তি', slug: 'technology', order: 10, subcategories: [{ name: 'গ্যাজেট', slug: 'gadget' }, { name: 'টিপস', slug: 'tips' }, { name: 'বিজ্ঞান', slug: 'biggan' }, { name: 'এআই', slug: 'ai' }] },
+  { name: 'শিক্ষা', slug: 'education', order: 11, subcategories: [{ name: 'ভর্তি', slug: 'bhorti' }, { name: 'পরীক্ষা', slug: 'porikkha' }, { name: 'বৃত্তি', slug: 'britti' }] },
+  { name: 'ধর্ম', slug: 'religion', order: 12, subcategories: [{ name: 'ইসলাম', slug: 'islam' }, { name: 'হিন্দুধর্ম', slug: 'hinduism' }] },
+  { name: 'অন্যপাঠ', slug: 'literature', order: 13, subcategories: [{ name: 'সাহিত্য', slug: 'sahitya' }, { name: 'কবিতা', slug: 'kobita' }] },
+  { name: 'সাক্ষাৎকার', slug: 'interview', order: 14, subcategories: [{ name: 'বিশেষ সাক্ষাৎকার', slug: 'bishesh-shakshatkar' }] },
+  { name: 'কৃষি ও প্রকৃতি', slug: 'agriculture', order: 15, subcategories: [{ name: 'কৃষি ও কৃষক', slug: 'krishi-o-krishok' }, { name: 'পরিবেশ', slug: 'prokriti-o-poribesh' }] },
+  { name: 'ছবি', slug: 'photo', order: 16, subcategories: [{ name: 'ফটোস্টোরি', slug: 'photo-story' }, { name: 'আলোচিত ছবি', slug: 'trending-photos' }] },
+  { name: 'প্রবাস', slug: 'diaspora', order: 17, subcategories: [{ name: 'মধ্যপ্রাচ্য', slug: 'middle-east-diaspora' }, { name: 'ইউরোপ', slug: 'europe-diaspora' }] },
+  { name: 'শিশু ও নারী', slug: 'women-children', order: 18, subcategories: [{ name: 'শিশু অধিকার', slug: 'child-rights' }, { name: 'নারী নেতৃত্ব', slug: 'women-leadership' }] },
+  { name: 'অনন্য', slug: 'exclusive', order: 19, subcategories: [{ name: 'বিশেষ প্রতিবেদন', slug: 'special-report' }, { name: 'অনুসন্ধান', slug: 'investigative' }] },
+];
+
 const CategoryMegaMenu = ({ className = "" }) => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await api.get('/taxonomy/categories');
-        if (res.success && Array.isArray(res.categories)) {
+        if (res.success && Array.isArray(res.categories) && res.categories.length > 0) {
           setCategories(res.categories.sort((a, b) => (a.order || 0) - (b.order || 0)));
         }
       } catch (err) {
@@ -23,7 +46,7 @@ const CategoryMegaMenu = ({ className = "" }) => {
     fetchCategories();
   }, []);
 
-  if (loading) {
+  if (loading && categories.length === 0) {
     return (
       <div className={`space-y-4 py-4 px-4 animate-pulse ${className}`}>
         {[...Array(6)].map((_, i) => (

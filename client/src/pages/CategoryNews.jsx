@@ -48,9 +48,16 @@ const CategoryNews = () => {
     const fetchCategoryArticles = async () => {
       setLoading(true);
       try {
-        let url = `/articles?category=${encodeURIComponent(catName)}&limit=30`;
-        if (activeSubSlug) {
-          url += `&subcategory=${encodeURIComponent(subName || activeSubSlug)}`;
+        let url = `/articles?limit=30`;
+        if (categorySlug === 'latest') {
+          url = `/articles?limit=30&sort=latest`;
+        } else if (categorySlug === 'photo') {
+          url = `/articles?category=${encodeURIComponent('ছবি')}&limit=30`;
+        } else {
+          url += `&category=${encodeURIComponent(catName || categorySlug)}`;
+          if (activeSubSlug) {
+            url += `&subcategory=${encodeURIComponent(subName || activeSubSlug)}`;
+          }
         }
         const res = await api.get(url);
         if (res.success) {

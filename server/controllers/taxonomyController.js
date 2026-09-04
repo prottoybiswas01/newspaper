@@ -16,7 +16,35 @@ const generateSlug = (text) => {
   return slug || 'subcat-' + Date.now();
 };
 
+const DEFAULT_CATEGORIES_LIST = [
+  { name: 'সর্বশেষ', slug: 'latest', order: 0 },
+  { name: 'বাংলাদেশ', slug: 'bangladesh', order: 1 },
+  { name: 'রাজনীতি', slug: 'politics', order: 2 },
+  { name: 'বিশ্ব', slug: 'international', order: 3 },
+  { name: 'বাণিজ্য', slug: 'economy', order: 4 },
+  { name: 'মতামত', slug: 'opinion', order: 5 },
+  { name: 'খেলা', slug: 'sports', order: 6 },
+  { name: 'বিনোদন', slug: 'entertainment', order: 7 },
+  { name: 'চাকরি', slug: 'jobs', order: 8 },
+  { name: 'জীবনযাপন', slug: 'lifestyle', order: 9 },
+  { name: 'স্টার্টআপ ও প্রযুক্তি', slug: 'technology', order: 10 },
+  { name: 'শিক্ষা', slug: 'education', order: 11 },
+  { name: 'ধর্ম', slug: 'religion', order: 12 },
+  { name: 'অন্যপাঠ', slug: 'literature', order: 13 },
+  { name: 'সাক্ষাৎকার', slug: 'interview', order: 14 },
+  { name: 'কৃষি ও প্রকৃতি', slug: 'agriculture', order: 15 },
+  { name: 'ছবি', slug: 'photo', order: 16 },
+  { name: 'প্রবাস', slug: 'diaspora', order: 17 },
+  { name: 'শিশু ও নারী', slug: 'women-children', order: 18 },
+  { name: 'অনন্য', slug: 'exclusive', order: 19 }
+];
+
 const DEFAULT_SUBCATEGORIES = {
+  latest: [
+    { _id: "sub_lat_1", name: "আজকের খবর", slug: "ajker-khobor", order: 0 },
+    { _id: "sub_lat_2", name: "প্রধান খবর", slug: "prodhan-khobor", order: 1 },
+    { _id: "sub_lat_3", name: "ব্রেকিং নিউজ", slug: "breaking-news", order: 2 }
+  ],
   bangladesh: [
     { _id: "sub_bd_1", name: "রাজধানী", slug: "rajdhani", order: 0 },
     { _id: "sub_bd_2", name: "জেলা", slug: "jila", order: 1 },
@@ -39,7 +67,8 @@ const DEFAULT_SUBCATEGORIES = {
   politics: [
     { _id: "sub_pol_1", name: "জাতীয়", slug: "jatiyo", order: 0 },
     { _id: "sub_pol_2", name: "সংসদ", slug: "songshod", order: 1 },
-    { _id: "sub_pol_3", name: "দলীয় সংবাদ", slug: "doliyo-songbad", order: 2 }
+    { _id: "sub_pol_3", name: "দলীয় সংবাদ", slug: "doliyo-songbad", order: 2 },
+    { _id: "sub_pol_4", name: "নির্বাচন", slug: "election", order: 3 }
   ],
   economy: [
     { _id: "sub_eco_1", name: "শেয়ারবাজার", slug: "sheyerbajar", order: 0 },
@@ -121,29 +150,87 @@ const DEFAULT_SUBCATEGORIES = {
     { _id: "sub_op_4", name: "স্মরণ", slug: "shmoron", order: 3 },
     { _id: "sub_op_5", name: "প্রতিক্রিয়া", slug: "protikriya", order: 4 },
     { _id: "sub_op_6", name: "চিঠি", slug: "chithi", order: 5 }
+  ],
+  religion: [
+    { _id: "sub_rel_1", name: "ইসলাম", slug: "islam", order: 0 },
+    { _id: "sub_rel_2", name: "হিন্দুধর্ম", slug: "hinduism", order: 1 },
+    { _id: "sub_rel_3", name: "অন্যান্য ধর্ম", slug: "other-religions", order: 2 },
+    { _id: "sub_rel_4", name: "বাণী ও চিন্তা", slug: "bani-chinta", order: 3 }
+  ],
+  literature: [
+    { _id: "sub_lit_1", name: "সাহিত্য", slug: "sahitya", order: 0 },
+    { _id: "sub_lit_2", name: "কবিতা", slug: "kobita", order: 1 },
+    { _id: "sub_lit_3", name: "বই আলোচনা", slug: "boi-alochona", order: 2 },
+    { _id: "sub_lit_4", name: "ছোটগল্প", slug: "chotogolpo", order: 3 }
+  ],
+  interview: [
+    { _id: "sub_intv_1", name: "বিশেষ সাক্ষাৎকার", slug: "bishesh-shakshatkar", order: 0 },
+    { _id: "sub_intv_2", name: "রাজনৈতিক ব্যক্তিত্ব", slug: "political-personality", order: 1 },
+    { _id: "sub_intv_3", name: "সাংস্কৃতিক ব্যক্তিত্ব", slug: "cultural-personality", order: 2 }
+  ],
+  agriculture: [
+    { _id: "sub_agr_1", name: "কৃষি ও কৃষক", slug: "krishi-o-krishok", order: 0 },
+    { _id: "sub_agr_2", name: "প্রকৃতি ও পরিবেশ", slug: "prokriti-o-poribesh", order: 1 },
+    { _id: "sub_agr_3", name: "প্রাণিজগৎ", slug: "pranijogot", order: 2 },
+    { _id: "sub_agr_4", name: "জলবায়ু পরিবর্তন", slug: "climate-change", order: 3 }
+  ],
+  photo: [
+    { _id: "sub_pht_1", name: "ফটোস্টোরি", slug: "photo-story", order: 0 },
+    { _id: "sub_pht_2", name: "আলোচিত ছবি", slug: "trending-photos", order: 1 },
+    { _id: "sub_pht_3", name: "প্রাকৃতিক দৃশ্য", slug: "nature-photos", order: 2 },
+    { _id: "sub_pht_4", name: "দৈনন্দিন জীবন", slug: "daily-life-photos", order: 3 }
+  ],
+  diaspora: [
+    { _id: "sub_dia_1", name: "মধ্যপ্রাচ্য প্রবাস", slug: "middle-east-diaspora", order: 0 },
+    { _id: "sub_dia_2", name: "ইউরোপ প্রবাস", slug: "europe-diaspora", order: 1 },
+    { _id: "sub_dia_3", name: "যুক্তরাষ্ট্র প্রবাস", slug: "usa-diaspora", order: 2 },
+    { _id: "sub_dia_4", name: "সাফল্য গাথা", slug: "success-stories", order: 3 }
+  ],
+  "women-children": [
+    { _id: "sub_wnc_1", name: "শিশু অধিকার", slug: "child-rights", order: 0 },
+    { _id: "sub_wnc_2", name: "নারী নেতৃত্ব", slug: "women-leadership", order: 1 },
+    { _id: "sub_wnc_3", name: "প্যারেন্টিং", slug: "parenting", order: 2 },
+    { _id: "sub_wnc_4", name: "কন্যাশিশু", slug: "girl-child", order: 3 }
+  ],
+  exclusive: [
+    { _id: "sub_exc_1", name: "বিশেষ প্রতিবেদন", slug: "special-report", order: 0 },
+    { _id: "sub_exc_2", name: "অনুসন্ধান", slug: "investigative", order: 1 },
+    { _id: "sub_exc_3", name: "ইতিহাস ঐতিহ্য", slug: "history-heritage", order: 2 }
   ]
 };
 
 const getCategories = async (req, res) => {
   try {
     const rawCategories = await Category.find({}).sort({ order: 1 });
-    const normalized = rawCategories.map(raw => {
-      const c = raw.toObject ? raw.toObject() : { ...raw };
-      
-      let subs = Array.isArray(c.subcategories) ? c.subcategories : [];
-      if (subs.length === 0 && c.slug && DEFAULT_SUBCATEGORIES[c.slug.toLowerCase()]) {
-        subs = DEFAULT_SUBCATEGORIES[c.slug.toLowerCase()];
-      }
+    
+    // If DB has custom categories, map them; otherwise ensure default 20 categories
+    let finalCategories = [];
+    if (rawCategories.length > 0) {
+      finalCategories = rawCategories.map(raw => {
+        const c = raw.toObject ? raw.toObject() : { ...raw };
+        let subs = Array.isArray(c.subcategories) && c.subcategories.length > 0
+          ? c.subcategories
+          : (DEFAULT_SUBCATEGORIES[c.slug ? c.slug.toLowerCase() : ''] || []);
 
-      return {
-        _id: c._id ? c._id.toString() : (c.id || c.slug),
-        name: c.name || (c.slug ? c.slug.charAt(0).toUpperCase() + c.slug.slice(1) : 'Category'),
-        slug: c.slug || '',
-        order: c.order || 0,
-        subcategories: subs.sort((a,b) => (a.order || 0) - (b.order || 0))
-      };
-    });
-    res.json({ success: true, categories: normalized });
+        return {
+          _id: c._id ? c._id.toString() : (c.id || c.slug),
+          name: c.name || (c.slug ? c.slug.charAt(0).toUpperCase() + c.slug.slice(1) : 'Category'),
+          slug: c.slug || '',
+          order: c.order !== undefined ? c.order : 0,
+          subcategories: subs.sort((a,b) => (a.order || 0) - (b.order || 0))
+        };
+      });
+    } else {
+      finalCategories = DEFAULT_CATEGORIES_LIST.map((c) => ({
+        _id: `cat_${c.slug}`,
+        name: c.name,
+        slug: c.slug,
+        order: c.order,
+        subcategories: (DEFAULT_SUBCATEGORIES[c.slug] || []).sort((a,b) => (a.order || 0) - (b.order || 0))
+      }));
+    }
+
+    res.json({ success: true, categories: finalCategories.sort((a, b) => (a.order || 0) - (b.order || 0)) });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -3,37 +3,42 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, Search, Newspaper, Shield, Globe, ChevronDown, Layers, Camera, Video, MoreHorizontal } from 'lucide-react';
 import { api } from '../utils/api';
 import CategoryMegaMenu from './CategoryMegaMenu';
+
+// Top 9 main visible categories as specified in audit PDF Page 5
+const MAIN_NAV_ITEMS = [
+  { name: 'সর্বশেষ', slug: 'latest', path: '/' },
+  { name: 'বাংলাদেশ', slug: 'bangladesh', path: '/category/bangladesh' },
+  { name: 'রাজনীতি', slug: 'politics', path: '/category/politics' },
+  { name: 'বিশ্ব', slug: 'international', path: '/category/international' },
+  { name: 'বাণিজ্য', slug: 'economy', path: '/category/economy' },
+  { name: 'চাকরি', slug: 'jobs', path: '/category/jobs' },
+  { name: 'ছবি', slug: 'photo', path: '/category/photo' },
+  { name: 'মতামত', slug: 'opinion', path: '/category/opinion' },
+  { name: 'জীবনযাপন', slug: 'lifestyle', path: '/category/lifestyle' },
+];
 
 const Header = () => {
   const { user, logout, hasPermission } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [categories, setCategories] = useState([
-    { name: 'Bangladesh', slug: 'bangladesh', subcategories: [] },
-    { name: 'International', slug: 'international', subcategories: [] },
-    { name: 'Politics', slug: 'politics', subcategories: [] },
-    { name: 'Economy', slug: 'economy', subcategories: [] },
-    { name: 'Sports', slug: 'sports', subcategories: [] },
-    { name: 'Entertainment', slug: 'entertainment', subcategories: [] },
-    { name: 'Technology', slug: 'technology', subcategories: [] },
-    { name: 'Opinion', slug: 'opinion', subcategories: [] },
-  ]);
+  const [allCategories, setAllCategories] = useState([]);
 
   useEffect(() => {
     const fetchCats = async () => {
       try {
         const res = await api.get('/taxonomy/categories');
         if (res.success && Array.isArray(res.categories) && res.categories.length > 0) {
-          setCategories(res.categories.sort((a,b) => (a.order || 0) - (b.order || 0)));
+          setAllCategories(res.categories.sort((a,b) => (a.order || 0) - (b.order || 0)));
         }
       } catch (err) {
         console.error('Failed to fetch navbar categories:', err);
@@ -53,20 +58,43 @@ const Header = () => {
 
   const handleCategoryClick = () => {
     setMobileMenuOpen(false);
+    setMegaMenuOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 shadow-xs transition-all duration-300 no-print">
       
-      {/* Row 1: Logo & Top controls (Search, divider, Login) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+      {/* Row 1: Logo & Top controls (Search, divider, Login, Photo/Video embeds) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
         {/* Left: Brand Logo & Title */}
-        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-black tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
-          <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-red-600 shrink-0" />
-          <span className="font-sans text-gray-950 dark:text-white tracking-tight">
-            {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
-          </span>
-        </Link>
+        <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-2 text-2xl font-black tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
+            <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-red-600 shrink-0" />
+            <span className="font-sans text-gray-950 dark:text-white tracking-tight">
+              {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
+            </span>
+          </Link>
+          
+          {/* Prothom-Alo Style Photo & Video Embed Badges */}
+          <div className="hidden lg:flex items-center space-x-1.5 pl-3 border-l border-gray-200 dark:border-neutral-800 text-xs font-bold text-gray-600 dark:text-neutral-400">
+            <Link 
+              to="/category/photo" 
+              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
+              title="ফটো স্টোরি ও ছবি"
+            >
+              <Camera className="h-3.5 w-3.5 text-red-600" />
+              <span>ছবি</span>
+            </Link>
+            <Link 
+              to="/media-center" 
+              className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-red-50 hover:text-red-600 dark:hover:bg-neutral-700 transition-colors"
+              title="ভিডিও ও মিডিয়া"
+            >
+              <Video className="h-3.5 w-3.5 text-red-600" />
+              <span>ভিডিও</span>
+            </Link>
+          </div>
+        </div>
 
         {/* Right: Search, Divider, and Login Link */}
         <div className="flex items-center space-x-3 text-gray-600 dark:text-neutral-400">
@@ -110,11 +138,11 @@ const Header = () => {
 
       {/* Row 2: Category Scroll Bar + Theme/Language Toggles (Visible on all screens) */}
       <div className="border-t border-b border-gray-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-1 gap-3">
           
-          {/* Scrollable Categories List */}
-          <nav className="flex-1 overflow-x-auto scrollbar-none py-1.5">
-            <ul className="flex items-center space-x-2 text-sm font-bold text-gray-800 dark:text-neutral-200 whitespace-nowrap">
+          {/* Main 9 Categories List (PDF Page 5) */}
+          <nav className="flex-1 overflow-x-auto scrollbar-none py-1">
+            <ul className="flex items-center space-x-1.5 text-sm font-bold text-gray-800 dark:text-neutral-200 whitespace-nowrap">
               {user && hasPermission(['Reporter', 'Editor', 'Admin', 'Super Admin', 'SEO Manager', 'Moderator']) && (
                 <li>
                   <Link 
@@ -127,50 +155,43 @@ const Header = () => {
                 </li>
               )}
 
-              <li>
-                <Link 
-                  to="/" 
-                  className={`inline-block px-3 py-1 rounded-md transition-all duration-150 ${
-                    currentPath === '/' 
-                      ? 'bg-red-600 text-white font-black shadow-xs' 
-                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
-                  }`}
-                >
-                  {t('home')}
-                </Link>
-              </li>
+              {MAIN_NAV_ITEMS.map((item) => {
+                const isItemActive = item.path === '/' 
+                  ? currentPath === '/' 
+                  : currentPath === item.path || currentPath.startsWith(`${item.path}/`);
+                
+                // Match subcategories for this item if available in allCategories
+                const categoryObj = allCategories.find(c => c.slug?.toLowerCase() === item.slug.toLowerCase());
+                const subs = categoryObj?.subcategories || [];
 
-              {categories.map((cat) => {
-                const isCatActive = currentPath === `/category/${cat.slug}` || currentPath.startsWith(`/category/${cat.slug}/`) || (cat.slug === 'media-center' && currentPath === '/media-center');
-                const hasSubs = cat.subcategories && cat.subcategories.length > 0;
                 return (
-                  <li key={cat._id || cat.slug} className="relative group">
-                    <div className="flex items-center space-x-0.5">
+                  <li key={item.slug} className="relative group">
+                    <div className="flex items-center">
                       <Link 
-                        to={cat.slug === 'media-center' ? '/media-center' : `/category/${cat.slug}`} 
+                        to={item.path} 
                         className={`inline-flex items-center space-x-1 px-3 py-1 rounded-md transition-all duration-150 ${
-                          isCatActive 
+                          isItemActive 
                             ? 'bg-red-600 text-white font-black shadow-xs' 
                             : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
                         }`}
                       >
-                        <span>{cat.name}</span>
-                        {hasSubs && (
-                          <ChevronDown className={`h-3 w-3 transition-transform group-hover:rotate-180 ${isCatActive ? 'text-white' : 'text-gray-400 group-hover:text-red-600'}`} />
+                        <span>{item.name}</span>
+                        {subs.length > 0 && (
+                          <ChevronDown className={`h-3 w-3 transition-transform group-hover:rotate-180 ${isItemActive ? 'text-white' : 'text-gray-400 group-hover:text-red-600'}`} />
                         )}
                       </Link>
                     </div>
 
                     {/* Hover Dropdown for Subcategories */}
-                    {hasSubs && (
+                    {subs.length > 0 && (
                       <div className="absolute left-0 top-full hidden group-hover:block z-50 pt-2 animate-in fade-in slide-in-from-top-1 duration-150">
                         <div className="bg-white dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 rounded-xl shadow-xl py-2 px-1 min-w-[180px]">
-                          {cat.subcategories.map(sub => {
-                            const isSubActive = currentPath === `/category/${cat.slug}/${sub.slug}`;
+                          {subs.map(sub => {
+                            const isSubActive = currentPath === `/category/${item.slug}/${sub.slug}`;
                             return (
                               <Link
                                 key={sub._id || sub.slug}
-                                to={`/category/${cat.slug}/${sub.slug}`}
+                                to={`/category/${item.slug}/${sub.slug}`}
                                 className={`block px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                                   isSubActive
                                     ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 font-bold'
@@ -188,27 +209,14 @@ const Header = () => {
                 );
               })}
 
-              <li>
-                <Link 
-                  to="/archive" 
-                  className={`inline-block px-3 py-1 rounded-md transition-all duration-150 ${
-                    currentPath === '/archive' 
-                      ? 'bg-red-600 text-white font-black shadow-xs' 
-                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-800 dark:text-neutral-200 font-bold'
-                  }`}
-                >
-                  {t('archive')}
-                </Link>
-              </li>
-
-              {/* All Categories / Mega Menu button at the VERY END */}
+              {/* 3-Dot All Beat / Mega Menu button at the end (PDF Page 1, Page 5) */}
               <li>
                 <button 
                   onClick={() => setMegaMenuOpen(!megaMenuOpen)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-neutral-800 hover:bg-red-600 hover:text-white text-gray-800 dark:text-neutral-200 font-extrabold'}`}
-                  title="সকল বিভাগ (All Categories)"
+                  className={`flex items-center space-x-1.5 px-3 py-1 rounded-md transition-colors ${megaMenuOpen ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-neutral-800 hover:bg-red-600 hover:text-white text-gray-800 dark:text-neutral-200 font-extrabold'}`}
+                  title="সকল ২০টি বিভাগ (All Beats - ৩ ডট)"
                 >
-                  <Layers className="h-3.5 w-3.5" />
+                  <MoreHorizontal className="h-4 w-4" />
                   <span>সব বিভাগ</span>
                   <ChevronDown className={`h-3 w-3 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -218,11 +226,11 @@ const Header = () => {
 
           {/* Right: Theme Toggle, Language button, Hamburger toggle */}
           <div className="flex items-center space-x-2 shrink-0 border-l border-gray-200 dark:border-neutral-800 pl-3 py-1">
-            {/* Theme Toggle */}
+            {/* Theme Toggle (Light Default, Optional Dark Mode) */}
             <button 
               onClick={toggleTheme} 
               className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-600 dark:text-neutral-400 transition-colors"
-              title="Toggle Theme"
+              title="Toggle Light/Dark Theme"
             >
               {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-gray-700" />}
             </button>
