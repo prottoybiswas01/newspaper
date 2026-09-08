@@ -72,7 +72,7 @@ const serveAd = async (req, res) => {
       });
     }
 
-    // Fallback: Check for designated house ad for this placement
+    // Fallback: Check if user created a designated house ad in the database for this placement
     const houseAd = await Ad.findOne({
       placement,
       active: true,
@@ -87,25 +87,10 @@ const serveAd = async (req, res) => {
       });
     }
 
-    // Default institutional house ad fallback
+    // No ad configured for this slot
     return res.json({
       success: true,
-      ad: {
-        _id: 'house_default_' + placement,
-        title: 'দৈনিক দর্পণ ডিজিটাল সংস্করণ',
-        advertiserName: 'দৈনিক দর্পণ',
-        campaignName: 'House Promotion',
-        creativeType: 'house-ad',
-        placement,
-        description: 'সবার আগে সর্বশেষ ও বিশ্বস্ত সংবাদ পেতে আমাদের সঙ্গেই থাকুন।',
-        ctaText: 'সাবস্ক্রাইব করুন',
-        sponsorBadge: 'বিজ্ঞাপন',
-        destinationUrl: 'https://dainikdarpan.com',
-        imageUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=1200',
-        isHouseAd: true,
-        priority: 1
-      },
-      isFallback: true
+      ad: null
     });
   } catch (error) {
     console.error('serveAd error:', error);

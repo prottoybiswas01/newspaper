@@ -98,30 +98,24 @@ const AdPlacement = ({
 
   if (dismissed || (!ad && !loading)) return null;
 
-  // Reserved CLS Dimensions Container Styles
+  // Reserved standard IAB news banner dimension constraints
   const dimensionClasses = {
-    header: 'w-full max-w-5xl min-h-[90px] sm:min-h-[110px] my-4 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    sidebar: 'w-full max-w-sm min-h-[250px] sm:min-h-[350px] my-4 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    'article-inline-1': 'w-full max-w-2xl min-h-[120px] sm:min-h-[160px] my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    'article-inline-2': 'w-full max-w-2xl min-h-[120px] sm:min-h-[160px] my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    'article-inline-3': 'w-full max-w-2xl min-h-[120px] sm:min-h-[160px] my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    article: 'w-full max-w-2xl min-h-[120px] sm:min-h-[160px] my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
-    'homepage-mid': 'w-full min-h-[100px] sm:min-h-[130px] my-6 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-xs flex justify-center',
+    header: 'w-full max-w-5xl h-[80px] sm:h-[95px] md:h-[100px] my-3 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    sidebar: 'w-full max-w-[320px] h-[250px] sm:h-[280px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'article-inline-1': 'w-full max-w-2xl h-[100px] sm:h-[120px] my-5 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'article-inline-2': 'w-full max-w-2xl h-[100px] sm:h-[120px] my-5 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'article-inline-3': 'w-full max-w-2xl h-[100px] sm:h-[120px] my-5 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    article: 'w-full max-w-2xl h-[100px] sm:h-[120px] my-5 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'homepage-mid': 'w-full max-w-5xl h-[85px] sm:h-[100px] my-5 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
     sticky: 'fixed bottom-0 left-0 right-0 bg-neutral-900/95 text-white z-40 py-2 border-t border-neutral-800 flex justify-center h-20 shadow-2xl',
     popup: 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs'
   };
 
   const containerClass = dimensionClasses[placement] || dimensionClasses.article;
 
-  // Loading skeleton state to prevent layout shift
+  // If loading and no ad yet, return null to prevent layout shifts or empty boxes
   if (loading) {
-    return (
-      <div className={`${containerClass} bg-gray-50/70 dark:bg-neutral-900/40 animate-pulse flex items-center justify-center ${className} no-print`}>
-        <span className="text-[10px] uppercase tracking-widest text-gray-400 dark:text-neutral-600 font-bold">
-          বিজ্ঞাপন লোড হচ্ছে...
-        </span>
-      </div>
-    );
+    return null;
   }
 
   // Popup Modal Ad
@@ -141,12 +135,12 @@ const AdPlacement = ({
             target="_blank" 
             rel="noopener noreferrer sponsored" 
             onClick={handleAdClick}
-            className="block overflow-hidden rounded-lg mt-4"
+            className="block overflow-hidden rounded-lg mt-4 max-h-[300px]"
           >
             <img 
               src={parseImageUrl(ad.imageUrl)} 
               alt={ad.title} 
-              className="w-full h-auto object-cover hover:scale-102 transition-transform duration-300" 
+              className="w-full h-full max-h-[300px] object-cover hover:scale-102 transition-transform duration-300" 
             />
           </a>
           <div className="flex items-center justify-between mt-3 text-[10px] text-gray-400 dark:text-neutral-500 uppercase tracking-wider font-bold">
@@ -162,7 +156,7 @@ const AdPlacement = ({
   if (ad.creativeType === 'script' || (ad.type === 'script' && ad.scriptCode)) {
     return (
       <div className={`${containerClass} bg-white dark:bg-[#121212] relative overflow-hidden flex flex-col justify-center items-center ${className} no-print`}>
-        <span className="absolute top-1 right-2 text-[9px] uppercase tracking-wider font-bold text-gray-400 dark:text-neutral-500 pointer-events-none">
+        <span className="absolute top-1 right-2 text-[9px] uppercase tracking-wider font-bold text-gray-400 dark:text-neutral-500 pointer-events-none z-10">
           {ad.sponsorBadge || 'বিজ্ঞাপন'}
         </span>
         <div 
@@ -176,9 +170,9 @@ const AdPlacement = ({
   // Native / In-Article Rich Creative Card
   if (ad.creativeType === 'native' || ad.creativeType === 'sponsored-card') {
     return (
-      <div className={`w-full max-w-3xl my-6 p-4 rounded-2xl border border-red-200/60 dark:border-red-950/40 bg-gradient-to-r from-red-50/40 via-white to-gray-50 dark:from-red-950/10 dark:via-[#121212] dark:to-[#181818] shadow-xs flex flex-col sm:flex-row items-center gap-4 ${className} no-print`}>
+      <div className={`w-full max-w-3xl my-5 p-4 rounded-2xl border border-red-200/60 dark:border-red-950/40 bg-gradient-to-r from-red-50/40 via-white to-gray-50 dark:from-red-950/10 dark:via-[#121212] dark:to-[#181818] shadow-xs flex flex-col sm:flex-row items-center gap-4 ${className} no-print`}>
         {ad.imageUrl && (
-          <div className="w-full sm:w-44 h-28 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-neutral-800">
+          <div className="w-full sm:w-40 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-neutral-800">
             <img 
               src={parseImageUrl(ad.imageUrl)} 
               alt={ad.title}
@@ -219,15 +213,15 @@ const AdPlacement = ({
     );
   }
 
-  // Banner & Standard Display Ads
+  // Banner & Standard Display Ads (Fixed Height Constrained)
   return (
-    <div className={`${containerClass} bg-gray-50 dark:bg-[#121212] relative overflow-hidden flex flex-col justify-center items-center ${className} no-print`}>
+    <div className={`${containerClass} bg-gray-50/50 dark:bg-[#121212] relative overflow-hidden flex flex-col justify-center items-center ${className} no-print`}>
       <a 
         href={ad.destinationUrl || ad.linkUrl || '#'} 
         target="_blank" 
         rel="noopener noreferrer sponsored" 
         onClick={handleAdClick}
-        className="w-full h-full block relative group"
+        className="w-full h-full block relative group overflow-hidden"
       >
         {ad.imageUrl ? (
           <img 
@@ -238,14 +232,14 @@ const AdPlacement = ({
             className="w-full h-full object-cover group-hover:opacity-95 transition-opacity" 
           />
         ) : (
-          <div className="p-4 flex flex-col items-center justify-center text-center h-full">
+          <div className="p-3 flex flex-col items-center justify-center text-center h-full">
             <span className="text-xs font-bold text-gray-900 dark:text-white">{ad.title}</span>
-            {ad.description && <p className="text-[11px] text-gray-500 mt-1">{ad.description}</p>}
+            {ad.description && <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1">{ad.description}</p>}
           </div>
         )}
       </a>
       {/* Visible Sponsored Badge */}
-      <span className="absolute bottom-1 right-2 bg-black/75 backdrop-blur-xs text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded tracking-widest pointer-events-none">
+      <span className="absolute bottom-1 right-2 bg-black/75 backdrop-blur-xs text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded tracking-widest pointer-events-none z-10">
         {ad.sponsorBadge || 'বিজ্ঞাপন'}
       </span>
     </div>
