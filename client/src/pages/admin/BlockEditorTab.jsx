@@ -333,6 +333,15 @@ const BlockEditorTab = ({
     setSubmitting(true);
     try {
       const finalStatus = saveStatusOverride || status;
+      const finalHtmlContent = blocks.map(b => {
+        if (!b) return '';
+        if (b.type === 'heading') return `<h2>${b.content || ''}</h2>`;
+        if (b.type === 'quote') return `<blockquote><p>${b.content || ''}</p></blockquote>`;
+        if (b.type === 'image') return `<figure><img src="${b.content || b.metadata?.url || ''}" alt="${b.metadata?.caption || ''}" /></figure>`;
+        if (b.type === 'video') return `<div class="video-embed"><iframe src="${b.content || ''}"></iframe></div>`;
+        return `<p>${b.content || ''}</p>`;
+      }).filter(Boolean).join('\n');
+
       const payload = {
         title,
         subtitle,
@@ -340,7 +349,7 @@ const BlockEditorTab = ({
         subcategory,
         status: finalStatus,
         scheduledDate: finalStatus === 'scheduled' ? scheduledDate : undefined,
-        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags: typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : tags,
         featuredImage,
         videoUrl,
         multimediaType,
@@ -348,17 +357,16 @@ const BlockEditorTab = ({
         isLead,
         isBreaking,
         blocks,
-        // Plain text fallback
-        content: blocks.filter(b => b.type === 'paragraph').map(b => `<p>${b.content}</p>`).join(''),
-        summary: aiSummary,
+        content: finalHtmlContent || `<p>${title}</p>`,
+        summary: aiSummary || (blocks[0] ? String(blocks[0].content).substring(0, 180) : title),
         aiSummary,
-        keyPoints: keyPointsInput.split('\n').map(s => s.trim()).filter(Boolean),
+        keyPoints: typeof keyPointsInput === 'string' ? keyPointsInput.split('\n').map(s => s.trim()).filter(Boolean) : keyPointsInput,
         // Trust
         verificationStatus,
         verificationNote,
-        factBox: factBoxInput.split('\n').map(s => s.trim()).filter(Boolean),
-        whatWeKnow: whatWeKnowInput.split('\n').map(s => s.trim()).filter(Boolean),
-        whatWeDontKnow: whatWeDontKnowInput.split('\n').map(s => s.trim()).filter(Boolean),
+        factBox: typeof factBoxInput === 'string' ? factBoxInput.split('\n').map(s => s.trim()).filter(Boolean) : factBoxInput,
+        whatWeKnow: typeof whatWeKnowInput === 'string' ? whatWeKnowInput.split('\n').map(s => s.trim()).filter(Boolean) : whatWeKnowInput,
+        whatWeDontKnow: typeof whatWeDontKnowInput === 'string' ? whatWeDontKnowInput.split('\n').map(s => s.trim()).filter(Boolean) : whatWeDontKnowInput,
         corrections,
         // Location
         division,
@@ -369,7 +377,7 @@ const BlockEditorTab = ({
         // SEO
         seo: {
           metaTitle: seoTitle || title,
-          metaDescription: seoDesc || aiSummary,
+          metaDescription: seoDesc || aiSummary || title,
           keywords: seoKeywords || tags
         }
       };
@@ -383,7 +391,8 @@ const BlockEditorTab = ({
 
       if (res.success) {
         setLastSavedTime(new Date());
-        toast.success(editingArticleId ? 'সংবাদটি আপডেট হয়েছে' : 'নতুন সংবাদ সফলভাবে সংরক্ষণ করা হয়েছে');
+        setStatus(finalStatus);
+        toast.success(finalStatus === 'published' ? 'সংবাদটি সফলভাবে লাইভ ওয়েবসাইটে প্রকাশিত (Published) হয়েছে!' : 'খসড়া সংরক্ষিত হয়েছে');
         if (onSaveSuccess) onSaveSuccess(res.article);
       } else {
         toast.error(res.message || 'সংরক্ষণ ব্যর্থ হয়েছে');

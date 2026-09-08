@@ -128,37 +128,101 @@ class JSONModel {
     if (!query || Object.keys(query).length === 0) return true;
     for (const key in query) {
       let val = query[key];
-      // Handle MongoDB syntax ($or, $regex, etc.)
+      if (val === undefined) continue;
+
+      // Handle MongoDB syntax ($or)
       if (key === '$or' && Array.isArray(val)) {
         if (!val.some(q => this._match(doc, q))) return false;
         continue;
       }
-      if (val && typeof val === 'object' && '$regex' in val) {
-        const regex = new RegExp(val.$regex, val.$options || '');
-        if (!regex.test(doc[key] || '')) return false;
+
+      // Direct RegExp instance (e.g. { category: /bangladesh/i })
+      if (val instanceof RegExp) {
+        if (!val.test(String(doc[key] || ''))) return false;
         continue;
       }
-      if (val && typeof val === 'object' && '$ne' in val) {
-        if (doc[key] === val.$ne) return false;
+
+      // Object operators
+      if (val && typeof val === 'object') {
+        // { $regex: ... }
+        if ('$regex' in val) {
+          let regex;
+          if (val.$regex instanceof RegExp) {
+            regex = val.$regex;
+          } else {
+            try {
+              regex = new RegExp(val.$regex, val.$options || '');
+            } catch (e) {
+              regex = new RegExp(String(val.$regex));
+            }
+          }
+          if (!regex.test(String(doc[key] || ''))) return false;
+          continue;
+        }
+
+        // { $ne: val }
+        if ('$ne' in val) {
+          if (doc[key] === val.$ne) return false;
+          continue;
+        }
+
+        // { $in: [...] }
+        if ('$in' in val && Array.isArray(val.$in)) {
+          if (Array.isArray(doc[key])) {
+            if (!doc[key].some(item => val.$in.includes(item))) return false;
+          } else {
+            if (!val.$in.includes(doc[key])) return false;
+          }
+          continue;
+        }
+
+        // { $nin: [...] }
+        if ('$nin' in val && Array.isArray(val.$nin)) {
+          if (Array.isArray(doc[key])) {
+            if (doc[key].some(item => val.$nin.includes(item))) return false;
+          } else {
+            if (val.$nin.includes(doc[key])) return false;
+          }
+          continue;
+        }
+
+        // Comparison operators: $gt, $gte, $lt, $lte
+        if ('$lt' in val || '$lte' in val || '$gt' in val || '$gte' in val) {
+          const docVal = doc[key];
+          const docTime = new Date(docVal).getTime();
+          const isDate = !isNaN(docTime) && typeof docVal === 'string' && docVal.includes('-');
+
+          if ('$lt' in val) {
+            const target = isDate ? new Date(val.$lt).getTime() : val.$lt;
+            const current = isDate ? docTime : docVal;
+            if (current >= target) return false;
+          }
+          if ('$lte' in val) {
+            const target = isDate ? new Date(val.$lte).getTime() : val.$lte;
+            const current = isDate ? docTime : docVal;
+            if (current > target) return false;
+          }
+          if ('$gt' in val) {
+            const target = isDate ? new Date(val.$gt).getTime() : val.$gt;
+            const current = isDate ? docTime : docVal;
+            if (current <= target) return false;
+          }
+          if ('$gte' in val) {
+            const target = isDate ? new Date(val.$gte).getTime() : val.$gte;
+            const current = isDate ? docTime : docVal;
+            if (current < target) return false;
+          }
+          continue;
+        }
+      }
+
+      // If document field is an array and query is a scalar (e.g. tags: 'জাতীয়')
+      if (Array.isArray(doc[key])) {
+        if (!doc[key].includes(val)) return false;
         continue;
       }
-      if (val && typeof val === 'object' && '$in' in val) {
-        if (!val.$in.includes(doc[key])) return false;
-        continue;
-      }
-      if (val && typeof val === 'object' && '$lt' in val) {
-        const docTime = new Date(doc[key]).getTime();
-        const targetTime = new Date(val.$lt).getTime();
-        if (isNaN(docTime) || docTime >= targetTime) return false;
-        continue;
-      }
-      if (val && typeof val === 'object' && '$gte' in val) {
-        const docTime = new Date(doc[key]).getTime();
-        const targetTime = new Date(val.$gte).getTime();
-        if (isNaN(docTime) || docTime < targetTime) return false;
-        continue;
-      }
-      // Direct match
+
+      // Direct scalar equality match
       if (doc[key] !== val) return false;
     }
     return true;
@@ -252,12 +316,13 @@ class JSONModel {
   async create(data) {
     const docs = this._read();
     const newDoc = {
-      _id: generateId(),
+      _id: data._id || generateId(),
       ...data,
-      createdAt: new Date().toISOString(),
+      publishDate: data.publishDate || (data.status === 'published' ? new Date().toISOString() : undefined),
+      createdAt: data.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    docs.push(newDoc);
+    docs.unshift(newDoc);
     this._write(docs);
     return newDoc;
   }
