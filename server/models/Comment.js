@@ -9,9 +9,13 @@ const CommentSchema = {
   content: { type: String, required: true },
   status: { 
     type: String, 
-    enum: ['pending', 'approved', 'spam'], 
+    enum: ['pending', 'approved', 'rejected', 'spam', 'reported'], 
     default: 'pending' 
-  }
+  },
+  likes: { type: Number, default: 0 },
+  reportsCount: { type: Number, default: 0 },
+  parentCommentId: { type: String, default: '' }
 };
 
 module.exports = createModel('Comment', CommentSchema);
+

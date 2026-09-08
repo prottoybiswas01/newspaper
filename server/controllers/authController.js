@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Article = require('../models/Article');
+const AuditLog = require('../models/AuditLog');
 
 const signToken = (user) => {
   const userId = user._id ? user._id.toString() : (user.id || user);
@@ -29,11 +30,9 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists with this email' });
     }
 
-    // Encrypt password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // If first user, make them Super Admin; otherwise Reader
     const totalUsers = await User.countDocuments({});
     const role = totalUsers === 0 ? 'Super Admin' : 'Reader';
 
@@ -41,19 +40,25 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role
+      role,
+      savedArticles: [],
+      preferredLocation: { division: 'ঢাকা', district: 'ঢাকা', upazila: '' },
+      notificationPreferences: { breakingNews: true, importantNews: true, sports: false, technology: false, localNews: true }
     });
 
     res.status(201).json({
       success: true,
-      token: signToken(user._id),
+      token: signToken(user),
       user: {
         id: user._id.toString(),
         _id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar
+        avatar: user.avatar,
+        savedArticles: user.savedArticles || [],
+        preferredLocation: user.preferredLocation,
+        notificationPreferences: user.notificationPreferences
       }
     });
   } catch (error) {
@@ -81,16 +86,30 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    await AuditLog.create({
+      userId: user._id ? user._id.toString() : '',
+      userName: user.name,
+      userRole: user.role,
+      action: 'auth.login',
+      targetType: 'User',
+      targetId: user._id ? user._id.toString() : '',
+      details: 'User logged in'
+    }).catch(() => null);
+
     res.json({
       success: true,
-      token: signToken(user._id),
+      token: signToken(user),
       user: {
         id: user._id.toString(),
         _id: user._id.toString(),
         name: user.name,
         email: user.email,
         role: user.role,
-        avatar: user.avatar
+        avatar: user.avatar,
+        designation: user.designation,
+        savedArticles: user.savedArticles || [],
+        preferredLocation: user.preferredLocation,
+        notificationPreferences: user.notificationPreferences
       }
     });
   } catch (error) {
@@ -107,7 +126,6 @@ const getProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    // Omit password
     const userProfile = {
       id: user._id.toString(),
       _id: user._id.toString(),
@@ -116,7 +134,11 @@ const getProfile = async (req, res) => {
       role: user.role,
       avatar: user.avatar,
       bio: user.bio,
-      socialLinks: user.socialLinks || { facebook: '', twitter: '', linkedin: '' }
+      designation: user.designation,
+      socialLinks: user.socialLinks || { facebook: '', twitter: '', linkedin: '' },
+      savedArticles: user.savedArticles || [],
+      preferredLocation: user.preferredLocation || { division: 'ঢাকা', district: 'ঢাকা', upazila: '' },
+      notificationPreferences: user.notificationPreferences || { breakingNews: true, importantNews: true }
     };
 
     res.json({ success: true, user: userProfile });
@@ -129,13 +151,16 @@ const getProfile = async (req, res) => {
 // @route   PUT /api/auth/profile
 const updateProfile = async (req, res) => {
   try {
-    const { name, bio, avatar, socialLinks } = req.body;
+    const { name, bio, avatar, designation, socialLinks, preferredLocation, notificationPreferences } = req.body;
     
     const updateData = {};
     if (name) updateData.name = name;
     if (bio !== undefined) updateData.bio = bio;
     if (avatar !== undefined) updateData.avatar = avatar;
+    if (designation !== undefined) updateData.designation = designation;
     if (socialLinks) updateData.socialLinks = socialLinks;
+    if (preferredLocation) updateData.preferredLocation = preferredLocation;
+    if (notificationPreferences) updateData.notificationPreferences = notificationPreferences;
 
     const user = await User.findByIdAndUpdate(req.user.id, { $set: updateData }, { new: true });
     
@@ -148,8 +173,72 @@ const updateProfile = async (req, res) => {
         role: user.role,
         avatar: user.avatar,
         bio: user.bio,
-        socialLinks: user.socialLinks
+        designation: user.designation,
+        socialLinks: user.socialLinks,
+        savedArticles: user.savedArticles || [],
+        preferredLocation: user.preferredLocation,
+        notificationPreferences: user.notificationPreferences
       }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Toggle Save/Bookmark Article
+// @route   POST /api/auth/save-article
+const toggleSaveArticle = async (req, res) => {
+  try {
+    const { articleId } = req.body;
+    if (!articleId) {
+      return res.status(400).json({ success: false, message: 'Article ID is required' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    let saved = user.savedArticles || [];
+    let isSaved = false;
+
+    if (saved.includes(articleId)) {
+      saved = saved.filter(id => id !== articleId);
+      isSaved = false;
+    } else {
+      saved.push(articleId);
+      isSaved = true;
+    }
+
+    await User.findByIdAndUpdate(req.user.id, { $set: { savedArticles: saved } });
+
+    res.json({
+      success: true,
+      isSaved,
+      savedArticles: saved
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get user's saved articles with full article objects
+// @route   GET /api/auth/saved-articles
+const getSavedArticles = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const savedIds = user.savedArticles || [];
+    const articles = await Article.find({
+      _id: { $in: savedIds }
+    }).sort({ publishDate: -1 });
+
+    res.json({
+      success: true,
+      articles
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -172,6 +261,7 @@ const getReporters = async (req, res) => {
           name: rep.name,
           avatar: rep.avatar,
           bio: rep.bio,
+          designation: rep.designation || rep.role,
           role: rep.role,
           socialLinks: rep.socialLinks,
           articleCount: count
@@ -203,6 +293,7 @@ const getReporterById = async (req, res) => {
         name: rep.name,
         avatar: rep.avatar,
         bio: rep.bio,
+        designation: rep.designation || rep.role,
         role: rep.role,
         socialLinks: rep.socialLinks,
         articleCount: articles.length
@@ -220,12 +311,12 @@ const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).sort({ createdAt: -1 });
     
-    // Strip passwords
     const sanitized = users.map(u => ({
       _id: u._id,
       name: u.name,
       email: u.email,
       role: u.role,
+      designation: u.designation,
       createdAt: u.createdAt
     }));
 
@@ -240,13 +331,22 @@ const getAllUsers = async (req, res) => {
 const updateUserRole = async (req, res) => {
   try {
     const { role } = req.body;
-    const allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Reporter', 'Moderator', 'SEO Manager', 'Reader'];
+    const allowedRoles = [
+      'Super Admin', 
+      'Admin', 
+      'Editor', 
+      'Reporter', 
+      'Moderator', 
+      'Ad Manager', 
+      'Analyst', 
+      'SEO Manager', 
+      'Reader'
+    ];
 
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ success: false, message: 'Invalid role' });
     }
 
-    // A Super Admin's role can only be changed by another Super Admin or we can prevent self change
     if (req.user.id === req.params.id) {
       return res.status(400).json({ success: false, message: 'You cannot change your own role' });
     }
@@ -255,6 +355,17 @@ const updateUserRole = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: req.user.role,
+      action: 'user.role_change',
+      targetType: 'User',
+      targetId: req.params.id,
+      targetTitle: updatedUser.name,
+      details: `Changed role to ${role}`
+    }).catch(() => null);
 
     res.json({ success: true, message: 'User role updated successfully', user: updatedUser });
   } catch (error) {
@@ -277,11 +388,19 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Cascade delete user's articles
     await Article.deleteMany({ authorId: userId });
-
-    // Delete user
     await User.findByIdAndDelete(userId);
+
+    await AuditLog.create({
+      userId: req.user.id,
+      userName: req.user.name,
+      userRole: req.user.role,
+      action: 'user.delete',
+      targetType: 'User',
+      targetId: userId,
+      targetTitle: userToDelete.name,
+      details: `Deleted user and their articles`
+    }).catch(() => null);
 
     res.json({ success: true, message: 'User and their articles deleted successfully' });
   } catch (error) {
@@ -294,6 +413,8 @@ module.exports = {
   login,
   getProfile,
   updateProfile,
+  toggleSaveArticle,
+  getSavedArticles,
   getReporters,
   getReporterById,
   getAllUsers,

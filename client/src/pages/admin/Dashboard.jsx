@@ -6,6 +6,10 @@ import { api } from '../../utils/api';
 import { useToast } from '../../components/Toast';
 import RichTextEditor from '../../components/RichTextEditor';
 import MediaLibrary from '../../components/MediaLibrary';
+import AdManagerTab from './AdManagerTab';
+import StoryHubTab from './StoryHubTab';
+import AuditLogsTab from './AuditLogsTab';
+import BlockEditorTab from './BlockEditorTab';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, 
   CartesianGrid, Tooltip, BarChart, Bar 
@@ -14,7 +18,7 @@ import {
   BarChart3, FileText, Image as ImageIcon, Tags, 
   MessageSquare, Megaphone, Users, ShieldAlert, 
   ChevronRight, LogOut, Globe, Plus, Trash2, Check, X,
-  Calendar, Eye, HelpCircle, Save, Settings, Cpu
+  Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -25,14 +29,16 @@ const Dashboard = () => {
 
   // Define tab properties dynamically with role validation arrays
   const tabs = [
-    { id: 'overview', name: 'Overview Analytics', icon: BarChart3, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
+    { id: 'overview', name: 'Overview Analytics', icon: BarChart3, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager', 'Analyst'] },
     { id: 'articlesList', name: 'Manage Articles', icon: FileText, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
-    { id: 'editor', name: 'Write Article', icon: Plus, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
+    { id: 'editor', name: 'Write Article (CMS)', icon: Plus, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
+    { id: 'storyHub', name: 'Story Hubs (Live)', icon: Layers, roles: ['Super Admin', 'Admin', 'Editor'] },
     { id: 'media', name: 'Media Library', icon: ImageIcon, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'taxonomy', name: 'Categories & Tags', icon: Tags, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
     { id: 'comments', name: 'Moderate Comments', icon: MessageSquare, roles: ['Super Admin', 'Admin', 'Editor', 'Moderator'] },
-    { id: 'ads', name: 'Manage Ads', icon: Megaphone, roles: ['Super Admin', 'Admin'] },
+    { id: 'ads', name: 'Ad Engine & Manager', icon: Megaphone, roles: ['Super Admin', 'Admin', 'Ad Manager'] },
     { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] },
+    { id: 'audit', name: 'Audit Logs', icon: ShieldAlert, roles: ['Super Admin', 'Admin', 'Analyst'] },
     { id: 'layout', name: 'Homepage Layout', icon: Settings, roles: ['Super Admin', 'Admin', 'Editor'] },
     { id: 'autoFetched', name: 'Auto Fetched Data', icon: Cpu, roles: ['Super Admin', 'Admin', 'Editor'] }
   ];
@@ -1147,294 +1153,21 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* TAB 1: NEWS EDITOR */}
+        {/* TAB 1: BLOCK ARTICLE CMS */}
         {activeTab === 'editor' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-                {editingArticleId ? 'সংবাদ সম্পাদনা (Edit Article)' : 'নতুন সংবাদ লিখুন (Write Article)'}
-              </h1>
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => handleTranslate('bn')}
-                  disabled={translating}
-                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
-                >
-                  <span>{translating ? 'অনুবাদ হচ্ছে...' : 'বাংলায় অনুবাদ (Translate to BN)'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleTranslate('en')}
-                  disabled={translating}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
-                >
-                  <span>{translating ? 'Translating...' : 'Translate to EN (ইংরেজি)'}</span>
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveArticle} className="space-y-6">
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Editor Content Area (Left 2 columns) */}
-                <div className="lg:col-span-2 space-y-4">
-                  {/* Title */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংবাদের শিরোনাম (Title) *</label>
-                    <input 
-                      type="text" 
-                      value={articleTitle} 
-                      onChange={(e) => setArticleTitle(e.target.value)} 
-                      required
-                      placeholder="শিরোনাম লিখুন..."
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm font-semibold rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    />
-                  </div>
-
-                  {/* Subtitle */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">উপ-শিরোনাম (Subtitle)</label>
-                    <input 
-                      type="text" 
-                      value={articleSubtitle} 
-                      onChange={(e) => setArticleSubtitle(e.target.value)}
-                      placeholder="উপ-শিরোনাম লিখুন..."
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    />
-                  </div>
-
-                  {/* HTML Body Editor Custom Component */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">মূল সংবাদ (Content Body) *</label>
-                    <RichTextEditor value={articleContent} onChange={setArticleContent} />
-                  </div>
-
-                  {/* Short Summary */}
-                  <div>
-                    <label className="text-xs font-bold text-slate-600 dark:text-slate-400 block mb-1">সংক্ষিপ্ত সারসংক্ষেপ (Short Summary)</label>
-                    <textarea 
-                      rows="3" 
-                      value={articleSummary} 
-                      onChange={(e) => setArticleSummary(e.target.value)}
-                      placeholder="খবরের একটি ২-৩ লাইনের সারসংক্ষেপ লিখুন..."
-                      className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    />
-                  </div>
-                </div>
-
-                {/* Configurations Panel (Right column) */}
-                <div className="space-y-4">
-                  
-                  {/* Status, Category & Actions Card */}
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs space-y-4">
-                    <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">Publish Desk</h3>
-                    
-                    {/* Category Selector */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">বিভাগ (Category) *</label>
-                      <select 
-                        value={articleCategory}
-                        onChange={(e) => {
-                          setArticleCategory(e.target.value);
-                          setArticleSubcategory('');
-                        }}
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
-                      >
-                        {categories && categories.length > 0 ? (
-                          categories.map(cat => (
-                            <option key={cat._id || cat.name} value={cat.name}>{cat.name}</option>
-                          ))
-                        ) : (
-                          <>
-                            <option value="Bangladesh">Bangladesh</option>
-                            <option value="International">International</option>
-                            <option value="Politics">Politics</option>
-                            <option value="Economy">Economy</option>
-                            <option value="Sports">Sports</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Technology">Technology</option>
-                            <option value="Education">Education</option>
-                            <option value="Jobs">Jobs</option>
-                            <option value="Lifestyle">Lifestyle</option>
-                            <option value="Opinion">Opinion</option>
-                          </>
-                        )}
-                      </select>
-                    </div>
-
-                    {/* Subcategory Selector */}
-                    {(() => {
-                      const selectedCatObj = (categories || []).find(c => c.name.toLowerCase() === (articleCategory || '').toLowerCase());
-                      const subcats = selectedCatObj?.subcategories || [];
-                      if (subcats.length === 0) return null;
-                      return (
-                        <div>
-                          <label className="text-xs font-bold text-slate-605 block mb-1">উপবিভাগ (Subcategory)</label>
-                          <select 
-                            value={articleSubcategory}
-                            onChange={(e) => setArticleSubcategory(e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
-                          >
-                            <option value="">-- কোনো উপবিভাগ নেই (মূল বিভাগে থাকবে) --</option>
-                            {subcats.map(sub => (
-                              <option key={sub._id || sub.slug || sub.name} value={sub.name}>{sub.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Status */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">অবস্থা (Status)</label>
-                      <select 
-                        value={articleStatus}
-                        onChange={(e) => setArticleStatus(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
-                      >
-                        <option value="draft">Draft (খসড়া)</option>
-                        <option value="published">Publish Immediately (প্রকাশিত)</option>
-                        <option value="scheduled">Schedule Publish (সময়সূচী)</option>
-                      </select>
-                    </div>
-
-                    {/* Date Scheduling */}
-                    {articleStatus === 'scheduled' && (
-                      <div>
-                        <label className="text-xs font-bold text-slate-605 block mb-1">তারিখ ও সময় (Publish Date)</label>
-                        <input 
-                          type="datetime-local" 
-                          value={articleScheduledDate}
-                          onChange={(e) => setArticleScheduledDate(e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-bold focus:outline-none"
-                        />
-                      </div>
-                    )}
-
-                    {/* Tags input */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">ট্যাগসমূহ (Tags - comma separated)</label>
-                      <input 
-                        type="text" 
-                        value={articleTags} 
-                        onChange={(e) => setArticleTags(e.target.value)}
-                        placeholder="রাজনীতি, নির্বাচন, ঢাকা"
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
-                      />
-                    </div>
-
-                    {/* Featured Image Picker */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">ফিচার ইমেজ লিংক (Featured Image URL)</label>
-                      <div className="flex space-x-1">
-                        <input 
-                          type="text" 
-                          value={articleFeaturedImage}
-                          onChange={(e) => setArticleFeaturedImage(e.target.value)}
-                          placeholder="/uploads/file.png or external link"
-                          className="flex-1 px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setShowMediaPicker(true)}
-                          className="px-2 py-1 bg-slate-200 dark:bg-slate-800 text-xs font-bold rounded-lg"
-                        >
-                          Pick
-                        </button>
-                      </div>
-                      {articleFeaturedImage && (
-                        <img 
-                          src={articleFeaturedImage.startsWith('/') ? `${import.meta.env.VITE_API_HOST || ''}${articleFeaturedImage}` : articleFeaturedImage} 
-                          alt="preview" 
-                          className="h-20 w-full object-cover mt-2 rounded-lg border border-slate-200" 
-                        />
-                      )}
-                    </div>
-
-                    {/* Video URL Input */}
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">ভিডিও লিংক (YouTube Video URL)</label>
-                      <input 
-                        type="text" 
-                        value={articleVideoUrl} 
-                        onChange={(e) => setArticleVideoUrl(e.target.value)}
-                        placeholder="https://www.youtube.com/watch?v=xxxxxx"
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold focus:outline-none"
-                      />
-                    </div>
-
-                    {/* Submit Actions */}
-                    <div className="pt-2 flex gap-2">
-                      <button 
-                        type="submit" 
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center space-x-1.5"
-                      >
-                        <Save className="h-4 w-4" />
-                        <span>Save Article</span>
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={resetEditorForm}
-                        className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 rounded-lg font-bold text-xs"
-                      >
-                        Reset
-                      </button>
-                    </div>
-
-                  </div>
-
-                  {/* SEO Settings Card */}
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs space-y-4">
-                    <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider">SEO Details</h3>
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">Meta Title</label>
-                      <input 
-                        type="text" 
-                        value={articleSeoTitle}
-                        onChange={(e) => setArticleSeoTitle(e.target.value)}
-                        placeholder="SEO Title..."
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-605 block mb-1">Meta Description</label>
-                      <textarea 
-                        rows="3" 
-                        value={articleSeoDesc}
-                        onChange={(e) => setArticleSeoDesc(e.target.value)}
-                        placeholder="SEO Summary..."
-                        className="w-full px-3 py-2 border border-slate-250 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-lg text-xs focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-
-            </form>
-            
-            {/* Modal Media picker */}
-            {showMediaPicker && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                <div className="bg-white dark:bg-slate-950 p-6 rounded-2xl max-w-4xl w-11/12 border shadow-2xl relative">
-                  <button 
-                    onClick={() => setShowMediaPicker(false)}
-                    className="absolute top-4 right-4 p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold"
-                  >
-                    ✕
-                  </button>
-                  <h3 className="text-base font-bold text-slate-800 dark:text-white mb-4">Select Featured Image</h3>
-                  <MediaLibrary 
-                    selectedUrl={articleFeaturedImage}
-                    onSelect={(url) => { setArticleFeaturedImage(url); setShowMediaPicker(false); }} 
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+          <BlockEditorTab 
+            editingArticleId={editingArticleId} 
+            categories={categories}
+            onSaveSuccess={() => {
+              resetEditorForm();
+              fetchArticlesList();
+              setActiveTab('articlesList');
+            }}
+            onCancel={() => {
+              resetEditorForm();
+              setActiveTab('articlesList');
+            }}
+          />
         )}
 
         {/* TAB 2: MEDIA LIBRARY PAGE */}
@@ -1699,149 +1432,19 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* TAB 5: AD PLACEMENTS DESK */}
+        {/* TAB: STORY HUB MANAGER */}
+        {activeTab === 'storyHub' && (
+          <StoryHubTab />
+        )}
+
+        {/* TAB: AD PLACEMENTS & FIRST-PARTY AD ENGINE */}
         {activeTab === 'ads' && (
-          <div className="space-y-8">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Advertisement Module Placements</h1>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
-              {/* Configure new ad form */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs h-fit space-y-4">
-                <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white mb-2">Create New Campaign</h3>
-                
-                <form onSubmit={handleCreateAd} className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold block mb-1">Ad Title *</label>
-                    <input
-                      type="text"
-                      placeholder="Title of Campaign..."
-                      value={newAdTitle}
-                      onChange={(e) => setNewAdTitle(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:outline-none"
-                    />
-                  </div>
+          <AdManagerTab />
+        )}
 
-                  <div>
-                    <label className="text-xs font-bold block mb-1">Slot Placement *</label>
-                    <select
-                      value={newAdPlacement}
-                      onChange={(e) => setNewAdPlacement(e.target.value)}
-                      className="w-full px-3 py-2 border bg-slate-50 rounded-lg text-xs focus:outline-none"
-                    >
-                      <option value="header">Header Banner (970x90 or 728x90)</option>
-                      <option value="sidebar">Sidebar Column (300x600 or 300x250)</option>
-                      <option value="article">Article Content Inline (600x150)</option>
-                      <option value="popup">Lightbox Popup Modal</option>
-                      <option value="sticky">Sticky Footer Banner</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold block mb-1">Ad Type</label>
-                    <select
-                      value={newAdType}
-                      onChange={(e) => setNewAdType(e.target.value)}
-                      className="w-full px-3 py-2 border bg-slate-50 rounded-lg text-xs focus:outline-none"
-                    >
-                      <option value="image">Standard Image Banner</option>
-                      <option value="script">Custom Script / AdSense HTML Code</option>
-                    </select>
-                  </div>
-
-                  {newAdType === 'image' ? (
-                    <>
-                      <div>
-                        <label className="text-xs font-bold block mb-1">Banner Image URL *</label>
-                        <input
-                          type="text"
-                          placeholder="https://example.com/banner.jpg"
-                          value={newAdImageUrl}
-                          onChange={(e) => setNewAdImageUrl(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold block mb-1">Target Redirection URL</label>
-                        <input
-                          type="text"
-                          placeholder="https://targeturl.com"
-                          value={newAdLinkUrl}
-                          onChange={(e) => setNewAdLinkUrl(e.target.value)}
-                          className="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:outline-none"
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <div>
-                      <label className="text-xs font-bold block mb-1">HTML Embed Code (Google AdSense Script) *</label>
-                      <textarea
-                        rows="5"
-                        placeholder="<ins class='adsbygoogle' ...></ins>"
-                        value={newAdScriptCode}
-                        onChange={(e) => setNewAdScriptCode(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg text-xs bg-slate-50 focus:outline-none"
-                      />
-                    </div>
-                  )}
-
-                  <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition-colors shadow">
-                    Create Advertisement
-                  </button>
-                </form>
-              </div>
-
-              {/* Ad list and performance grid */}
-              <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 p-6 rounded-2xl shadow-xs">
-                <h3 className="text-sm font-black uppercase text-slate-800 dark:text-white mb-4">Active Campaigns and CTR Performance</h3>
-                
-                <div className="space-y-4">
-                  {ads.map(ad => {
-                    const ctr = ad.impressions ? ((ad.clicks / ad.impressions) * 100).toFixed(1) : 0;
-                    return (
-                      <div key={ad._id} className="p-4 border border-slate-100 dark:border-slate-800/60 rounded-xl flex items-center justify-between gap-4">
-                        <div className="space-y-1.5 flex-1 truncate">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-[9px] uppercase font-black px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">{ad.placement}</span>
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate">{ad.title}</h4>
-                          </div>
-                          
-                          {/* CTR Metrics */}
-                          <div className="flex items-center space-x-6 text-[10px] font-semibold text-slate-400">
-                            <span>Views: {ad.impressions || 0}</span>
-                            <span>Clicks: {ad.clicks || 0}</span>
-                            <span className="text-blue-500 font-extrabold">CTR: {ctr}%</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2 shrink-0">
-                          {/* Toggle Active Switch */}
-                          <button
-                            onClick={() => handleToggleAd(ad._id, !ad.active)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-colors ${
-                              ad.active ? 'bg-green-50 text-green-700' : 'bg-slate-100 text-slate-400'
-                            }`}
-                          >
-                            {ad.active ? 'Active' : 'Disabled'}
-                          </button>
-                          
-                          {/* Delete */}
-                          <button
-                            onClick={() => handleDeleteAd(ad._id)}
-                            className="p-1.5 rounded-lg bg-red-50 text-red-650 hover:bg-red-100"
-                          >
-                            <Trash2 className="h-4.5 w-4.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-            </div>
-          </div>
+        {/* TAB: ENTERPRISE AUDIT LOGS */}
+        {activeTab === 'audit' && (
+          <AuditLogsTab />
         )}
 
         {/* TAB 6: ROLE MANAGEMENT (ADMIN ONLY) */}
@@ -1887,6 +1490,8 @@ const Dashboard = () => {
                             <option value="Editor">Editor (সম্পাদক)</option>
                             <option value="Moderator">Moderator (মডারেটর)</option>
                             <option value="SEO Manager">SEO Manager (এসইও ম্যানেজার)</option>
+                            <option value="Ad Manager">Ad Manager (বিজ্ঞাপন ব্যবস্থাপক)</option>
+                            <option value="Analyst">Analyst (অ্যানালিস্ট ও অডিটর)</option>
                             <option value="Admin">Admin (প্রশাসক)</option>
                             <option value="Super Admin">Super Admin (মাস্টার)</option>
                           </select>

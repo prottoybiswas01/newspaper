@@ -4,7 +4,9 @@ const {
   register, 
   login, 
   getProfile, 
-  updateProfile, 
+  updateProfile,
+  toggleSaveArticle,
+  getSavedArticles,
   getReporters, 
   getReporterById, 
   getAllUsers, 
@@ -19,6 +21,9 @@ router.post('/login', authLimiter, login);
 
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
+
+router.post('/save-article', protect, toggleSaveArticle);
+router.get('/saved-articles', protect, getSavedArticles);
 
 router.get('/reporters', getReporters);
 router.get('/reporters/:id', getReporterById);

@@ -21,6 +21,7 @@ import ReporterProfile from './pages/ReporterProfile';
 import Archive from './pages/Archive';
 import MediaCenter from './pages/MediaCenter';
 import UserProfile from './pages/UserProfile';
+import StoryHubPage from './pages/StoryHubPage';
 import Login from './pages/Login';
 import Dashboard from './pages/admin/Dashboard';
 
@@ -122,6 +123,16 @@ function App() {
                         element={
                           <ErrorBoundary isSection={true} sectionName="মিডিয়া সেন্টার">
                             <MediaCenter />
+                          </ErrorBoundary>
+                        } 
+                      />
+
+                      {/* Story Hub Partition */}
+                      <Route 
+                        path="/story-hub/:slug" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="স্টোরি হাব পেজ">
+                            <StoryHubPage />
                           </ErrorBoundary>
                         } 
                       />
