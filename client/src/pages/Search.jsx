@@ -103,7 +103,7 @@ const Search = () => {
         </form>
 
         {/* Dropdowns filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           {/* Category Filter */}
           <div>
             <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">বিভাগ (Category)</label>
@@ -119,21 +119,6 @@ const Search = () => {
             </select>
           </div>
 
-          {/* Author/Reporter Filter */}
-          <div>
-            <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">লেখক (Author)</label>
-            <select
-              value={authorId}
-              onChange={(e) => setAuthorId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-250 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-800 dark:text-neutral-200 rounded-lg text-xs font-semibold focus:outline-none"
-            >
-              <option value="">সকল লেখক</option>
-              {reporters.map(rep => (
-                <option key={rep._id} value={rep._id}>{rep.name}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Sorting */}
           <div>
             <label className="text-xs font-bold text-gray-600 dark:text-neutral-400 block mb-1">সাজান (Sorting)</label>
@@ -143,11 +128,12 @@ const Search = () => {
               className="w-full px-3 py-2 border border-gray-250 dark:border-neutral-700 bg-white dark:bg-[#18181b] text-gray-800 dark:text-neutral-200 rounded-lg text-xs font-semibold focus:outline-none"
             >
               <option value="latest">নতুন প্রথম</option>
-              <option value="popular">জনপ্রিয় প্রথম</option>
+              <option value="popular">সর্বাধিক পঠিত</option>
               <option value="oldest">পুরনো প্রথম</option>
             </select>
           </div>
 
+          {/* Reset button */}
           <div className="flex items-end">
             <button
               type="button"

@@ -274,10 +274,9 @@ const ArticleDetails = () => {
       "@id": window.location.href
     },
     "author": [{
-      "@type": "Person",
-      "name": displayArticle.author,
-      "jobTitle": displayArticle.authorDesignation || 'প্রতিবেদক',
-      "url": `${window.location.origin}/reporter/${displayArticle.authorId}`
+      "@type": "Organization",
+      "name": "অনলাইন ডেস্ক",
+      "url": window.location.origin
     }],
     "publisher": {
       "@type": "NewsMediaOrganization",
@@ -363,15 +362,15 @@ const ArticleDetails = () => {
 
             {/* Reporter Meta & Interactive Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-y border-gray-200 dark:border-neutral-800 py-3.5 gap-3 no-print">
-              {/* Author info */}
+              {/* Editorial Desk Byline */}
               <div className="flex items-center space-x-3">
                 <div className="bg-red-50 dark:bg-neutral-800 rounded-full p-2 text-red-600 dark:text-red-400">
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <Link to={`/reporter/${displayArticle.authorId}`} className="text-sm font-bold text-gray-900 dark:text-neutral-100 hover:text-red-600 transition-colors">
-                    {displayArticle.author}
-                  </Link>
+                  <span className="text-sm font-bold text-gray-900 dark:text-neutral-100">
+                    {language === 'bn' ? 'অনলাইন ডেস্ক' : 'Online Desk'}
+                  </span>
                   <div className="flex items-center text-xs text-gray-500 dark:text-neutral-400 space-x-3 mt-0.5">
                     <span className="flex items-center">
                       <Calendar className="h-3.5 w-3.5 mr-1 text-gray-400" />
@@ -443,10 +442,21 @@ const ArticleDetails = () => {
                 {/* Social Share Group */}
                 <div className="flex items-center gap-1">
                   <a 
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(displayArticle.title + ' ' + window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                    title="WhatsApp"
+                  >
+                    <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                      <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.297.144.35.491 1.199.534 1.286.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z" />
+                    </svg>
+                  </a>
+                  <a 
                     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-blue-600 hover:bg-blue-50"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-neutral-800 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20"
                     title="Facebook"
                   >
                     <Facebook className="h-4 w-4" />
@@ -561,24 +571,13 @@ const ArticleDetails = () => {
             </div>
           )}
 
-          {/* Author Bio Box */}
-          <div className="my-8 p-5 rounded-2xl bg-gray-50 dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 flex items-center space-x-4 no-print shadow-xs">
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-red-100 dark:bg-neutral-800 flex-shrink-0">
-              <img 
-                src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(displayArticle.author)}`} 
-                alt={displayArticle.author} 
-                className="w-full h-full object-cover" 
-              />
+          {/* Editorial / Copyright Note */}
+          <div className="my-8 p-4 rounded-xl bg-gray-50 dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 flex items-center justify-between text-xs text-gray-500 dark:text-neutral-400 no-print shadow-xs">
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+              <span className="font-medium">সর্বস্বত্ব সংরক্ষিত © দৈনিক দর্পণ ডিজিটাল নিউজ সংস্করণ</span>
             </div>
-            <div className="flex-grow">
-              <span className="text-xs font-bold text-red-600 uppercase tracking-wider block">প্রতিবেদক পরিচিতি</span>
-              <Link to={`/reporter/${displayArticle.authorId}`} className="text-base font-black text-gray-950 dark:text-white hover:text-red-600 transition-colors">
-                {displayArticle.author}
-              </Link>
-              <p className="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">
-                {displayArticle.authorDesignation || 'দৈনিক দর্পণ ডিজিটাল নিউজ টিম'}
-              </p>
-            </div>
+            <span className="font-bold text-gray-700 dark:text-neutral-300">অনলাইন ডেস্ক</span>
           </div>
 
           {/* Moderated Comments Section */}

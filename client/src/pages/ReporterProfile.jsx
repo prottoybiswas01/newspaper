@@ -63,31 +63,10 @@ const ReporterProfile = () => {
         />
         <div className="flex-1 text-center md:text-left space-y-2">
           <span className="text-[10px] uppercase font-extrabold tracking-widest bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 rounded">
-            {reporter.role}
+            ডিজিটাল বিভাগ
           </span>
-          <h1 className="text-2xl font-black text-gray-950 dark:text-white">{reporter.name}</h1>
-          <p className="text-sm text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">{reporter.bio || 'এই লেখকের কোনো জীবনবৃত্তান্ত এখনো যোগ করা হয়নি।'}</p>
-          
-          {/* Social Links */}
-          {reporter.socialLinks && (
-            <div className="flex justify-center md:justify-start space-x-3 pt-2">
-              {reporter.socialLinks.facebook && (
-                <a href={reporter.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-400 hover:text-blue-600">
-                  <Facebook className="h-4.5 w-4.5" />
-                </a>
-              )}
-              {reporter.socialLinks.twitter && (
-                <a href={reporter.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-400 hover:text-sky-500">
-                  <Twitter className="h-4.5 w-4.5" />
-                </a>
-              )}
-              {reporter.socialLinks.linkedin && (
-                <a href={reporter.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-400 hover:text-blue-700">
-                  <Linkedin className="h-4.5 w-4.5" />
-                </a>
-              )}
-            </div>
-          )}
+          <h1 className="text-2xl font-black text-gray-950 dark:text-white">অনলাইন ডেস্ক</h1>
+          <p className="text-sm text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">দৈনিক দর্পণ ডিজিটাল নিউজরুম ও সম্পাদকীয় আর্কাইভ। সকল বিশেষ প্রতিবেদন ও সংবাদের সমাহার।</p>
         </div>
         
         {/* Total stats */}
