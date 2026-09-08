@@ -7,17 +7,24 @@ const BreakingTicker = () => {
   const [articles, setArticles] = useState([]);
 
   useEffect(() => {
-    const fetchLatest = async () => {
+    const fetchBreaking = async () => {
       try {
-        const res = await api.get('/articles?limit=5&sort=latest');
-        if (res.success) {
+        // First try to fetch breaking news
+        const res = await api.get('/articles?isBreaking=true&limit=8');
+        if (res.success && Array.isArray(res.articles) && res.articles.length > 0) {
           setArticles(res.articles);
+        } else {
+          // Fallback to latest published articles
+          const fallbackRes = await api.get('/articles?limit=8&sort=latest');
+          if (fallbackRes.success && Array.isArray(fallbackRes.articles)) {
+            setArticles(fallbackRes.articles);
+          }
         }
       } catch (err) {
         console.error('Ticker fetch failed:', err);
       }
     };
-    fetchLatest();
+    fetchBreaking();
   }, []);
 
   if (articles.length === 0) return null;

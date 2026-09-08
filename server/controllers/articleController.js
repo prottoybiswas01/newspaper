@@ -324,10 +324,16 @@ const getArticles = async (req, res) => {
     const query = {};
 
     // Status filter
-    if (status && ['published', 'draft', 'review', 'scheduled', 'updated', 'archived', 'trash'].includes(status)) {
-      query.status = status;
+    if (status && status !== 'all') {
+      if (status === 'published') {
+        query.status = { $in: ['published', 'updated'] };
+      } else {
+        query.status = status;
+      }
+    } else if (status === 'all') {
+      // no status filter (for admin panel)
     } else {
-      query.status = 'published';
+      query.status = { $in: ['published', 'updated'] };
     }
 
     if (category) {
@@ -387,6 +393,20 @@ const getArticles = async (req, res) => {
   }
 };
 
+// @desc    Get single article by ID
+// @route   GET /api/articles/:id
+const getArticleById = async (req, res) => {
+  try {
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      return res.status(404).json({ success: false, message: 'Article not found' });
+    }
+    res.json({ success: true, article });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get article by slug (increments views)
 // @route   GET /api/articles/slug/:slug
 const getArticleBySlug = async (req, res) => {
@@ -416,14 +436,17 @@ const updateArticle = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Article not found' });
     }
 
-    // Permissions check
-    const isAuthor = article.authorId === req.user.id;
-    const isStaff = ['Editor', 'Admin', 'Super Admin'].includes(req.user.role);
+    // Permissions check - allow all newsroom staff
+    const userRole = req.user ? req.user.role : '';
+    const isStaff = ['Editor', 'Admin', 'Super Admin', 'Reporter', 'Moderator'].includes(userRole);
+    const isAuthor = article.authorId && req.user && String(article.authorId) === String(req.user.id);
     if (!isAuthor && !isStaff) {
       return res.status(403).json({ success: false, message: 'You are not authorized to edit this article' });
     }
 
     const updateData = { ...req.body };
+    delete updateData._id;
+    delete updateData.id;
 
     // If blocks provided, ensure HTML sync
     if (updateData.blocks && Array.isArray(updateData.blocks)) {
@@ -439,7 +462,7 @@ const updateArticle = async (req, res) => {
 
     // Status management
     if (updateData.status) {
-      if (updateData.status === 'published' && article.status !== 'published') {
+      if ((updateData.status === 'published' || updateData.status === 'updated') && article.status !== 'published' && article.status !== 'updated') {
         updateData.publishDate = new Date();
       } else if (updateData.status === 'scheduled' && updateData.scheduledDate) {
         updateData.scheduledDate = new Date(updateData.scheduledDate);
@@ -452,7 +475,7 @@ const updateArticle = async (req, res) => {
     const newRevision = {
       version: nextVersion,
       savedAt: new Date(),
-      savedBy: req.user.name,
+      savedBy: req.user ? req.user.name : 'সম্পাদক',
       title: article.title,
       content: article.content,
       blocks: article.blocks || []
@@ -462,19 +485,22 @@ const updateArticle = async (req, res) => {
     const updated = await Article.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
 
     // Audit log
-    await AuditLog.create({
-      userId: req.user.id,
-      userName: req.user.name,
-      userRole: req.user.role,
-      action: 'article.update',
-      targetType: 'Article',
-      targetId: req.params.id,
-      targetTitle: updated.title,
-      details: `Updated article status to ${updated.status}`
-    }).catch(() => null);
+    if (req.user) {
+      await AuditLog.create({
+        userId: req.user.id,
+        userName: req.user.name,
+        userRole: req.user.role,
+        action: 'article.update',
+        targetType: 'Article',
+        targetId: req.params.id,
+        targetTitle: updated.title,
+        details: `Updated article status to ${updated.status}`
+      }).catch(() => null);
+    }
 
     res.json({ success: true, article: updated });
   } catch (error) {
+    console.error('updateArticle error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -686,28 +712,30 @@ const getHomepageData = async (req, res) => {
     const Setting = require('../models/Setting');
     const StoryHub = require('../models/StoryHub');
     
+    const liveStatus = { $in: ['published', 'updated'] };
+
     // 1. Lead & Breaking News
-    const leadArticle = await Article.findOne({ status: 'published', isLead: true })
+    const leadArticle = await Article.findOne({ status: liveStatus, isLead: true })
       .sort({ publishDate: -1, createdAt: -1 });
 
-    const breakingNews = await Article.find({ status: 'published', isBreaking: true })
+    const breakingNews = await Article.find({ status: liveStatus, isBreaking: true })
       .select('title slug publishDate')
       .sort({ publishDate: -1 })
       .limit(8);
 
     // 2. Top articles (latest 10)
-    const topArticles = await Article.find({ status: 'published' })
+    const topArticles = await Article.find({ status: liveStatus })
       .sort({ publishDate: -1, createdAt: -1 })
       .limit(10);
       
     // 3. Most read 5
-    const mostRead = await Article.find({ status: 'published' })
+    const mostRead = await Article.find({ status: liveStatus })
       .sort({ views: -1, publishDate: -1 })
       .limit(5);
 
     // 4. Multimedia section
     const multimediaArticles = await Article.find({
-      status: 'published',
+      status: liveStatus,
       multimediaType: { $in: ['video', 'podcast', 'gallery', 'explainer'] }
     })
     .sort({ publishDate: -1 })
@@ -739,7 +767,7 @@ const getHomepageData = async (req, res) => {
       const pattern = synonyms.map(s => `^${s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}$`).join('|');
 
       const articles = await Article.find({ 
-        status: 'published',
+        status: liveStatus,
         category: { $regex: new RegExp(pattern, 'i') }
       })
       .sort({ publishDate: -1, createdAt: -1 })
@@ -773,6 +801,7 @@ const getHomepageData = async (req, res) => {
 module.exports = {
   createArticle,
   getArticles,
+  getArticleById,
   getArticleBySlug,
   getHomepageData,
   updateArticle,

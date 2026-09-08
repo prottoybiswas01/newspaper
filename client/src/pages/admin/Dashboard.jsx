@@ -312,7 +312,9 @@ const Dashboard = () => {
           featuredImage: extRes.featuredImage || fetchedArt.featuredImage || '',
           source: extRes.source || fetchedArt.source,
           sourceUrl: fetchedArt.link,
-          paragraphs: extRes.paragraphs && extRes.paragraphs.length > 0 ? extRes.paragraphs : [extRes.summary || fetchedArt.description || ''],
+          paragraphs: extRes.paragraphs && extRes.paragraphs.length > 0 
+            ? extRes.paragraphs 
+            : (extRes.content ? extRes.content.split(/<\/p>/i).map(p => p.replace(/<[^>]*>/g, '').trim()).filter(Boolean) : [(extRes.summary || fetchedArt.description || '').replace(/<[^>]*>/g, '').trim()]),
           content: extRes.content || '',
           summary: extRes.summary || '',
           keyPoints: extRes.keyPoints || [],
@@ -383,13 +385,15 @@ const Dashboard = () => {
           if (extRes.keyPoints) keyPointsList = extRes.keyPoints;
         }
       } catch (e) {
-        // Ignore fallback to snippet
+        // Fallback to snippet
       }
 
-      const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${finalSource} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
+      if (paragraphsList.length === 0 && fullContent) {
+        paragraphsList = fullContent.split(/<\/p>/i).map(p => p.replace(/<[^>]*>/g, '').trim()).filter(p => p.length > 15);
+      }
 
       if (paragraphsList.length === 0) {
-        let cleanDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
+        let cleanDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').replace(/<[^>]*>/g, '').trim();
         if (cleanDesc) paragraphsList = [cleanDesc];
       }
 
@@ -400,12 +404,14 @@ const Dashboard = () => {
       }));
 
       // Add source quote block
-      structuredBlocks.push({
-        id: `blk_src_${Date.now()}`,
-        type: 'quote',
-        content: `মূল সংবাদের উৎস: ${finalSource} (লিংক: ${fetchedArt.link})`,
-        author: finalSource
-      });
+      if (finalSource) {
+        structuredBlocks.push({
+          id: `blk_src_${Date.now()}`,
+          type: 'quote',
+          content: `মূল সংবাদের উৎস: ${finalSource}${fetchedArt.link ? ` (লিংক: ${fetchedArt.link})` : ''}`,
+          author: finalSource
+        });
+      }
 
       if (!fullContent) {
         fullContent = paragraphsList.map(p => `<p>${p}</p>`).join('\n') + sourceAttribution;

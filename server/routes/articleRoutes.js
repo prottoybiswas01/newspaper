@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createArticle,
   getArticles,
+  getArticleById,
   getArticleBySlug,
   getHomepageData,
   updateArticle,
@@ -19,6 +20,7 @@ const { protect, authorize } = require('../middleware/auth');
 router.get('/homepage', getHomepageData);
 router.get('/', getArticles);
 router.get('/slug/:slug', getArticleBySlug);
+router.get('/:id', getArticleById);
 router.post('/translate', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), translateArticle);
 router.post('/generate-summary', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), generateSummary);
 router.post('/', protect, authorize('Reporter', 'Editor', 'Admin', 'Super Admin'), createArticle);

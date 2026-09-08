@@ -440,6 +440,25 @@ exports.extractFullArticleContent = async (req, res) => {
         .filter(p => p.length > 25 && !badPatterns.some(pattern => pattern.test(p)));
     }
 
+    // Secondary fallback for dynamic news portals
+    if (cleanParagraphs.length === 0) {
+      const storyMatches = html.match(/<(article|main|div)[^>]*(story|article|content|news-body|details|post-body)[^>]*>([\s\S]*?)<\/\1>/gi) || [];
+      for (const section of storyMatches) {
+        const pMatches = section.match(/<p[^\>]*>[\s\S]*?<\/p>/gi) || [];
+        for (const p of pMatches) {
+          const clean = decodeHtmlEntities(p.replace(/<[^>]*>/g, '').trim());
+          if (clean.length > 25 && !badPatterns.some(pattern => pattern.test(clean))) {
+            cleanParagraphs.push(clean);
+          }
+        }
+        if (cleanParagraphs.length > 0) break;
+      }
+    }
+
+    if (cleanParagraphs.length === 0 && jsonLdDesc) {
+      cleanParagraphs.push(jsonLdDesc);
+    }
+
     const summary = cleanParagraphs[0] ? cleanParagraphs[0].substring(0, 250) : (jsonLdDesc || '');
     const htmlContent = cleanParagraphs.map(p => `<p>${p}</p>`).join('\n');
 

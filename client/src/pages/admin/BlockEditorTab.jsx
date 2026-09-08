@@ -92,6 +92,77 @@ const BlockEditorTab = ({
   // Autosave status indicator
   const [lastSavedTime, setLastSavedTime] = useState(null);
 
+  // Helper to convert HTML or raw text into clean structured blocks
+  const htmlToBlocks = (htmlOrText) => {
+    if (!htmlOrText) return [{ id: `blk_${Date.now()}_1`, type: 'paragraph', content: '' }];
+    
+    const textStr = String(htmlOrText).trim();
+    if (!textStr) return [{ id: `blk_${Date.now()}_1`, type: 'paragraph', content: '' }];
+
+    // Parse HTML nodes if tags exist
+    if (/<[a-z][\s\S]*>/i.test(textStr)) {
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(textStr, 'text/html');
+        const nodes = Array.from(doc.body.childNodes);
+        const parsed = [];
+
+        nodes.forEach((node, idx) => {
+          const tag = (node.tagName || '').toLowerCase();
+          const text = (node.textContent || '').trim();
+          if (!text && tag !== 'img' && tag !== 'iframe') return;
+
+          if (tag === 'h2' || tag === 'h3' || tag === 'h4') {
+            parsed.push({
+              id: `blk_${Date.now()}_${idx}`,
+              type: 'heading',
+              content: text,
+              metadata: { level: tag === 'h2' ? 2 : (tag === 'h3' ? 3 : 4) }
+            });
+          } else if (tag === 'blockquote') {
+            parsed.push({
+              id: `blk_${Date.now()}_${idx}`,
+              type: 'quote',
+              content: text
+            });
+          } else if (tag === 'img' || (node.querySelector && node.querySelector('img'))) {
+            const imgEl = tag === 'img' ? node : node.querySelector('img');
+            if (imgEl && imgEl.src) {
+              parsed.push({
+                id: `blk_${Date.now()}_${idx}`,
+                type: 'image',
+                content: imgEl.src,
+                metadata: { url: imgEl.src, caption: imgEl.alt || '' }
+              });
+            }
+          } else if (text) {
+            parsed.push({
+              id: `blk_${Date.now()}_${idx}`,
+              type: 'paragraph',
+              content: text
+            });
+          }
+        });
+
+        if (parsed.length > 0) return parsed;
+      } catch (e) {
+        // Fall through to plain text parsing
+      }
+    }
+
+    // Split plain text by newlines into clean paragraph blocks
+    const lines = textStr.split(/\n\n+/).map(s => s.replace(/<[^>]*>/g, '').trim()).filter(Boolean);
+    if (lines.length > 0) {
+      return lines.map((p, idx) => ({
+        id: `blk_${Date.now()}_${idx}`,
+        type: 'paragraph',
+        content: p
+      }));
+    }
+
+    return [{ id: `blk_${Date.now()}_1`, type: 'paragraph', content: textStr.replace(/<[^>]*>/g, '').trim() }];
+  };
+
   const populateFromArticleData = (data) => {
     if (!data) return;
     setTitle(data.title || '');
@@ -104,16 +175,17 @@ const BlockEditorTab = ({
       setKeyPointsInput(data.keyPoints.join('\n'));
     }
 
-    // Convert paragraphs into structured blocks
-    const paragraphList = Array.isArray(data.paragraphs) && data.paragraphs.length > 0
-      ? data.paragraphs
-      : (data.content ? [data.content.replace(/<[^>]*>/g, '').trim()] : []);
-
-    const newBlocks = paragraphList.filter(Boolean).map((p, idx) => ({
-      id: `blk_gen_${Date.now()}_${idx}`,
-      type: 'paragraph',
-      content: p
-    }));
+    // Extract blocks cleanly
+    let newBlocks = [];
+    if (Array.isArray(data.paragraphs) && data.paragraphs.length > 0) {
+      newBlocks = data.paragraphs.filter(Boolean).map((p, idx) => ({
+        id: `blk_gen_${Date.now()}_${idx}`,
+        type: 'paragraph',
+        content: String(p).replace(/<[^>]*>/g, '').trim()
+      }));
+    } else if (data.content) {
+      newBlocks = htmlToBlocks(data.content);
+    }
 
     if (data.sourceUrl) {
       newBlocks.push({
@@ -176,7 +248,7 @@ const BlockEditorTab = ({
         setSubtitle(art.subtitle || '');
         setCategory(art.category || 'bangladesh');
         setSubcategory(art.subcategory || '');
-        setStatus(art.status || 'draft');
+        setStatus(art.status || 'published');
         setScheduledDate(art.scheduledDate ? art.scheduledDate.substring(0, 16) : '');
         setTags(Array.isArray(art.tags) ? art.tags.join(', ') : (art.tags || ''));
         setFeaturedImage(art.featuredImage || '');
@@ -190,10 +262,9 @@ const BlockEditorTab = ({
         if (Array.isArray(art.blocks) && art.blocks.length > 0) {
           setBlocks(art.blocks);
         } else if (art.content) {
-          // Parse HTML content into basic paragraph block
-          setBlocks([
-            { id: 'b_1', type: 'paragraph', content: art.content }
-          ]);
+          setBlocks(htmlToBlocks(art.content));
+        } else {
+          setBlocks([{ id: 'b_1', type: 'paragraph', content: '' }]);
         }
 
         // Trust features
