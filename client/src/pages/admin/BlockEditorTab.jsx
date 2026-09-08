@@ -214,6 +214,119 @@ const BlockEditorTab = ({
     }
   }, [editingArticleId, importedData]);
 
+  // Dynamic Subcategories for selected category
+  const getAvailableSubcategories = () => {
+    const foundCat = categories.find(c => 
+      (c.slug && c.slug.toLowerCase() === category.toLowerCase()) || 
+      (c.name && c.name.toLowerCase() === category.toLowerCase())
+    );
+    
+    const dynamicSubs = (foundCat?.subcategories || []).map(s => 
+      typeof s === 'string' ? { name: s, slug: s } : s
+    );
+
+    const presets = {
+      bangladesh: [
+        { name: 'জাতীয়', slug: 'national' },
+        { name: 'রাজনীতি', slug: 'politics' },
+        { name: 'অপরাধ ও দুর্নীতি', slug: 'crime' },
+        { name: 'জেলা সংবাদ', slug: 'districts' },
+        { name: 'আইন ও আদালত', slug: 'law-courts' },
+        { name: 'প্রশাসন ও সরকার', slug: 'governance' },
+        { name: 'ঢাকা', slug: 'dhaka' },
+        { name: 'চট্টগ্রাম', slug: 'chattogram' },
+        { name: 'সিলেট', slug: 'sylhet' },
+        { name: 'রাজশাহী', slug: 'rajshahi' },
+        { name: 'খুলনা', slug: 'khulna' },
+        { name: 'বরিশাল', slug: 'barishal' },
+        { name: 'রংপুর', slug: 'rangpur' },
+        { name: 'ময়মনসিংহ', slug: 'mymensingh' },
+        { name: 'প্রকৃতি ও পরিবেশ', slug: 'environment' }
+      ],
+      politics: [
+        { name: 'নির্বাচন', slug: 'election' },
+        { name: 'দলীয় কর্মসূচি', slug: 'party-events' },
+        { name: 'সংসদ ও আইনসভা', slug: 'parliament' },
+        { name: 'বক্তব্য ও বিবৃতি', slug: 'statements' }
+      ],
+      world: [
+        { name: 'এশিয়া', slug: 'asia' },
+        { name: 'মধ্যপ্রাচ্য', slug: 'middle-east' },
+        { name: 'আমেরিকা', slug: 'america' },
+        { name: 'ইউরোপ', slug: 'europe' },
+        { name: 'ভারত ও প্রতিবেশী', slug: 'india' },
+        { name: 'কূটনীতি ও জাতিসংঘ', slug: 'diplomacy' }
+      ],
+      international: [
+        { name: 'এশিয়া', slug: 'asia' },
+        { name: 'মধ্যপ্রাচ্য', slug: 'middle-east' },
+        { name: 'আমেরিকা', slug: 'america' },
+        { name: 'ইউরোপ', slug: 'europe' },
+        { name: 'ভারত ও প্রতিবেশী', slug: 'india' },
+        { name: 'কূটনীতি ও জাতিসংঘ', slug: 'diplomacy' }
+      ],
+      business: [
+        { name: 'শেয়ার বাজার', slug: 'stock-market' },
+        { name: 'ব্যাংক ও অর্থনীতি', slug: 'banking' },
+        { name: 'বাজেট ও রাজস্ব', slug: 'budget-tax' },
+        { name: 'ব্যবসা-বাণিজ্য', slug: 'commerce' },
+        { name: 'কৃষি ও শিল্প', slug: 'agriculture' }
+      ],
+      sports: [
+        { name: 'ক্রিকেট', slug: 'cricket' },
+        { name: 'ফুটবল', slug: 'football' },
+        { name: 'টেনিস ও অ্যাথলেটিক্স', slug: 'other-sports' },
+        { name: 'বিপিএল ও ফ্র্যাঞ্চাইজি লীগ', slug: 'leagues' }
+      ],
+      entertainment: [
+        { name: 'ঢালিউড ও চলচ্চিত্র', slug: 'dhallywood' },
+        { name: 'নাটক ও ওটিটি', slug: 'drama-ott' },
+        { name: 'গান ও সঙ্গীত', slug: 'music' },
+        { name: 'বলিউড ও হলিউড', slug: 'global-showbiz' },
+        { name: 'তারকা ও সেলিব্রিটি', slug: 'celebrity' }
+      ],
+      technology: [
+        { name: 'স্মার্টফোন ও গ্যাজেট', slug: 'gadgets' },
+        { name: 'কৃত্রিম বুদ্ধিমত্তা (AI)', slug: 'ai' },
+        { name: 'সাইবার নিরাপত্তা', slug: 'cybersecurity' },
+        { name: 'স্টার্টআপ ও উদ্ভাবন', slug: 'startups' },
+        { name: 'সোশ্যাল মিডিয়া ও অ্যাপ', slug: 'social-media' }
+      ],
+      education: [
+        { name: 'বিশ্ববিদ্যালয় ও ভর্তি', slug: 'admission' },
+        { name: 'পরীক্ষা ও ফলাফল', slug: 'exams' },
+        { name: 'স্কুল ও কলেজ', slug: 'schools' },
+        { name: 'বৃত্তি ও স্কলারশিপ', slug: 'scholarships' }
+      ],
+      jobs: [
+        { name: 'সরকারি চাকরি (বিসিএস/ব্যাংক)', slug: 'govt-jobs' },
+        { name: 'বেসরকারি ও কর্পোরেট', slug: 'private-jobs' },
+        { name: 'ক্যারিয়ার পরামর্শ', slug: 'career-tips' }
+      ],
+      lifestyle: [
+        { name: 'স্বাস্থ্য ও চিকিৎসা', slug: 'health' },
+        { name: 'ভ্রমণ ও দর্শনীয় স্থান', slug: 'travel' },
+        { name: 'ফ্যাশন ও রূপচর্চা', slug: 'fashion' },
+        { name: 'রান্নাবান্না ও রেসিপি', slug: 'recipes' }
+      ],
+      opinion: [
+        { name: 'সম্পাদকীয়', slug: 'editorial' },
+        { name: 'কলাম ও বিশ্লেষণ', slug: 'columns' },
+        { name: 'সাক্ষাৎকার', slug: 'interviews' }
+      ]
+    };
+
+    const catKey = (category || 'bangladesh').toLowerCase();
+    const presetList = presets[catKey] || [];
+    const combined = [...dynamicSubs];
+    presetList.forEach(p => {
+      if (!combined.some(c => (c.slug && c.slug === p.slug) || (c.name && c.name === p.name))) {
+        combined.push(p);
+      }
+    });
+    return combined;
+  };
+
   // Handle URL News Extractor
   const handleExtractFromUrl = async (e) => {
     if (e) e.preventDefault();
@@ -723,13 +836,48 @@ const BlockEditorTab = ({
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 border rounded-xl text-xs bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold"
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setSubcategory('');
+                }}
+                className="w-full px-3 py-2 border rounded-xl text-xs bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold focus:ring-2 focus:ring-red-500"
               >
                 {categories.map(c => (
                   <option key={c._id || c.slug} value={c.slug || c.name}>{c.name}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Subcategory / District Selection */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-gray-700 dark:text-neutral-300">
+                  উপ-বিভাগ / জেলা (Subcategory)
+                </label>
+                <span className="text-[10px] text-gray-400 font-medium">ঐচ্ছিক</span>
+              </div>
+              <div className="space-y-1.5">
+                <select
+                  value={subcategory}
+                  onChange={(e) => setSubcategory(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-xl text-xs bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="">-- প্রধান বিভাগ (সকল) --</option>
+                  {getAvailableSubcategories().map((sub, idx) => (
+                    <option key={idx} value={sub.name || sub.slug}>
+                      {sub.name}
+                    </option>
+                  ))}
+                </select>
+                
+                <input
+                  type="text"
+                  placeholder="অথবা কাস্টম উপ-বিভাগ / জেলা টাইপ করুন..."
+                  value={subcategory}
+                  onChange={(e) => setSubcategory(e.target.value)}
+                  className="w-full px-3 py-1.5 border rounded-lg text-xs bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 focus:outline-none focus:ring-1 focus:ring-red-500"
+                />
+              </div>
             </div>
 
             {/* Lead & Breaking Toggles */}
