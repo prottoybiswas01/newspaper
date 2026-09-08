@@ -753,8 +753,16 @@ const ArticleDetails = () => {
               </div>
             </div>
           )}
+
+          {/* Sticky Lower Sidebar Ad */}
+          <div className="sticky top-24">
+            <AdPlacement placement="sidebar" category={displayArticle.category} />
+          </div>
         </aside>
       </div>
+
+      {/* Floating Sticky Bottom Bar Ad */}
+      <AdPlacement placement="sticky" />
     </div>
   );
 };

@@ -216,6 +216,14 @@ class JSONModel {
         }
       }
 
+      // ID comparison handling
+      if (key === '_id' || key === 'id') {
+        const docId = String(doc._id || doc.id || '');
+        const targetVal = val && typeof val === 'object' && val._id ? val._id : val;
+        if (docId !== String(targetVal || '')) return false;
+        continue;
+      }
+
       // If document field is an array and query is a scalar (e.g. tags: 'জাতীয়')
       if (Array.isArray(doc[key])) {
         if (!doc[key].includes(val)) return false;
@@ -329,7 +337,8 @@ class JSONModel {
 
   async findByIdAndUpdate(id, updateData, options = {}) {
     const docs = this._read();
-    const idx = docs.findIndex(doc => doc._id === id);
+    const strId = String(id || '');
+    const idx = docs.findIndex(doc => String(doc._id || doc.id || '') === strId);
     if (idx === -1) return null;
 
     // Handle Mongoose syntax for $set and $inc
@@ -356,7 +365,8 @@ class JSONModel {
 
   async findByIdAndDelete(id) {
     const docs = this._read();
-    const idx = docs.findIndex(doc => doc._id === id);
+    const strId = String(id || '');
+    const idx = docs.findIndex(doc => String(doc._id || doc.id || '') === strId);
     if (idx === -1) return null;
     const deleted = docs[idx];
     docs.splice(idx, 1);

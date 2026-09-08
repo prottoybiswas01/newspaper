@@ -14,11 +14,10 @@ const CATEGORIES_LIST = [
 
 const CREATIVE_TYPES = [
   { id: 'banner', label: 'Standard Banner (ডিসপ্লে ব্যানার)' },
-  { id: 'in-article', label: 'In-Article Inline (ইন-আর্টিকেল অ্যাড)' },
+  { id: 'in-article', label: 'In-Article Inline Card (ইন-আর্টিকেল কার্ড)' },
   { id: 'native', label: 'Native Feed Card (নেটিভ ফিড অ্যাড)' },
   { id: 'sponsored-card', label: 'Sponsored Card (স্পন্সরড কার্ড)' },
   { id: 'sticky-bottom', label: 'Sticky Bottom Footer (স্টিকি ফুটার)' },
-  { id: 'video', label: 'Video Billboard (ভিডিও অ্যাড)' },
   { id: 'house-ad', label: 'House Ad Fallback (হাউস প্রমোশন)' }
 ];
 
@@ -27,9 +26,10 @@ const PLACEMENTS_LIST = [
   { id: 'article-inline-1', label: 'Article Inline 1 (আর্টিকেল প্যারা ৩)' },
   { id: 'article-inline-2', label: 'Article Inline 2 (আর্টিকেল প্যারা ৭)' },
   { id: 'article-inline-3', label: 'Article Inline 3 (আর্টিকেল প্যারা ১২)' },
-  { id: 'sidebar', label: 'Sidebar Column (সাইডবার ৩০০x২৫০)' },
-  { id: 'footer', label: 'Footer Banner (ফুটার ব্যানার)' },
-  { id: 'sticky', label: 'Sticky Bottom Bar (স্টিকি বটম)' }
+  { id: 'sidebar', label: 'Sidebar Column (সাইডবার ৩০০x২৫০ / ৩০০x৬০০)' },
+  { id: 'homepage-mid', label: 'Homepage Middle (হোমপেজ মিডল ৯৭০x৯০)' },
+  { id: 'sticky', label: 'Sticky Bottom Bar (স্টিকি বটম)' },
+  { id: 'popup', label: 'Popup Modal (পপ-আপ বিজ্ঞাপন)' }
 ];
 
 const AdManagerTab = () => {

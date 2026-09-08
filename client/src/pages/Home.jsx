@@ -384,6 +384,9 @@ const Home = () => {
           ))}
         </div>
       )}
+
+      {/* Floating Sticky Bottom Bar Ad */}
+      <AdPlacement placement="sticky" />
     </div>
   );
 };

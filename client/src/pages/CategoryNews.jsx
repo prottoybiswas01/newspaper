@@ -98,7 +98,10 @@ const CategoryNews = () => {
   }, [categorySlug, catName, activeSubSlug, subName]);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Top Header Banner Advertisement */}
+      <AdPlacement placement="header" category={categorySlug} />
+
       {/* Breadcrumbs */}
       <div className="text-xs text-gray-400 dark:text-neutral-500 font-bold mb-4 uppercase tracking-wider flex items-center space-x-1.5">
         <Link to="/" className="hover:underline">Home</Link>

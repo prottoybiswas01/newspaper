@@ -28,24 +28,33 @@ const BlockArticleRenderer = ({
     if (!legacyContent) return null;
 
     const sanitizedHtml = DOMPurify.sanitize(legacyContent);
-    // Split HTML by paragraphs to inject in-article ads cleanly
-    const paragraphs = sanitizedHtml.split(/<\/p>/i).filter(p => p.trim().length > 0);
+    // Split HTML by paragraphs or newlines to inject in-article ads cleanly
+    let paragraphs = sanitizedHtml.split(/<\/p>/i).filter(p => p.trim().length > 0);
+    if (paragraphs.length <= 1) {
+      paragraphs = sanitizedHtml.split(/\n\n+/).filter(p => p.trim().length > 0);
+    }
 
-    // If short legacy article, render single block
+    // If short legacy article, render content with inline ad at bottom
     if (paragraphs.length <= 2) {
       return (
         <div 
-          className="prose prose-lg dark:prose-invert max-w-none leading-relaxed text-gray-900 dark:text-neutral-100 font-sans"
+          className="prose prose-lg dark:prose-invert max-w-none leading-relaxed text-gray-900 dark:text-neutral-100 font-sans space-y-4"
           style={{ fontSize: `${fontSize}px` }}
-          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-        />
+        >
+          <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+          {adSettings.autoPlacement !== false && (
+            <div className="my-6 not-prose">
+              <AdPlacement placement="article-inline-1" category={category} articleId={articleId} />
+            </div>
+          )}
+        </div>
       );
     }
 
     // Inject in-article ad between paragraphs
     const adPositions = [
-      Math.min(2, Math.floor(paragraphs.length * 0.35)),
-      Math.min(6, Math.floor(paragraphs.length * 0.70))
+      Math.max(1, Math.min(2, Math.floor(paragraphs.length * 0.35))),
+      Math.max(3, Math.min(6, Math.floor(paragraphs.length * 0.70)))
     ];
 
     return (
@@ -55,11 +64,11 @@ const BlockArticleRenderer = ({
       >
         {paragraphs.map((p, idx) => {
           const isSlot1 = idx === adPositions[0];
-          const isSlot2 = idx === adPositions[1] && paragraphs.length > 5;
+          const isSlot2 = idx === adPositions[1] && paragraphs.length > 4;
 
           return (
             <React.Fragment key={idx}>
-              <div dangerouslySetInnerHTML={{ __html: p + '</p>' }} />
+              <div dangerouslySetInnerHTML={{ __html: p.endsWith('</p>') ? p : (p + '</p>') }} />
               {isSlot1 && adSettings.autoPlacement !== false && (
                 <div className="my-6 not-prose">
                   <AdPlacement placement="article-inline-1" category={category} articleId={articleId} />
@@ -81,23 +90,19 @@ const BlockArticleRenderer = ({
   const sortedBlocks = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
   const totalBlocks = sortedBlocks.length;
 
-  // Determine automatic ad placement indices based on article length heuristics
-  // Short (< 5 blocks): 0-1 ad (after block 2)
-  // Medium (5-9 blocks): 1-2 ads (after block 3, block 6)
-  // Long (>= 10 blocks): 2-3 ads (after block 3, block 7, block 11)
   const autoAdSlotIndices = new Set();
   const hasManualAds = sortedBlocks.some(b => b.type === 'ad');
 
   if (adSettings.autoPlacement !== false && !hasManualAds) {
-    if (totalBlocks >= 3 && totalBlocks < 6) {
-      autoAdSlotIndices.add(2); // after 3rd block
-    } else if (totalBlocks >= 6 && totalBlocks < 10) {
-      autoAdSlotIndices.add(2);
+    if (totalBlocks >= 2 && totalBlocks < 5) {
+      autoAdSlotIndices.add(1); // after 2nd block
+    } else if (totalBlocks >= 5 && totalBlocks < 9) {
+      autoAdSlotIndices.add(1);
+      autoAdSlotIndices.add(4);
+    } else if (totalBlocks >= 9) {
+      autoAdSlotIndices.add(1);
       autoAdSlotIndices.add(5);
-    } else if (totalBlocks >= 10) {
-      autoAdSlotIndices.add(2);
-      autoAdSlotIndices.add(6);
-      if (adSettings.maxAds >= 3) autoAdSlotIndices.add(9);
+      if (adSettings.maxAds >= 3) autoAdSlotIndices.add(8);
     }
   }
 

@@ -10,14 +10,19 @@ const AdSchema = {
     type: String, 
     enum: [
       'header', 
+      'header-top',
       'sidebar', 
+      'sidebar-right',
+      'sidebar-left',
       'article', 
       'article-inline-1', 
       'article-inline-2', 
       'article-inline-3', 
       'sticky', 
+      'sticky-bottom',
       'popup', 
       'homepage-mid', 
+      'footer',
       'feed'
     ], 
     required: true 

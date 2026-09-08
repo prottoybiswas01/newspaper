@@ -38,8 +38,8 @@ const serveAd = async (req, res) => {
 
       // Category targeting (if specified on ad, current category must match)
       if (Array.isArray(ad.targetCategories) && ad.targetCategories.length > 0 && category) {
-        const catMatched = ad.targetCategories.some(c => 
-          c.toLowerCase() === category.toLowerCase() || 
+        const catMatched = ad.targetCategories.some(c =>
+          c.toLowerCase() === category.toLowerCase() ||
           category.toLowerCase().includes(c.toLowerCase())
         );
         if (!catMatched) return false;
@@ -145,7 +145,7 @@ const recordClick = async (req, res) => {
 const getAdReports = async (req, res) => {
   try {
     const ads = await Ad.find({}).sort({ createdAt: -1 });
-    
+
     let totalImpressions = 0;
     let totalClicks = 0;
     let activeCampaigns = 0;
@@ -176,8 +176,8 @@ const getAdReports = async (req, res) => {
       placementMap[pName].clicks += (ad.clicks || 0);
     });
 
-    const averageCtr = totalImpressions > 0 
-      ? parseFloat(((totalClicks / totalImpressions) * 100).toFixed(2)) 
+    const averageCtr = totalImpressions > 0
+      ? parseFloat(((totalClicks / totalImpressions) * 100).toFixed(2))
       : 0;
 
     // Top campaigns by impressions
