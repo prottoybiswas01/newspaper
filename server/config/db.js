@@ -4,7 +4,12 @@ const path = require('path');
 
 let isJSONFallback = false;
 let connPromise = null;
-const DATA_DIR = path.join(__dirname, '..', 'data');
+const BUNDLED_DATA_DIR = path.join(__dirname, '..', 'data');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || (process.env.NODE_ENV === 'production' && process.platform === 'linux'));
+const WRITABLE_DATA_DIR = isServerless ? path.join('/tmp', 'newspaper_data') : BUNDLED_DATA_DIR;
+
+// Global in-memory document store to guarantee operations succeed even on read-only file systems
+const globalMemoryStore = {};
 
 // Disable command buffering globally so queries fail fast or fall back instead of timing out after 10s
 try {
@@ -24,7 +29,7 @@ const connectDB = async () => {
     const mongoURI = process.env.MONGODB_URI;
 
     if (!mongoURI) {
-      console.warn('\n⚠️  No MONGODB_URI provided in environment. Falling back to local JSON database.');
+      console.warn('\n⚠️  No MONGODB_URI provided in environment. Falling back to local/memory database.');
       isJSONFallback = true;
       return;
     }
@@ -37,7 +42,7 @@ const connectDB = async () => {
       isJSONFallback = false;
     } catch (error) {
       console.error('\n❌ MongoDB connection failed:', error.message);
-      console.warn('⚠️  Falling back to local JSON database.');
+      console.warn('⚠️  Falling back to local/memory database.');
       isJSONFallback = true;
     }
   })();
@@ -57,29 +62,65 @@ const generateId = () => {
   return [...Array(24)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 };
 
-// JSON Mock Model Class to replicate Mongoose behavior
+// JSON Mock Model Class to replicate Mongoose behavior safely across all platforms
 class JSONModel {
   constructor(collectionName) {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    this.collectionName = collectionName;
+    this.writablePath = path.join(WRITABLE_DATA_DIR, `${collectionName}.json`);
+    this.bundledPath = path.join(BUNDLED_DATA_DIR, `${collectionName}.json`);
+
+    if (!globalMemoryStore[collectionName]) {
+      globalMemoryStore[collectionName] = this._initData();
     }
-    this.filePath = path.join(DATA_DIR, `${collectionName}.json`);
-    if (!fs.existsSync(this.filePath)) {
-      fs.writeFileSync(this.filePath, JSON.stringify([], null, 2));
+  }
+
+  _initData() {
+    // 1. Try reading from writable /tmp path
+    try {
+      if (fs.existsSync(this.writablePath)) {
+        const raw = fs.readFileSync(this.writablePath, 'utf8');
+        return JSON.parse(raw || '[]');
+      }
+    } catch (e) {}
+
+    // 2. Try reading from bundled static data
+    try {
+      if (fs.existsSync(this.bundledPath)) {
+        const raw = fs.readFileSync(this.bundledPath, 'utf8');
+        const parsed = JSON.parse(raw || '[]');
+        // Try copying to writable dir
+        this._safeWriteFile(parsed);
+        return parsed;
+      }
+    } catch (e) {}
+
+    // 3. Fallback to empty array
+    this._safeWriteFile([]);
+    return [];
+  }
+
+  _safeWriteFile(data) {
+    try {
+      if (!fs.existsSync(WRITABLE_DATA_DIR)) {
+        fs.mkdirSync(WRITABLE_DATA_DIR, { recursive: true });
+      }
+      fs.writeFileSync(this.writablePath, JSON.stringify(data, null, 2));
+    } catch (e) {
+      // Ignore EROFS or filesystem write errors on serverless
     }
   }
 
   _read() {
-    try {
-      const data = fs.readFileSync(this.filePath, 'utf8');
-      return JSON.parse(data || '[]');
-    } catch (e) {
-      return [];
+    if (globalMemoryStore[this.collectionName]) {
+      return [...globalMemoryStore[this.collectionName]];
     }
+    globalMemoryStore[this.collectionName] = this._initData();
+    return [...globalMemoryStore[this.collectionName]];
   }
 
   _write(data) {
-    fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
+    globalMemoryStore[this.collectionName] = [...data];
+    this._safeWriteFile(data);
   }
 
   // Matches a simple query object against a document

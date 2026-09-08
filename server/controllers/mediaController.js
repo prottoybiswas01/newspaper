@@ -2,13 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 
-const UPLOADS_DIR = process.env.VERCEL 
-  ? '/tmp/uploads' 
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || (process.env.NODE_ENV === 'production' && process.platform === 'linux'));
+const UPLOADS_DIR = isServerless 
+  ? path.join('/tmp', 'uploads') 
   : path.join(__dirname, '..', 'public', 'uploads');
 
 // Ensure uploads folder exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Ignore EROFS
 }
 
 // Multer Storage Configuration
