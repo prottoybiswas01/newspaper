@@ -449,33 +449,6 @@ const Dashboard = () => {
       toast.error('আর্টিকেল প্রকাশে ত্রুটি ঘটেছে।');
     }
   };
-        tags: [finalSource, 'জাতীয়'],
-        status: 'published',
-        featuredImage: finalImage,
-        source: finalSource,
-        sourceUrl: fetchedArt.link,
-        videoUrl: '',
-        seo: {
-          metaTitle: finalTitle,
-          metaDescription: fullSummary.substring(0, 150),
-          keywords: finalSource
-        }
-      };
-
-      const res = await api.post('/articles', payload);
-      if (res.success) {
-        toast.success('খবরটি সফলভাবে আসল ছবি ও পূর্ণাঙ্গ টেক্সটসহ সরাসরি পাবলিশ করা হয়েছে!');
-        // Delete log after publishing
-        await api.delete(`/auto-fetched/${fetchedArt._id}`);
-        loadAutoFetchedArticles();
-      } else {
-        toast.error(res.message || 'পাবলিশ করতে ব্যর্থ হয়েছে।');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('আর্টিকেল প্রকাশে ত্রুটি ঘটেছে।');
-    }
-  };
 
   // Delete a fetched log entry
   const handleDeleteFetchedLog = async (id) => {
