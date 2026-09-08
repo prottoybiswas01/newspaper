@@ -10,7 +10,6 @@ import AdPlacement from '../components/AdPlacement';
 import BlockArticleRenderer from '../components/BlockArticleRenderer';
 import AISummaryBox from '../components/AISummaryBox';
 import TrustBox from '../components/TrustBox';
-import AudioPlayer from '../components/AudioPlayer';
 import { 
   Calendar, Eye, Heart, Share2, Printer, 
   RotateCcw, Clock, User, MessageSquare, Tags, Facebook, Twitter, 
@@ -512,13 +511,6 @@ const ArticleDetails = () => {
             </div>
           )}
 
-          {/* Text-to-Speech / Audio Narration Player */}
-          <AudioPlayer 
-            text={displayArticle.summary || displayArticle.content || ''} 
-            title={displayArticle.title} 
-            audioUrl={displayArticle.audioUrl}
-            language={language}
-          />
 
           {/* AI Summary Box ("সংক্ষেপে পড়ুন") */}
           <AISummaryBox 
