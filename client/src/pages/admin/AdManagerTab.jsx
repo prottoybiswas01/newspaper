@@ -100,7 +100,7 @@ const AdManagerTab = () => {
       description: '',
       sponsorBadge: 'বিজ্ঞাপন',
       priority: 5,
-      frequencyCap: 3,
+      frequencyCap: 0,
       isHouseAd: false,
       targetDevices: ['desktop', 'mobile', 'tablet'],
       targetCategories: [],
@@ -126,7 +126,7 @@ const AdManagerTab = () => {
       description: ad.description || '',
       sponsorBadge: ad.sponsorBadge || 'বিজ্ঞাপন',
       priority: ad.priority !== undefined ? ad.priority : 5,
-      frequencyCap: ad.frequencyCap || 3,
+      frequencyCap: ad.frequencyCap !== undefined ? ad.frequencyCap : 0,
       isHouseAd: !!ad.isHouseAd,
       targetDevices: ad.targetDevices || ['desktop', 'mobile', 'tablet'],
       targetCategories: ad.targetCategories || [],
@@ -604,14 +604,15 @@ const AdManagerTab = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-neutral-300 mb-1">
-                    ফ্রিকোয়েন্সি ক্যাপ (দিন প্রতি সর্বোচ্চ ভিউ)
+                    ভিউ লিমিট / ক্যাপ (০ = আনলিমিটেড ভিউ)
                   </label>
                   <input
                     type="number"
-                    min="1"
-                    max="20"
-                    value={formData.frequencyCap}
-                    onChange={(e) => setFormData({ ...formData, frequencyCap: parseInt(e.target.value) || 3 })}
+                    min="0"
+                    max="10000000"
+                    placeholder="০ = আনলিমিটেড"
+                    value={formData.frequencyCap ?? 0}
+                    onChange={(e) => setFormData({ ...formData, frequencyCap: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 border rounded-xl text-xs bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white focus:outline-none"
                   />
                 </div>

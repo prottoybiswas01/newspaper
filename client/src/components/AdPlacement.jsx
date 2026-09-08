@@ -61,20 +61,11 @@ const AdPlacement = ({
 
         if (isMounted && res.success && res.ad) {
           const fetchedAd = res.ad;
-          
-          // Check frequency cap only for non-house ads
-          if (!fetchedAd.isHouseAd && fetchedAd._id && isFrequencyCapExceeded(fetchedAd._id, fetchedAd.frequencyCap || 8)) {
-            setAd(null);
-            setLoading(false);
-            return;
-          }
-
           setAd(fetchedAd);
 
-          // Record impression telemetry only once
+          // Record impression telemetry
           if (!impressionRecorded.current && fetchedAd._id) {
             impressionRecorded.current = true;
-            recordLocalImpression(fetchedAd._id);
             api.post(`/ads/${fetchedAd._id}/impression`).catch(() => null);
           }
         }

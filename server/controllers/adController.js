@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Ad = require('../models/Ad');
 const AuditLog = require('../models/AuditLog');
 
@@ -14,9 +15,21 @@ const serveAd = async (req, res) => {
     const now = new Date();
     const excludeList = excludeIds ? excludeIds.split(',').filter(Boolean) : [];
 
+    // Build placement aliases
+    let placementQuery = [placement];
+    if (placement.startsWith('article-inline') || placement === 'in-article') {
+      placementQuery = ['article-inline-1', 'article-inline-2', 'article-inline-3', 'article-inline', 'in-article'];
+    } else if (placement.startsWith('header')) {
+      placementQuery = ['header', 'header-top'];
+    } else if (placement.startsWith('sidebar')) {
+      placementQuery = ['sidebar', 'sidebar-top', 'sidebar-sticky', 'sidebar-bottom'];
+    } else if (placement.startsWith('sticky')) {
+      placementQuery = ['sticky', 'sticky-bottom', 'sticky-footer'];
+    }
+
     // Query active ads for placement
     const ads = await Ad.find({
-      placement,
+      placement: { $in: placementQuery },
       active: true,
       status: 'active'
     });
@@ -55,15 +68,8 @@ const serveAd = async (req, res) => {
     });
 
     if (eligibleAds.length > 0) {
-      // Sort by priority descending (10 is top priority, 1 is low)
-      eligibleAds.sort((a, b) => (b.priority || 5) - (a.priority || 5));
-
-      // Get highest priority group
-      const highestPriority = eligibleAds[0].priority || 5;
-      const topTierAds = eligibleAds.filter(a => (a.priority || 5) === highestPriority);
-
-      // Randomly pick one among the top priority tier
-      const chosenAd = topTierAds[Math.floor(Math.random() * topTierAds.length)];
+      // Pick randomly from all eligible active ads so every page load / paragraph gets fresh rotation
+      const chosenAd = eligibleAds[Math.floor(Math.random() * eligibleAds.length)];
 
       return res.json({
         success: true,
@@ -74,7 +80,7 @@ const serveAd = async (req, res) => {
 
     // Fallback: Check if user created a designated house ad in the database for this placement
     const houseAd = await Ad.findOne({
-      placement,
+      placement: { $in: placementQuery },
       active: true,
       isHouseAd: true
     });
@@ -323,10 +329,24 @@ const updateAd = async (req, res) => {
     if (updateData.linkUrl && !updateData.destinationUrl) {
       updateData.destinationUrl = updateData.linkUrl;
     }
+    delete updateData._id;
+    delete updateData.id;
 
-    const updated = await Ad.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
+    let updated = null;
+    if (req.params.id && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      updated = await Ad.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
+    }
+
+    if (!updated && req.params.id) {
+      updated = await Ad.findOneAndUpdate(
+        { $or: [{ _id: req.params.id }, { title: updateData.title }, { placement: updateData.placement, campaignName: updateData.campaignName }] },
+        { $set: updateData },
+        { new: true, upsert: true }
+      );
+    }
+
     if (!updated) {
-      return res.status(404).json({ success: false, message: 'Advertisement not found' });
+      updated = await Ad.create(updateData);
     }
 
     // Audit log
@@ -345,6 +365,7 @@ const updateAd = async (req, res) => {
 
     res.json({ success: true, ad: updated });
   } catch (error) {
+    console.error('updateAd error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -353,11 +374,13 @@ const updateAd = async (req, res) => {
 // @route   DELETE /api/ads/:id
 const deleteAd = async (req, res) => {
   try {
-    const ad = await Ad.findById(req.params.id);
-    if (!ad) {
-      return res.status(404).json({ success: false, message: 'Advertisement not found' });
+    let deleted = null;
+    if (req.params.id && mongoose.Types.ObjectId.isValid(req.params.id)) {
+      deleted = await Ad.findByIdAndDelete(req.params.id);
     }
-    await Ad.findByIdAndDelete(req.params.id);
+    if (!deleted && req.params.id) {
+      deleted = await Ad.findOneAndDelete({ _id: req.params.id });
+    }
 
     // Audit log
     if (req.user) {
@@ -368,8 +391,8 @@ const deleteAd = async (req, res) => {
         action: 'ad.delete',
         targetType: 'Ad',
         targetId: req.params.id,
-        targetTitle: ad.title,
-        details: `Deleted ad creative ${ad.title}`
+        targetTitle: deleted ? deleted.title : req.params.id,
+        details: `Deleted ad creative`
       }).catch(() => null);
     }
 

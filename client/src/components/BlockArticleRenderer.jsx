@@ -51,32 +51,29 @@ const BlockArticleRenderer = ({
       );
     }
 
-    // Inject in-article ad between paragraphs
-    const adPositions = [
-      Math.max(1, Math.min(2, Math.floor(paragraphs.length * 0.35))),
-      Math.max(3, Math.min(6, Math.floor(paragraphs.length * 0.70)))
-    ];
+    // Inject in-article ads evenly between paragraphs (every 3-4 paragraphs)
+    const adPositions = new Set();
+    if (paragraphs.length >= 3) {
+      for (let i = 2; i < paragraphs.length; i += 3) {
+        adPositions.add(i);
+      }
+    }
 
+    let adCount = 1;
     return (
       <div 
         className="prose prose-lg dark:prose-invert max-w-none leading-relaxed text-gray-900 dark:text-neutral-100 font-sans space-y-4"
         style={{ fontSize: `${fontSize}px` }}
       >
         {paragraphs.map((p, idx) => {
-          const isSlot1 = idx === adPositions[0];
-          const isSlot2 = idx === adPositions[1] && paragraphs.length > 4;
+          const isAdSlot = adPositions.has(idx);
 
           return (
             <React.Fragment key={idx}>
               <div dangerouslySetInnerHTML={{ __html: p.endsWith('</p>') ? p : (p + '</p>') }} />
-              {isSlot1 && adSettings.autoPlacement !== false && (
+              {isAdSlot && adSettings.autoPlacement !== false && (
                 <div className="my-6 not-prose">
-                  <AdPlacement placement="article-inline-1" category={category} articleId={articleId} />
-                </div>
-              )}
-              {isSlot2 && adSettings.autoPlacement !== false && (
-                <div className="my-6 not-prose">
-                  <AdPlacement placement="article-inline-2" category={category} articleId={articleId} />
+                  <AdPlacement placement={`article-inline-${adCount++}`} category={category} articleId={articleId} />
                 </div>
               )}
             </React.Fragment>
@@ -97,12 +94,12 @@ const BlockArticleRenderer = ({
     if (totalBlocks >= 2 && totalBlocks < 5) {
       autoAdSlotIndices.add(1); // after 2nd block
     } else if (totalBlocks >= 5 && totalBlocks < 9) {
-      autoAdSlotIndices.add(1);
-      autoAdSlotIndices.add(4);
-    } else if (totalBlocks >= 9) {
-      autoAdSlotIndices.add(1);
+      autoAdSlotIndices.add(2);
       autoAdSlotIndices.add(5);
-      if (adSettings.maxAds >= 3) autoAdSlotIndices.add(8);
+    } else if (totalBlocks >= 9) {
+      for (let i = 2; i < totalBlocks - 1; i += 3) {
+        autoAdSlotIndices.add(i);
+      }
     }
   }
 
