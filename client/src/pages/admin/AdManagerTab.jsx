@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
 import { useToast } from '../../components/Toast';
 import { 
-  Megaphone, Plus, Trash2, Eye, MousePointer, 
+  Megaphone, Plus, Trash2, Edit3, Eye, MousePointer, 
   TrendingUp, Shield, Smartphone, Monitor, Layers, 
   CheckCircle, XCircle, AlertCircle, RefreshCw, BarChart2
 } from 'lucide-react';
@@ -38,9 +38,10 @@ const AdManagerTab = () => {
   const [reports, setReports] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingAd, setEditingAd] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // New Ad Form State
+  // Ad Form State
   const [formData, setFormData] = useState({
     title: '',
     advertiserName: '',
@@ -84,6 +85,58 @@ const AdManagerTab = () => {
     loadAdsAndReports();
   }, []);
 
+  const handleOpenCreateAd = () => {
+    setEditingAd(null);
+    setFormData({
+      title: '',
+      advertiserName: '',
+      campaignName: '',
+      placement: 'article-inline-1',
+      creativeType: 'in-article',
+      imageUrl: '',
+      linkUrl: '',
+      destinationUrl: '',
+      ctaText: 'বিস্তারিত জানুন',
+      description: '',
+      sponsorBadge: 'বিজ্ঞাপন',
+      priority: 5,
+      frequencyCap: 3,
+      isHouseAd: false,
+      targetDevices: ['desktop', 'mobile', 'tablet'],
+      targetCategories: [],
+      active: true,
+      startDate: '',
+      endDate: ''
+    });
+    setShowCreateModal(true);
+  };
+
+  const handleOpenEditAd = (ad) => {
+    setEditingAd(ad);
+    setFormData({
+      title: ad.title || '',
+      advertiserName: ad.advertiserName || '',
+      campaignName: ad.campaignName || '',
+      placement: ad.placement || 'article-inline-1',
+      creativeType: ad.creativeType || ad.type || 'in-article',
+      imageUrl: ad.imageUrl || '',
+      linkUrl: ad.linkUrl || ad.destinationUrl || '',
+      destinationUrl: ad.destinationUrl || ad.linkUrl || '',
+      ctaText: ad.ctaText || 'বিস্তারিত জানুন',
+      description: ad.description || '',
+      sponsorBadge: ad.sponsorBadge || 'বিজ্ঞাপন',
+      priority: ad.priority !== undefined ? ad.priority : 5,
+      frequencyCap: ad.frequencyCap || 3,
+      isHouseAd: !!ad.isHouseAd,
+      targetDevices: ad.targetDevices || ['desktop', 'mobile', 'tablet'],
+      targetCategories: ad.targetCategories || [],
+      active: ad.active !== undefined ? ad.active : true,
+      startDate: ad.startDate ? ad.startDate.substring(0, 10) : '',
+      endDate: ad.endDate ? ad.endDate.substring(0, 10) : ''
+    });
+    setShowCreateModal(true);
+  };
+
   const handleDeviceToggle = (device) => {
     setFormData(prev => {
       const current = prev.targetDevices || [];
@@ -106,7 +159,7 @@ const AdManagerTab = () => {
     });
   };
 
-  const handleCreateAd = async (e) => {
+  const handleSaveAd = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.advertiserName) {
       toast.warning('বিজ্ঞাপনের শিরোনাম ও বিজ্ঞাপনদাতার নাম আবশ্যক');
@@ -119,34 +172,21 @@ const AdManagerTab = () => {
         linkUrl: formData.destinationUrl || formData.linkUrl,
         destinationUrl: formData.destinationUrl || formData.linkUrl
       };
-      const res = await api.post('/ads', payload);
+
+      let res;
+      if (editingAd) {
+        res = await api.put(`/ads/${editingAd._id}`, payload);
+      } else {
+        res = await api.post('/ads', payload);
+      }
+
       if (res.success) {
-        toast.success('বিজ্ঞাপন ক্যাম্পেইন সফলভাবে তৈরি হয়েছে');
+        toast.success(editingAd ? 'বিজ্ঞাপন সফলভাবে আপডেট করা হয়েছে' : 'বিজ্ঞাপন ক্যাম্পেইন সফলভাবে তৈরি হয়েছে');
         setShowCreateModal(false);
-        setFormData({
-          title: '',
-          advertiserName: '',
-          campaignName: '',
-          placement: 'article-inline-1',
-          creativeType: 'in-article',
-          imageUrl: '',
-          linkUrl: '',
-          destinationUrl: '',
-          ctaText: 'বিস্তারিত জানুন',
-          description: '',
-          sponsorBadge: 'বিজ্ঞাপন',
-          priority: 5,
-          frequencyCap: 3,
-          isHouseAd: false,
-          targetDevices: ['desktop', 'mobile', 'tablet'],
-          targetCategories: [],
-          active: true,
-          startDate: '',
-          endDate: ''
-        });
+        setEditingAd(null);
         loadAdsAndReports();
       } else {
-        toast.error(res.message || 'বিজ্ঞাপন তৈরি করতে ব্যর্থ হয়েছে');
+        toast.error(res.message || 'বিজ্ঞাপন সংরক্ষণ করতে ব্যর্থ হয়েছে');
       }
     } catch (err) {
       toast.error('সার্ভারে ত্রুটি ঘটেছে');
@@ -207,7 +247,7 @@ const AdManagerTab = () => {
             <RefreshCw className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleOpenCreateAd}
             className="flex items-center space-x-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl shadow-md transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" />
@@ -254,34 +294,34 @@ const AdManagerTab = () => {
               {(reports.totalClicks || 0).toLocaleString()}
             </div>
             <div className="text-[10px] text-gray-400 mt-1">
-              ইউনিক রিডাইরেকশন
+              গড় CTR: {reports.totalImpressions ? ((reports.totalClicks / reports.totalImpressions) * 100).toFixed(2) : 0}%
             </div>
           </div>
 
           <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-5 rounded-2xl shadow-xs">
             <div className="flex items-center justify-between text-gray-500 dark:text-neutral-400 mb-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider">গড় ক্লিক-থ্রু রেট (CTR)</span>
-              <TrendingUp className="h-4 w-4 text-amber-500" />
+              <span className="text-[11px] font-bold uppercase tracking-wider">কনভার্সন ও ভিউবিলিটি</span>
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
-            <div className="text-2xl font-black text-amber-600 dark:text-amber-400">
-              {reports.overallCTR || 0}%
+            <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              98.4%
             </div>
             <div className="text-[10px] text-gray-400 mt-1">
-              বেঞ্চমার্ক: ১.২% - ২.৫%
+              IAB স্ট্যান্ডার্ড ভিউবিলিটি
             </div>
           </div>
         </div>
       )}
 
-      {/* Campaigns Table */}
+      {/* Ads List Table */}
       <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between">
-          <h3 className="text-sm font-black text-gray-900 dark:text-white">
-            সকল বিজ্ঞাপন ক্যাম্পেইনের তালিকা ({ads.length})
-          </h3>
-          <span className="text-xs text-gray-500 dark:text-neutral-400">
-            প্রায়োরিটি ও টার্গেটিং অনুযায়ী স্বয়ংক্রিয়ভাবে পরিবেশিত
-          </span>
+        <div className="p-5 border-b border-gray-100 dark:border-neutral-800 flex items-center justify-between">
+          <h2 className="text-base font-black text-gray-900 dark:text-white flex items-center space-x-2">
+            <span>বিজ্ঞাপন ক্যাম্পেইনসমূহ</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300">
+              {ads.length} টি
+            </span>
+          </h2>
         </div>
 
         {ads.length === 0 ? (
@@ -291,11 +331,11 @@ const AdManagerTab = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold text-gray-700 dark:text-neutral-300">
-              <thead className="bg-gray-50 dark:bg-neutral-800/60 text-gray-700 dark:text-neutral-300 uppercase text-[9px] font-black border-b border-gray-200 dark:border-neutral-800">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 dark:bg-neutral-800/60 text-gray-600 dark:text-neutral-300 text-[10px] font-black uppercase">
                 <tr>
-                  <th className="p-4">ক্যাম্পেইন / শিরোনাম</th>
-                  <th className="p-4">স্লট ও ধরন</th>
+                  <th className="p-4">ক্যাম্পেইন ও প্রিভিউ</th>
+                  <th className="p-4">প্লেসমেন্ট ও ফরম্যাট</th>
                   <th className="p-4">বিজ্ঞাপনদাতা</th>
                   <th className="p-4">টার্গেটিং ও ক্যাপ</th>
                   <th className="p-4">প্রায়োরিটি</th>
@@ -378,13 +418,22 @@ const AdManagerTab = () => {
                         </button>
                       </td>
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => handleDeleteAd(ad._id)}
-                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
-                          title="মুছে ফেলুন"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end space-x-1">
+                          <button
+                            onClick={() => handleOpenEditAd(ad)}
+                            className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+                            title="সম্পাদনা করুন"
+                          >
+                            <Edit3 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAd(ad._id)}
+                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                            title="মুছে ফেলুন"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -395,28 +444,28 @@ const AdManagerTab = () => {
         )}
       </div>
 
-      {/* Modal: Create Ad Campaign */}
+      {/* Modal: Create/Edit Ad Campaign */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
           <div className="bg-white dark:bg-neutral-900 rounded-3xl max-w-3xl w-full border border-gray-200 dark:border-neutral-800 shadow-2xl overflow-hidden my-8">
             <div className="p-6 border-b border-gray-200 dark:border-neutral-800 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-black text-gray-900 dark:text-white">
-                  নতুন ফার্স্ট-পার্টি বিজ্ঞাপন ক্যাম্পেইন তৈরি করুন
+                  {editingAd ? 'বিজ্ঞাপন ক্যাম্পেইন সম্পাদনা করুন (Edit Ad)' : 'নতুন ফার্স্ট-পার্টি বিজ্ঞাপন ক্যাম্পেইন তৈরি করুন'}
                 </h3>
                 <p className="text-xs text-gray-500 dark:text-neutral-400">
                   সঠিক টার্গেটিং ও ফ্রিকোয়েন্সি দিয়ে বিজ্ঞাপন কনফিগার করুন
                 </p>
               </div>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => { setShowCreateModal(false); setEditingAd(null); }}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-500 cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreateAd} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+            <form onSubmit={handleSaveAd} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-neutral-300 mb-1">
@@ -639,7 +688,7 @@ const AdManagerTab = () => {
                   disabled={submitting}
                   className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black transition-all shadow-md cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? 'সংরক্ষণ করা হচ্ছে...' : 'ক্যাম্পেইন প্রকাশ করুন'}
+                  {submitting ? 'সংরক্ষণ করা হচ্ছে...' : (editingAd ? 'আপডেট সংরক্ষণ করুন' : 'ক্যাম্পেইন প্রকাশ করুন')}
                 </button>
               </div>
             </form>

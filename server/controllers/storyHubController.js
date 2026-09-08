@@ -19,7 +19,7 @@ const slugify = (text) => {
 const getStoryHubs = async (req, res) => {
   try {
     const hubs = await StoryHub.find({}).sort({ createdAt: -1 });
-    res.json({ success: true, hubs });
+    res.json({ success: true, hubs, storyHubs: hubs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -55,7 +55,23 @@ const getStoryHubBySlug = async (req, res) => {
 // @route   POST /api/story-hubs
 const createStoryHub = async (req, res) => {
   try {
-    const { title, summary, coverImage, category, active, isBreaking, keyFacts, timeline, liveUpdates } = req.body;
+    const { 
+      title, 
+      subtitle,
+      summary, 
+      description,
+      coverImage, 
+      bannerImage,
+      category, 
+      status,
+      active, 
+      isBreaking, 
+      keyFacts, 
+      timeline, 
+      timelineEvents, 
+      liveUpdates 
+    } = req.body;
+
     if (!title) {
       return res.status(400).json({ success: false, message: 'Title is required' });
     }
@@ -67,16 +83,27 @@ const createStoryHub = async (req, res) => {
       slug = `${slugify(title)}-${count++}`;
     }
 
+    const finalSummary = summary || description || subtitle || '';
+    const finalImage = coverImage || bannerImage || '';
+    const finalTimeline = Array.isArray(timeline) && timeline.length > 0 ? timeline : (Array.isArray(timelineEvents) ? timelineEvents : []);
+    const hubStatus = status || 'developing';
+    const isActive = active !== undefined ? active : (hubStatus !== 'concluded');
+
     const hub = await StoryHub.create({
       title,
+      subtitle: subtitle || '',
       slug,
-      summary: summary || '',
-      coverImage: coverImage || '',
+      summary: finalSummary,
+      description: finalSummary,
+      coverImage: finalImage,
+      bannerImage: finalImage,
       category: category || 'bangladesh',
-      active: active !== undefined ? active : true,
+      status: hubStatus,
+      active: isActive,
       isBreaking: Boolean(isBreaking),
       keyFacts: Array.isArray(keyFacts) ? keyFacts : [],
-      timeline: Array.isArray(timeline) ? timeline : [],
+      timeline: finalTimeline,
+      timelineEvents: finalTimeline,
       liveUpdates: Array.isArray(liveUpdates) ? liveUpdates : []
     });
 
@@ -103,7 +130,12 @@ const createStoryHub = async (req, res) => {
 // @route   PUT /api/story-hubs/:id
 const updateStoryHub = async (req, res) => {
   try {
-    const updated = await StoryHub.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
+    const updateData = { ...req.body };
+    if (updateData.bannerImage && !updateData.coverImage) updateData.coverImage = updateData.bannerImage;
+    if (updateData.description && !updateData.summary) updateData.summary = updateData.description;
+    if (updateData.timelineEvents && (!updateData.timeline || updateData.timeline.length === 0)) updateData.timeline = updateData.timelineEvents;
+
+    const updated = await StoryHub.findByIdAndUpdate(req.params.id, { $set: updateData }, { new: true });
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Story hub not found' });
     }

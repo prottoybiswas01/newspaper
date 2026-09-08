@@ -27,17 +27,32 @@ const LocalNewsWidget = () => {
     const fetchLocalNews = async () => {
       setLoading(true);
       try {
-        const query = district ? `district=${encodeURIComponent(district)}` : `division=${encodeURIComponent(division)}`;
-        const res = await api.get(`/articles?${query}&limit=4`);
-        if (res.success) {
-          // If no specific district news, fallback to division or general district category
-          if (res.articles.length > 0) {
-            setArticles(res.articles);
-          } else {
-            const fallbackRes = await api.get(`/articles?category=বাংলাদেশ&limit=4`);
-            if (fallbackRes.success) setArticles(fallbackRes.articles);
+        // Priority 1: Exact district match
+        let localArticles = [];
+        if (district) {
+          const resDist = await api.get(`/articles?district=${encodeURIComponent(district)}&limit=4`);
+          if (resDist.success && resDist.articles && resDist.articles.length > 0) {
+            localArticles = resDist.articles;
           }
         }
+
+        // Priority 2: Division match if district has no news
+        if (localArticles.length === 0 && division) {
+          const resDiv = await api.get(`/articles?division=${encodeURIComponent(division)}&limit=4`);
+          if (resDiv.success && resDiv.articles && resDiv.articles.length > 0) {
+            localArticles = resDiv.articles;
+          }
+        }
+
+        // Priority 3: Fallback to general Bangladesh news
+        if (localArticles.length === 0) {
+          const fallbackRes = await api.get(`/articles?category=বাংলাদেশ&limit=4`);
+          if (fallbackRes.success && fallbackRes.articles) {
+            localArticles = fallbackRes.articles;
+          }
+        }
+
+        setArticles(localArticles);
       } catch (err) {
         console.error('Local news fetch failed:', err);
       } finally {

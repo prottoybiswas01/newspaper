@@ -27,7 +27,7 @@ const StoryHubTab = () => {
     try {
       const res = await api.get('/story-hubs');
       if (res.success) {
-        setStoryHubs(res.storyHubs || []);
+        setStoryHubs(res.hubs || res.storyHubs || []);
       }
     } catch (err) {
       console.error(err);
@@ -61,14 +61,16 @@ const StoryHubTab = () => {
     setEditingHub(hub);
     setFormData({
       title: hub.title || '',
-      subtitle: hub.subtitle || '',
-      description: hub.description || '',
-      bannerImage: hub.bannerImage || '',
+      subtitle: hub.subtitle || hub.description || hub.summary || '',
+      description: hub.description || hub.summary || hub.subtitle || '',
+      bannerImage: hub.bannerImage || hub.coverImage || '',
       status: hub.status || 'developing',
-      keyFacts: Array.isArray(hub.keyFacts) ? hub.keyFacts.join('\n') : '',
-      timelineEvents: hub.timelineEvents && hub.timelineEvents.length > 0 ? hub.timelineEvents : [
-        { time: '১০:০০ AM', title: 'ঘটনার সূত্রপাত', description: 'ঘটনাস্থল থেকে প্রথম বার্তা পাওয়া যায়।' }
-      ]
+      keyFacts: Array.isArray(hub.keyFacts) ? hub.keyFacts.join('\n') : (hub.keyFacts || ''),
+      timelineEvents: (hub.timelineEvents && hub.timelineEvents.length > 0) ? hub.timelineEvents : (
+        (hub.timeline && hub.timeline.length > 0) ? hub.timeline : [
+          { time: '১০:০০ AM', title: 'ঘটনার সূত্রপাত', description: 'ঘটনাস্থল থেকে প্রথম বার্তা পাওয়া যায়।' }
+        ]
+      )
     });
     setShowModal(true);
   };
@@ -169,32 +171,38 @@ const StoryHubTab = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {storyHubs.map(hub => (
-            <div key={hub._id} className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs flex flex-col">
-              {hub.bannerImage && (
-                <img src={hub.bannerImage} alt="" className="h-40 w-full object-cover" />
-              )}
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                      hub.status === 'live' 
-                        ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 animate-pulse'
-                        : (hub.status === 'developing' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400' : 'bg-green-100 text-green-700')
-                    }`}>
-                      {hub.status === 'live' ? '🔴 LIVE' : (hub.status === 'developing' ? '⚡ DEVELOPING' : '✓ CONCLUDED')}
-                    </span>
-                    <span className="text-[10px] text-gray-400">
-                      {hub.timelineEvents?.length || 0} টি টাইমলাইন আপডেট
-                    </span>
+          {storyHubs.map(hub => {
+            const hubImg = hub.bannerImage || hub.coverImage;
+            const hubText = hub.subtitle || hub.description || hub.summary;
+            const timelineCount = (hub.timelineEvents || hub.timeline || []).length;
+            return (
+              <div key={hub._id} className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-xs flex flex-col">
+                {hubImg && (
+                  <img src={hubImg} alt="" className="h-40 w-full object-cover" />
+                )}
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                        hub.status === 'live' 
+                          ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 animate-pulse'
+                          : (hub.status === 'developing' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-400' : 'bg-green-100 text-green-700')
+                      }`}>
+                        {hub.status === 'live' ? '🔴 LIVE' : (hub.status === 'developing' ? '⚡ DEVELOPING' : '✓ CONCLUDED')}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        {timelineCount} টি টাইমলাইন আপডেট
+                      </span>
+                    </div>
+                    <h3 className="text-base font-extrabold text-gray-900 dark:text-white mb-1">
+                      {hub.title}
+                    </h3>
+                    {hubText && (
+                      <p className="text-xs text-gray-500 dark:text-neutral-400 line-clamp-2 mb-3">
+                        {hubText}
+                      </p>
+                    )}
                   </div>
-                  <h3 className="text-base font-extrabold text-gray-900 dark:text-white mb-1">
-                    {hub.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-neutral-400 line-clamp-2 mb-3">
-                    {hub.subtitle || hub.description}
-                  </p>
-                </div>
 
                 <div className="pt-4 border-t border-gray-100 dark:border-neutral-800 flex items-center justify-between">
                   <a
@@ -223,8 +231,9 @@ const StoryHubTab = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
       )}
 
       {/* Modal */}

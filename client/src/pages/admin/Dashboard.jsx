@@ -17,7 +17,7 @@ import {
 import { 
   BarChart3, FileText, Image as ImageIcon, Tags, 
   MessageSquare, Megaphone, Users, ShieldAlert, 
-  ChevronRight, LogOut, Globe, Plus, Trash2, Check, X,
+  ChevronRight, LogOut, Globe, Plus, Trash2, Edit3, Check, X,
   Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers
 } from 'lucide-react';
 
@@ -595,6 +595,43 @@ const Dashboard = () => {
   };
 
   // Category Manager Actions
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryOrder, setEditCategoryOrder] = useState(0);
+
+  const handleStartEditCategory = (cat) => {
+    setEditingCategoryId(cat._id);
+    setEditCategoryName(cat.name);
+    setEditCategoryOrder(cat.order !== undefined ? cat.order : 0);
+  };
+
+  const handleCancelEditCategory = () => {
+    setEditingCategoryId(null);
+    setEditCategoryName('');
+    setEditCategoryOrder(0);
+  };
+
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!editCategoryName || !editingCategoryId) return;
+    try {
+      const res = await api.put(`/taxonomy/categories/${editingCategoryId}`, { 
+        name: editCategoryName, 
+        order: editCategoryOrder 
+      });
+      if (res.success) {
+        setCategories(prev => prev.map(c => c._id === editingCategoryId ? { ...c, name: editCategoryName, order: editCategoryOrder } : c).sort((a,b) => (a.order || 0) - (b.order || 0)));
+        setEditingCategoryId(null);
+        toast.success('ক্যাটাগরি আপডেট করা হয়েছে');
+      } else {
+        toast.error(res.message || 'আপডেট করতে ব্যর্থ হয়েছে');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('সার্ভারে ত্রুটি ঘটেছে');
+    }
+  };
+
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCatName) return;
@@ -604,6 +641,7 @@ const Dashboard = () => {
         setCategories(prev => [...prev, res.category].sort((a,b) => a.order - b.order));
         setNewCatName('');
         setNewCatOrder(0);
+        toast.success('নতুন ক্যাটাগরি তৈরি হয়েছে');
       }
     } catch (err) {
       console.error(err);
@@ -616,6 +654,7 @@ const Dashboard = () => {
       const res = await api.delete(`/taxonomy/categories/${id}`);
       if (res.success) {
         setCategories(prev => prev.filter(c => c._id !== id));
+        toast.success('ক্যাটাগরি মুছে ফেলা হয়েছে');
       }
     } catch (err) {
       console.error(err);
@@ -1250,24 +1289,62 @@ const Dashboard = () => {
                 <div className="space-y-3">
                   {categories.map(cat => (
                     <div key={cat._id} className="border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/20">
-                      <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">Order: {cat.order}</span>
-                          <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
-                          <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full">
-                            {(cat.subcategories || []).length} সাব-ক্যাটাগরি
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <button 
-                            onClick={() => handleDeleteCategory(cat._id)} 
-                            className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
-                            title="Delete category"
+                      {editingCategoryId === cat._id ? (
+                        <form onSubmit={handleUpdateCategory} className="flex items-center gap-2 p-2.5 bg-blue-50/50 dark:bg-blue-950/20 border-b border-blue-200 dark:border-blue-900/50">
+                          <input
+                            type="text"
+                            value={editCategoryName}
+                            onChange={(e) => setEditCategoryName(e.target.value)}
+                            required
+                            className="flex-1 px-2.5 py-1 text-xs border rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                          />
+                          <input
+                            type="number"
+                            value={editCategoryOrder}
+                            onChange={(e) => setEditCategoryOrder(parseInt(e.target.value) || 0)}
+                            className="w-16 px-2 py-1 text-xs border rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                          />
+                          <button
+                            type="submit"
+                            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            Save
                           </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelEditCategory}
+                            className="px-2 py-1 border rounded-lg text-xs hover:bg-gray-100 dark:hover:bg-slate-800"
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[10px] font-bold bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">Order: {cat.order}</span>
+                            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
+                            <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full">
+                              {(cat.subcategories || []).length} সাব-ক্যাটাগরি
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <button 
+                              onClick={() => handleStartEditCategory(cat)} 
+                              className="text-blue-600 hover:text-blue-800 p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
+                              title="Edit category"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteCategory(cat._id)} 
+                              className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                              title="Delete category"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Subcategories Desk */}
                       <div className="p-3 space-y-2.5">
