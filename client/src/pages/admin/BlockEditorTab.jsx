@@ -50,7 +50,7 @@ const BlockEditorTab = ({
   const [tags, setTags] = useState('');
   const [featuredImage, setFeaturedImage] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
-  const [multimediaType, setMultimediaType] = useState('standard');
+  const [multimediaType, setMultimediaType] = useState('none');
   const [duration, setDuration] = useState('');
   const [isLead, setIsLead] = useState(false);
   const [isBreaking, setIsBreaking] = useState(false);
@@ -181,7 +181,7 @@ const BlockEditorTab = ({
         setTags(Array.isArray(art.tags) ? art.tags.join(', ') : (art.tags || ''));
         setFeaturedImage(art.featuredImage || '');
         setVideoUrl(art.videoUrl || '');
-        setMultimediaType(art.multimediaType || 'standard');
+        setMultimediaType(art.multimediaType || 'none');
         setDuration(art.duration || '');
         setIsLead(!!art.isLead);
         setIsBreaking(!!art.isBreaking);
@@ -241,7 +241,7 @@ const BlockEditorTab = ({
     setTags('');
     setFeaturedImage('');
     setVideoUrl('');
-    setMultimediaType('standard');
+    setMultimediaType('none');
     setDuration('');
     setIsLead(false);
     setIsBreaking(false);

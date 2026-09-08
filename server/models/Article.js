@@ -65,7 +65,7 @@ const ArticleSchema = {
   // Multimedia
   multimediaType: { 
     type: String, 
-    enum: ['none', 'video', 'podcast', 'gallery', 'explainer', 'liveblog'], 
+    enum: ['none', 'standard', 'video', 'podcast', 'gallery', 'explainer', 'liveblog', 'audio'], 
     default: 'none' 
   },
   duration: { type: String, default: '' },
