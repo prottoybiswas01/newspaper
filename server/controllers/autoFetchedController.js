@@ -302,13 +302,16 @@ exports.extractFullArticleContent = async (req, res) => {
 
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language': 'bn-BD,bn;q=0.9,en-US;q=0.8,en;q=0.7'
       },
-      signal: AbortSignal.timeout(8000)
+      redirect: 'follow',
+      signal: AbortSignal.timeout(10000)
     });
 
     if (!response.ok) {
-      return res.status(400).json({ success: false, message: 'Failed to fetch news page' });
+      return res.status(400).json({ success: false, message: `Failed to fetch news page (Status: ${response.status})` });
     }
 
     const html = await response.text();
@@ -325,15 +328,43 @@ exports.extractFullArticleContent = async (req, res) => {
         .replace(/&amp;/g, '&')
         .replace(/&nbsp;/g, ' ')
         .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>');
+        .replace(/&gt;/g, '>')
+        .trim();
     };
 
-    // 1. Extract Official Title from OpenGraph meta or H1
-    let officialTitle = '';
-    const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
-                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["'][^>]*>/i);
-    if (ogTitleMatch && ogTitleMatch[1]) {
-      officialTitle = cleanOfficialTitle(ogTitleMatch[1]);
+    // Attempt JSON-LD schema extraction for highest fidelity news data
+    let jsonLdTitle = '';
+    let jsonLdImage = '';
+    let jsonLdDesc = '';
+    let jsonLdBody = '';
+    const jsonLdMatches = html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+    for (const match of jsonLdMatches) {
+      try {
+        const parsed = JSON.parse(match[1].trim());
+        const data = Array.isArray(parsed) ? parsed[0] : (parsed['@graph'] ? parsed['@graph'].find(item => item['@type'] === 'NewsArticle' || item['@type'] === 'Article') || parsed['@graph'][0] : parsed);
+        if (data) {
+          if (data.headline && !jsonLdTitle) jsonLdTitle = cleanOfficialTitle(data.headline);
+          if (data.description && !jsonLdDesc) jsonLdDesc = decodeHtmlEntities(data.description);
+          if (data.articleBody && !jsonLdBody) jsonLdBody = decodeHtmlEntities(data.articleBody);
+          if (data.image) {
+            if (typeof data.image === 'string') jsonLdImage = data.image;
+            else if (Array.isArray(data.image) && data.image[0]) jsonLdImage = typeof data.image[0] === 'string' ? data.image[0] : (data.image[0].url || '');
+            else if (data.image.url) jsonLdImage = data.image.url;
+          }
+        }
+      } catch (e) {
+        // Continue if JSON-LD parse fails
+      }
+    }
+
+    // 1. Extract Official Title from JSON-LD or OpenGraph meta or H1
+    let officialTitle = jsonLdTitle;
+    if (!officialTitle) {
+      const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                           html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["'][^>]*>/i);
+      if (ogTitleMatch && ogTitleMatch[1]) {
+        officialTitle = cleanOfficialTitle(ogTitleMatch[1]);
+      }
     }
     if (!officialTitle) {
       const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i);
@@ -342,14 +373,16 @@ exports.extractFullArticleContent = async (req, res) => {
       }
     }
 
-    // 2. Extract Featured Image from OpenGraph meta or Twitter meta
-    let featuredImage = '';
-    const ogImgMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
-                       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i) ||
-                       html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
-                       html.match(/<link[^>]*rel=["']image_src["'][^>]*href=["']([^"']+)["'][^>]*>/i);
-    if (ogImgMatch && ogImgMatch[1]) {
-      featuredImage = decodeHtmlEntities(ogImgMatch[1]).trim();
+    // 2. Extract Featured Image from JSON-LD, OpenGraph meta, or Twitter meta
+    let featuredImage = jsonLdImage;
+    if (!featuredImage) {
+      const ogImgMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                         html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i) ||
+                         html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                         html.match(/<link[^>]*rel=["']image_src["'][^>]*href=["']([^"']+)["'][^>]*>/i);
+      if (ogImgMatch && ogImgMatch[1]) {
+        featuredImage = decodeHtmlEntities(ogImgMatch[1]).trim();
+      }
     }
 
     // 3. Extract Portal / Source name from og:site_name or domain
@@ -370,48 +403,64 @@ exports.extractFullArticleContent = async (req, res) => {
       else if (url.includes('jugantor')) sourceName = 'যুগান্তর';
       else if (url.includes('samakal')) sourceName = 'সমকাল';
       else if (url.includes('ittefaq')) sourceName = 'ইত্তেফাক';
+      else if (url.includes('bbc.com') || url.includes('bbc.co.uk')) sourceName = 'বিবিসি বাংলা';
+      else {
+        try {
+          const host = new URL(url).hostname.replace('www.', '');
+          sourceName = host;
+        } catch (e) {
+          sourceName = 'অনলাইন নিউজ পোর্টাল';
+        }
+      }
     }
 
     // 4. Extract clean article paragraphs
-    const pMatches = html.match(/<p[^\>]*>[\s\S]*?<\/p>/gi) || [];
     const badPatterns = [
       /আরও\s*পড়ুন/i, /আরও\s*দেখুন/i, /READ\s*MORE/i, /পাঠকপ্রিয়/i, /লিখতে\s*পারেন/i,
       /আজই\s*আপনার\s*লেখাটি/i, /সম্পাদক\s*:/i, /সর্বস্বত্ব/i, /কমফোর্ট/i, /প্রগতি\s*সরণি/i,
       /বিজ্ঞাপন/i, /ফাইল\s*ছবি/i, /সর্বশেষ\s*-/i, /শেয়ার\s*করুন/i, /লাইক\s*দিন/i,
-      /ফলো\s*করুন/i, /সাবস্ক্রাইব/i, /Copyright/i, /মন্তব্য\s*করুন/i, /গোপনীয়তা\s*নীতি/i
+      /ফলো\s*করুন/i, /সাবস্ক্রাইব/i, /Copyright/i, /মন্তব্য\s*করুন/i, /গোপনীয়তা\s*নীতি/i,
+      /Terms\s*of\s*Use/i, /Privacy\s*Policy/i
     ];
 
-    const cleanParagraphs = pMatches
-      .map(p => decodeHtmlEntities(p.replace(/<[^>]*>/g, '').trim()))
-      .filter(p => p.length > 25 && !badPatterns.some(pattern => pattern.test(p)));
+    let cleanParagraphs = [];
 
-    if (cleanParagraphs.length === 0) {
-      return res.json({ 
-        success: false, 
-        message: 'Could not extract full text',
-        title: officialTitle,
-        featuredImage,
-        source: sourceName,
-        sourceUrl: url
-      });
+    // Check if JSON-LD had full articleBody
+    if (jsonLdBody && jsonLdBody.length > 80) {
+      const parts = jsonLdBody.split(/\n+/).map(s => s.trim()).filter(s => s.length > 20);
+      if (parts.length > 0) {
+        cleanParagraphs = parts.filter(p => !badPatterns.some(pat => pat.test(p)));
+      }
     }
 
+    if (cleanParagraphs.length === 0) {
+      const pMatches = html.match(/<p[^\>]*>[\s\S]*?<\/p>/gi) || [];
+      cleanParagraphs = pMatches
+        .map(p => decodeHtmlEntities(p.replace(/<[^>]*>/g, '').trim()))
+        .filter(p => p.length > 25 && !badPatterns.some(pattern => pattern.test(p)));
+    }
+
+    const summary = cleanParagraphs[0] ? cleanParagraphs[0].substring(0, 250) : (jsonLdDesc || '');
     const htmlContent = cleanParagraphs.map(p => `<p>${p}</p>`).join('\n');
-    const summary = cleanParagraphs[0] ? cleanParagraphs[0].substring(0, 250) : '';
+
+    // Generate quick bullet points for AI key takeaways
+    const keyBullets = cleanParagraphs.slice(0, 3).map(p => p.length > 120 ? p.substring(0, 117) + '...' : p);
 
     res.json({
       success: true,
-      title: officialTitle,
-      featuredImage,
+      title: officialTitle || 'অনলাইন নিউজ বুলেটিন',
+      featuredImage: featuredImage || '',
       source: sourceName,
       sourceUrl: url,
       content: htmlContent,
+      paragraphs: cleanParagraphs,
       summary,
+      keyPoints: keyBullets,
       paragraphCount: cleanParagraphs.length
     });
   } catch (error) {
     console.error('Extract article error:', error.message);
-    res.status(500).json({ success: false, message: 'Extracting full article content failed' });
+    res.status(500).json({ success: false, message: `সংবাদটি এক্সট্রাক্ট করতে ত্রুটি: ${error.message}` });
   }
 };
 

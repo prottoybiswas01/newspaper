@@ -25,6 +25,7 @@ const DISTRICTS_BY_DIV = {
 
 const BlockEditorTab = ({ 
   editingArticleId, 
+  importedData,
   onSaveSuccess, 
   onCancel,
   categories = [] 
@@ -35,6 +36,10 @@ const BlockEditorTab = ({
   const [activeSideTab, setActiveSideTab] = useState('meta'); // meta, trust, local, ads, revisions
   const [revisions, setRevisions] = useState([]);
   
+  // AI URL Ingestion Tool state
+  const [inputUrl, setInputUrl] = useState('');
+  const [extractingUrl, setExtractingUrl] = useState(false);
+
   // Article Core Fields
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -87,14 +92,80 @@ const BlockEditorTab = ({
   // Autosave status indicator
   const [lastSavedTime, setLastSavedTime] = useState(null);
 
+  const populateFromArticleData = (data) => {
+    if (!data) return;
+    setTitle(data.title || '');
+    setSubtitle(data.subtitle || (data.source ? `উৎস: ${data.source}` : ''));
+    setFeaturedImage(data.featuredImage || '');
+    setCategory(data.category || 'bangladesh');
+    setTags(Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || 'জাতীয়'));
+    setAiSummary(data.summary || data.aiSummary || '');
+    if (Array.isArray(data.keyPoints) && data.keyPoints.length > 0) {
+      setKeyPointsInput(data.keyPoints.join('\n'));
+    }
+
+    // Convert paragraphs into structured blocks
+    const paragraphList = Array.isArray(data.paragraphs) && data.paragraphs.length > 0
+      ? data.paragraphs
+      : (data.content ? [data.content.replace(/<[^>]*>/g, '').trim()] : []);
+
+    const newBlocks = paragraphList.filter(Boolean).map((p, idx) => ({
+      id: `blk_gen_${Date.now()}_${idx}`,
+      type: 'paragraph',
+      content: p
+    }));
+
+    if (data.sourceUrl) {
+      newBlocks.push({
+        id: `blk_src_${Date.now()}`,
+        type: 'quote',
+        content: `মূল সংবাদের উৎস: ${data.source || 'অনলাইন নিউজ পোর্টাল'} (লিংক: ${data.sourceUrl})`,
+        author: data.source || 'উৎস'
+      });
+    }
+
+    if (newBlocks.length > 0) {
+      setBlocks(newBlocks);
+    } else {
+      setBlocks([{ id: 'b_1', type: 'paragraph', content: '' }]);
+    }
+  };
+
   // Load article if editing
   useEffect(() => {
     if (editingArticleId) {
       loadArticleData(editingArticleId);
+    } else if (importedData) {
+      populateFromArticleData(importedData);
     } else {
       resetForm();
     }
-  }, [editingArticleId]);
+  }, [editingArticleId, importedData]);
+
+  // Handle URL News Extractor
+  const handleExtractFromUrl = async (e) => {
+    if (e) e.preventDefault();
+    if (!inputUrl.trim()) {
+      toast.warning('অনুগ্রহ করে একটি বৈধ নিউজের লিংক দিন');
+      return;
+    }
+    setExtractingUrl(true);
+    try {
+      toast.info('নিউজ লিংক থেকে শিরোনাম, ছবি ও পূর্ণাঙ্গ টেক্সট সংগ্রহ করা হচ্ছে...');
+      const res = await api.post('/auto-fetched/extract', { url: inputUrl.trim() });
+      if (res.success) {
+        populateFromArticleData(res);
+        toast.success(`সফলভাবে মূল ছবি, শিরোনাম ও ${res.paragraphCount || ''}টি প্যারাগ্রাফ এডিটরে লোড করা হয়েছে!`);
+        setInputUrl('');
+      } else {
+        toast.error(res.message || 'সংবাদটি সংগ্রহ করতে ব্যর্থ হয়েছে');
+      }
+    } catch (err) {
+      toast.error('সার্ভারে সমস্যা হয়েছে');
+    } finally {
+      setExtractingUrl(false);
+    }
+  };
 
   const loadArticleData = async (id) => {
     try {
@@ -384,6 +455,51 @@ const BlockEditorTab = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content Area (2 Cols) */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Smart AI URL Ingest / News Scraper Bar */}
+          <div className="bg-gradient-to-r from-purple-50 via-white to-blue-50 dark:from-purple-950/20 dark:via-neutral-900 dark:to-blue-950/20 border border-purple-200 dark:border-purple-900/60 p-5 rounded-3xl shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                  এআই ও লাইভ URL নিউজ ইমপোর্টার (Smart News Auto-Fill)
+                </h3>
+              </div>
+              <span className="text-[9px] bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 font-black px-2 py-0.5 rounded-full">
+                অটো-এক্সট্র্যাক্টর
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-500 dark:text-neutral-400">
+              যেকোনো নিউজ পোর্টালের (প্রথম আলো, কালের কণ্ঠ, যুগান্তর, বিবিসি ইত্যাদি) খবরের লিংক পেস্ট করে নিচের বাটনে চাপুন। এআই স্বয়ংক্রিয়ভাবে আসল শিরোনাম, উচ্চ রেজোলিউশন ছবি, প্যারাগ্রাফ ও সারসংক্ষেপ এডিটরে ফিল করে দেবে।
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="url"
+                placeholder="e.g. https://www.prothomalo.com/bangladesh/..."
+                value={inputUrl}
+                onChange={(e) => setInputUrl(e.target.value)}
+                className="flex-1 px-3.5 py-2.5 border border-purple-200 dark:border-purple-800 rounded-xl text-xs bg-white dark:bg-neutral-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                type="button"
+                onClick={handleExtractFromUrl}
+                disabled={extractingUrl || !inputUrl.trim()}
+                className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl text-xs font-black flex items-center justify-center space-x-1.5 shadow-md disabled:opacity-50 cursor-pointer transition-all"
+              >
+                {extractingUrl ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                    <span>এক্সট্রাক্ট হচ্ছে...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span>অটো-এক্সট্রাক্ট ও ফিল করুন</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* Article Title & Subtitle */}
           <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-6 rounded-3xl shadow-xs space-y-4">
             <div>

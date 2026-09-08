@@ -290,30 +290,13 @@ const Dashboard = () => {
     }
   }, [activeTab, autoFetchedPage, autoFetchedSearch]);
 
+  const [importedArticleData, setImportedArticleData] = useState(null);
+
   // Import an auto-fetched article directly into the CMS editor tab with FULL article extraction
   const handleImportToEditor = async (fetchedArt) => {
     resetEditorForm();
     setEditingArticleId(null);
-    setArticleTitle(fetchedArt.title || '');
-    setArticleSubtitle(fetchedArt.source ? `তথ্যসূত্র: ${fetchedArt.source}` : '');
-    setArticleFeaturedImage(fetchedArt.featuredImage || '');
-    
-    // Initial source attribution footer
-    const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
-    
-    // Initial fallback text cleaned of teaser snippets
-    let initialDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
-    const initialContent = initialDesc ? `<p>${initialDesc}</p>${sourceAttribution}` : sourceAttribution;
-    
-    setArticleContent(initialContent);
-    setArticleSummary(initialDesc ? initialDesc.substring(0, 200) : '');
-    setArticleCategory('বাংলাদেশ');
-    setArticleTags(fetchedArt.source ? fetchedArt.source : 'জাতীয়');
-    setArticleStatus('draft');
-    
-    setArticleSeoTitle(fetchedArt.title || '');
-    setArticleSeoDesc(initialDesc ? initialDesc.substring(0, 150) : '');
-    setArticleSeoKeywords(fetchedArt.source || '');
+    setImportedArticleData(null);
     
     setActiveTab('editor');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -323,26 +306,53 @@ const Dashboard = () => {
     try {
       const extRes = await api.post('/auto-fetched/extract', { url: fetchedArt.link });
       if (extRes.success) {
-        if (extRes.title) {
-          setArticleTitle(extRes.title);
-          setArticleSeoTitle(extRes.title);
-        }
-        if (extRes.featuredImage) {
-          setArticleFeaturedImage(extRes.featuredImage);
-        }
-        const updatedAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${extRes.source || fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
-        if (extRes.content) {
-          setArticleContent(`${extRes.content}\n${updatedAttribution}`);
-        }
-        if (extRes.summary) {
-          setArticleSummary(extRes.summary);
-          setArticleSeoDesc(extRes.summary.substring(0, 150));
-        }
-        toast.success(`ছবি ও সম্পূর্ণ ${extRes.paragraphCount || ''}টি প্যারাগ্রাফ সফলভাবে লোড করা হয়েছে!`);
+        const fullArt = {
+          title: extRes.title || fetchedArt.title || '',
+          subtitle: `উৎস: ${extRes.source || fetchedArt.source || 'অনলাইন নিউজ পোর্টাল'}`,
+          featuredImage: extRes.featuredImage || fetchedArt.featuredImage || '',
+          source: extRes.source || fetchedArt.source,
+          sourceUrl: fetchedArt.link,
+          paragraphs: extRes.paragraphs && extRes.paragraphs.length > 0 ? extRes.paragraphs : [extRes.summary || fetchedArt.description || ''],
+          content: extRes.content || '',
+          summary: extRes.summary || '',
+          keyPoints: extRes.keyPoints || [],
+          category: 'bangladesh',
+          tags: extRes.source || fetchedArt.source || 'জাতীয়'
+        };
+        setImportedArticleData(fullArt);
+        toast.success(`ছবি ও সম্পূর্ণ ${extRes.paragraphCount || ''}টি প্যারাগ্রাফ সফলভাবে এডিটরে লোড করা হয়েছে!`);
       } else {
+        const snippetDesc = (fetchedArt.description || '').replace(/<[^>]*>/g, '').trim();
+        setImportedArticleData({
+          title: fetchedArt.title || '',
+          subtitle: fetchedArt.source ? `তথ্যসূত্র: ${fetchedArt.source}` : '',
+          featuredImage: fetchedArt.featuredImage || '',
+          source: fetchedArt.source,
+          sourceUrl: fetchedArt.link,
+          paragraphs: snippetDesc ? [snippetDesc] : [],
+          content: snippetDesc ? `<p>${snippetDesc}</p>` : '',
+          summary: snippetDesc.substring(0, 200),
+          keyPoints: [],
+          category: 'bangladesh',
+          tags: fetchedArt.source || 'জাতীয়'
+        });
         toast.success('সংবাদটি এডিটরে লোড করা হয়েছে।');
       }
     } catch (e) {
+      const snippetDesc = (fetchedArt.description || '').replace(/<[^>]*>/g, '').trim();
+      setImportedArticleData({
+        title: fetchedArt.title || '',
+        subtitle: fetchedArt.source ? `তথ্যসূত্র: ${fetchedArt.source}` : '',
+        featuredImage: fetchedArt.featuredImage || '',
+        source: fetchedArt.source,
+        sourceUrl: fetchedArt.link,
+        paragraphs: snippetDesc ? [snippetDesc] : [],
+        content: snippetDesc ? `<p>${snippetDesc}</p>` : '',
+        summary: snippetDesc.substring(0, 200),
+        keyPoints: [],
+        category: 'bangladesh',
+        tags: fetchedArt.source || 'জাতীয়'
+      });
       toast.success('সংবাদটি এডিটরে লোড করা হয়েছে।');
     }
   };
@@ -355,8 +365,10 @@ const Dashboard = () => {
       let finalTitle = fetchedArt.title;
       let finalImage = fetchedArt.featuredImage || '';
       let finalSource = fetchedArt.source || 'অনলাইন নিউজ পোর্টাল';
+      let paragraphsList = [];
       let fullContent = '';
       let fullSummary = '';
+      let keyPointsList = [];
 
       // Try full extraction
       try {
@@ -365,8 +377,10 @@ const Dashboard = () => {
           if (extRes.title) finalTitle = extRes.title;
           if (extRes.featuredImage) finalImage = extRes.featuredImage;
           if (extRes.source) finalSource = extRes.source;
+          if (extRes.paragraphs && extRes.paragraphs.length > 0) paragraphsList = extRes.paragraphs;
           if (extRes.content) fullContent = extRes.content;
           if (extRes.summary) fullSummary = extRes.summary;
+          if (extRes.keyPoints) keyPointsList = extRes.keyPoints;
         }
       } catch (e) {
         // Ignore fallback to snippet
@@ -374,10 +388,27 @@ const Dashboard = () => {
 
       const sourceAttribution = `<br/><div style="background-color: #f8fafc; border-left: 4px solid #ef4444; padding: 12px 16px; border-radius: 8px; margin: 20px 0;"><p style="margin: 0; font-size: 13px; color: #334155;"><strong>মূল সংবাদের উৎস:</strong> ${finalSource} | <a href="${fetchedArt.link}" target="_blank" rel="noopener noreferrer" style="color: #dc2626; font-weight: bold; text-decoration: underline;">মূল সংবাদ পড়ুন ➔</a></p></div>`;
 
-      if (!fullContent) {
+      if (paragraphsList.length === 0) {
         let cleanDesc = (fetchedArt.description || '').replace(/আরও\s*পড়ুন[\s\S]*/gi, '').replace(/\.{3,}$/g, '').trim();
-        fullContent = cleanDesc ? `<p>${cleanDesc}</p>${sourceAttribution}` : sourceAttribution;
-        fullSummary = cleanDesc ? cleanDesc.substring(0, 200) : '';
+        if (cleanDesc) paragraphsList = [cleanDesc];
+      }
+
+      const structuredBlocks = paragraphsList.map((p, idx) => ({
+        id: `blk_imp_${Date.now()}_${idx}`,
+        type: 'paragraph',
+        content: p
+      }));
+
+      // Add source quote block
+      structuredBlocks.push({
+        id: `blk_src_${Date.now()}`,
+        type: 'quote',
+        content: `মূল সংবাদের উৎস: ${finalSource} (লিংক: ${fetchedArt.link})`,
+        author: finalSource
+      });
+
+      if (!fullContent) {
+        fullContent = paragraphsList.map(p => `<p>${p}</p>`).join('\n') + sourceAttribution;
       } else {
         fullContent = `${fullContent}\n${sourceAttribution}`;
       }
@@ -386,8 +417,38 @@ const Dashboard = () => {
         title: finalTitle,
         subtitle: `উৎস: ${finalSource}`,
         content: fullContent,
-        summary: fullSummary,
-        category: 'বাংলাদেশ',
+        blocks: structuredBlocks,
+        summary: fullSummary || (paragraphsList[0] ? paragraphsList[0].substring(0, 200) : ''),
+        aiSummary: fullSummary,
+        keyPoints: keyPointsList,
+        category: 'bangladesh',
+        tags: [finalSource, 'জাতীয়'],
+        status: 'published',
+        featuredImage: finalImage,
+        source: finalSource,
+        sourceUrl: fetchedArt.link,
+        videoUrl: '',
+        seo: {
+          metaTitle: finalTitle,
+          metaDescription: (fullSummary || finalTitle).substring(0, 150),
+          keywords: finalSource
+        }
+      };
+
+      const res = await api.post('/articles', payload);
+      if (res.success) {
+        toast.success('খবরটি সফলভাবে আসল ছবি ও পূর্ণাঙ্গ টেক্সটসহ সরাসরি পাবলিশ করা হয়েছে!');
+        // Delete log after publishing
+        await api.delete(`/auto-fetched/${fetchedArt._id}`);
+        loadAutoFetchedArticles();
+      } else {
+        toast.error(res.message || 'পাবলিশ করতে ব্যর্থ হয়েছে।');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('আর্টিকেল প্রকাশে ত্রুটি ঘটেছে।');
+    }
+  };
         tags: [finalSource, 'জাতীয়'],
         status: 'published',
         featuredImage: finalImage,
@@ -1157,14 +1218,17 @@ const Dashboard = () => {
         {activeTab === 'editor' && (
           <BlockEditorTab 
             editingArticleId={editingArticleId} 
+            importedData={importedArticleData}
             categories={categories}
             onSaveSuccess={() => {
               resetEditorForm();
+              setImportedArticleData(null);
               fetchArticlesList();
               setActiveTab('articlesList');
             }}
             onCancel={() => {
               resetEditorForm();
+              setImportedArticleData(null);
               setActiveTab('articlesList');
             }}
           />
