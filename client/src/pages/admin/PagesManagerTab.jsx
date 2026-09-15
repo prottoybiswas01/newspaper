@@ -23,7 +23,7 @@ const DEFAULT_FOOTER_SETTINGS = {
   ],
   contact: {
     phone: '+৮৮০ ১৭৪৯৯৬৫২৪০',
-    email: 'info@darpannews.com',
+    email: 'info@bengaltimes.com',
     address: 'বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ',
     mapUrl: 'https://maps.google.com/?q=Nikunja,Dhaka'
   },
@@ -746,7 +746,7 @@ const PagesManagerTab = () => {
                       ...prev,
                       contact: { ...prev.contact, email: e.target.value }
                     }))}
-                    placeholder="info@darpannews.com"
+                    placeholder="info@bengaltimes.com"
                     className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
                   />
                 </div>

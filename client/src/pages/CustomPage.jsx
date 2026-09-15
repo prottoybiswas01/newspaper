@@ -229,10 +229,18 @@ const CustomPage = ({ forcedSlug }) => {
                 </header>
 
                 {/* Rich HTML Content */}
-                <div 
-                  className="prose dark:prose-invert max-w-none text-neutral-800 dark:text-neutral-200 leading-relaxed text-sm sm:text-base page-content"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content || '<p>কোনো কন্টেন্ট পাওয়া যায়নি।</p>') }}
-                />
+                {page.content && page.content.replace(/<[^>]*>/g, '').trim().length > 0 ? (
+                  <div 
+                    className="prose dark:prose-invert max-w-none text-neutral-800 dark:text-neutral-200 leading-relaxed text-sm sm:text-base page-content"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}
+                  />
+                ) : (
+                  <div className="py-16 text-center text-neutral-400 dark:text-neutral-500 bg-white/40 dark:bg-neutral-900/30 rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-800 p-8">
+                    <FileText className="h-10 w-10 mx-auto mb-3 text-neutral-300 dark:text-neutral-600" />
+                    <p className="text-base font-bold text-neutral-600 dark:text-neutral-400">এই পৃষ্ঠার তথ্য শীঘ্রই প্রকাশিত হবে।</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 mt-1">প্রশাসক কর্তৃক ড্যাশবোর্ড থেকে তথ্য যুক্ত করার পর এখানে তা প্রদর্শিত হবে।</p>
+                  </div>
+                )}
 
                 {/* Footer disclaimer */}
                 <div className="mt-12 pt-6 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-400 leading-relaxed flex items-center justify-between flex-wrap gap-4">

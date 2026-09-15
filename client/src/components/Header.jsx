@@ -112,14 +112,14 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-white dark:bg-[#0a0a0a] border-b border-gray-200 dark:border-neutral-800 shadow-xs transition-all duration-300 no-print">
       
       {/* Row 1: Logo & Top controls (Search, divider, Login) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center space-x-3">
-          <Link to="/" className="flex items-center space-x-2 text-2xl font-black tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
+          <Link to="/" className="flex items-center space-x-2 whitespace-nowrap group">
             <img 
               src="/logo.png" 
               alt="Bengal Times" 
-              className="h-9 sm:h-11 w-auto object-contain shrink-0" 
+              className="h-10 sm:h-12 md:h-14 max-w-[280px] sm:max-w-[340px] w-auto object-contain shrink-0 transition-transform duration-200 group-hover:scale-[1.02]" 
             />
           </Link>
         </div>

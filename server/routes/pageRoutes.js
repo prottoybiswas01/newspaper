@@ -25,6 +25,15 @@ router.get('/:slug', async (req, res) => {
       return res.status(404).json({ success: false, message: 'পৃষ্ঠাটি খুঁজে পাওয়া যায়নি।' });
     }
 
+    // Automatically purge old pre-seeded dummy text if present
+    if (page.content && (page.content.includes('দৈনিক দর্পণ') || page.lastUpdatedBy === 'System Pre-seed')) {
+      page.content = '';
+      page.subtitle = '';
+      if (typeof page.save === 'function') {
+        try { await page.save(); } catch (e) { /* ignore */ }
+      }
+    }
+
     res.json({ success: true, page });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

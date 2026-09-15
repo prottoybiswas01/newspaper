@@ -20,7 +20,7 @@ const DEFAULT_FOOTER_SETTINGS = {
   ],
   contact: {
     phone: '+৮৮০ ১৭৪৯৯৬৫২৪০',
-    email: 'info@darpannews.com',
+    email: 'info@bengaltimes.com',
     address: 'বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ',
     mapUrl: 'https://maps.google.com/?q=Nikunja,Dhaka'
   },
@@ -244,7 +244,7 @@ const Footer = () => {
                 <Mail className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-neutral-200">ইমেইল:</p>
-                  <p>{contact.email || 'info@darpannews.com'}</p>
+                  <p>{contact.email || 'info@bengaltimes.com'}</p>
                 </div>
               </li>
               <li className="flex items-start gap-2">

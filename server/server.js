@@ -129,7 +129,7 @@ app.get('/news-sitemap.xml', async (req, res) => {
       xml += `    <loc>${siteUrl}/article/${art.slug}</loc>\n`;
       xml += `    <news:news>\n`;
       xml += `      <news:publication>\n`;
-      xml += `        <news:name>দৈনিক দর্পণ</news:name>\n`;
+      xml += `        <news:name>বেঙ্গল টাইমস</news:name>\n`;
       xml += `        <news:language>bn</news:language>\n`;
       xml += `      </news:publication>\n`;
       xml += `      <news:publication_date>${new Date(pubDate).toISOString()}</news:publication_date>\n`;
@@ -213,7 +213,7 @@ app.get('/rss.xml', async (req, res) => {
     let rss = `<?xml version="1.0" encoding="UTF-8" ?>\n`;
     rss += `<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n`;
     rss += `<channel>\n`;
-    rss += `  <title>দৈনিক দর্পণ | Mirror News</title>\n`;
+    rss += `  <title>বেঙ্গল টাইমস | Bengal Times</title>\n`;
     rss += `  <link>${siteUrl}</link>\n`;
     rss += `  <description>সর্বশেষ, নিরপেক্ষ ও সত্য সংবাদ সবার আগে পাঠকের কাছে পৌছে দিতে অঙ্গিকারবদ্ধ অনলাইন নিউজ পোর্টাল।</description>\n`;
     rss += `  <language>bn</language>\n`;

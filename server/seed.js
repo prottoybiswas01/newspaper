@@ -27,7 +27,7 @@ const seed = async () => {
         password: hashedPassword,
         role: 'Super Admin',
         designation: 'প্রধান নির্বাহী ও সম্পাদক',
-        bio: 'দৈনিক দর্পণ ডিজিটাল পাবলিশিং নেটওয়ার্কের প্রধান নির্বাহী।',
+        bio: 'বেঙ্গল টাইমস ডিজিটাল পাবলিশিং নেটওয়ার্কের প্রধান নির্বাহী।',
         avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=superadmin'
       });
       console.log('✅ Super Admin account created: superadmin@news.com (pass: password123)');
