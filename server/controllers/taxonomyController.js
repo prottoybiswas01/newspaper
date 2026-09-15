@@ -228,15 +228,14 @@ const getCategories = async (req, res) => {
   try {
     const rawCategories = await Category.find({}).sort({ order: 1 });
     
-    // If DB has custom categories, map them; otherwise ensure default 20 categories
     let finalCategories = [];
     if (rawCategories.length > 0) {
       finalCategories = rawCategories.map(raw => {
         const c = raw.toObject ? raw.toObject() : { ...raw };
         const slugKey = (c.slug || '').toLowerCase();
-        let subs = Array.isArray(c.subcategories) && c.subcategories.length > 0
-          ? c.subcategories
-          : (DEFAULT_SUBCATEGORIES[slugKey] || []);
+        
+        // Use strictly the actual subcategories stored in database
+        const subs = Array.isArray(c.subcategories) ? c.subcategories : [];
 
         const bnName = BN_NAME_BY_SLUG[slugKey] || c.name || (c.slug ? c.slug.charAt(0).toUpperCase() + c.slug.slice(1) : 'বিভাগ');
 
@@ -254,7 +253,7 @@ const getCategories = async (req, res) => {
         name: c.name,
         slug: c.slug,
         order: c.order,
-        subcategories: (DEFAULT_SUBCATEGORIES[c.slug] || []).sort((a,b) => (a.order || 0) - (b.order || 0))
+        subcategories: []
       }));
     }
 

@@ -300,197 +300,27 @@ const BlockEditorTab = ({
     }
   }, [editingArticleId, importedData]);
 
-  // Dynamic Subcategories for selected category
+  // Dynamic Subcategories strictly from Database categories
   const getAvailableSubcategories = () => {
-    const rawKey = (category || 'bangladesh').toString().trim().toLowerCase();
+    const rawKey = (category || '').toString().trim().toLowerCase();
     const canonKey = CANONICAL_MAP[rawKey] || rawKey;
 
-    const currentCats = localCategories && localCategories.length > 0 ? localCategories : DEFAULT_CATEGORIES_LIST;
+    const currentCats = localCategories && localCategories.length > 0 ? localCategories : [];
     const foundCat = currentCats.find(c => 
       (c.slug && c.slug.toLowerCase() === rawKey) || 
       (c.slug && c.slug.toLowerCase() === canonKey) ||
-      (c.name && c.name.toLowerCase() === rawKey)
+      (c.name && c.name.toLowerCase() === rawKey) ||
+      (c.name && c.name.toLowerCase() === canonKey) ||
+      (c._id && String(c._id) === String(category))
     );
     
-    const dynamicSubs = (foundCat?.subcategories || []).map(s => 
+    if (!foundCat || !Array.isArray(foundCat.subcategories)) {
+      return [];
+    }
+
+    return foundCat.subcategories.map(s => 
       typeof s === 'string' ? { name: s, slug: s } : s
-    );
-
-    const presets = {
-      bangladesh: [
-        { name: 'রাজধানী', slug: 'rajdhani' },
-        { name: 'জেলা সংবাদ', slug: 'districts' },
-        { name: 'করোনাভাইরাস ও স্বাস্থ্য', slug: 'coronavirus' },
-        { name: 'প্রকৃতি ও পরিবেশ', slug: 'poribesh' },
-        { name: 'অপরাধ ও দুর্নীতি', slug: 'oporadh' },
-        { name: 'জাতীয়', slug: 'national' },
-        { name: 'আইন ও আদালত', slug: 'law-courts' },
-        { name: 'প্রশাসন ও সরকার', slug: 'governance' },
-        { name: 'ঢাকা', slug: 'dhaka' },
-        { name: 'চট্টগ্রাম', slug: 'chattogram' },
-        { name: 'সিলেট', slug: 'sylhet' },
-        { name: 'রাজশাহী', slug: 'rajshahi' },
-        { name: 'খুলনা', slug: 'khulna' },
-        { name: 'বরিশাল', slug: 'barishal' },
-        { name: 'রংপুর', slug: 'rangpur' },
-        { name: 'ময়মনসিংহ', slug: 'mymensingh' }
-      ],
-      politics: [
-        { name: 'জাতীয় রাজনীতি', slug: 'jatiyo' },
-        { name: 'সংসদ ও আইনসভা', slug: 'songshod' },
-        { name: 'দলীয় কর্মসূচি ও সম্মেলন', slug: 'doliyo-songbad' },
-        { name: 'নির্বাচন কমিশন ও ভোট', slug: 'election' },
-        { name: 'বক্তব্য ও বিবৃতি', slug: 'statements' },
-        { name: 'আওয়ামী লীগ', slug: 'al' },
-        { name: 'বিএনপি', slug: 'bnp' },
-        { name: 'জাতীয় পার্টি ও অন্যান্য', slug: 'other-parties' }
-      ],
-      international: [
-        { name: 'ইরান যুদ্ধ পরিস্থিতি', slug: 'iran-yuddho' },
-        { name: 'মধ্যপ্রাচ্য ও সংঘাত', slug: 'moddhoprachyo' },
-        { name: 'যুক্তরাষ্ট্র ও আমেরিকা', slug: 'joktorashtro' },
-        { name: 'ভারত ও প্রতিবেশী', slug: 'bharat' },
-        { name: 'পাকিস্তান', slug: 'pakistan' },
-        { name: 'চীন', slug: 'chin' },
-        { name: 'এশিয়া ও প্রশান্ত মহাসাগর', slug: 'eshia' },
-        { name: 'ইউরোপ', slug: 'europ' },
-        { name: 'কূটনীতি ও জাতিসংঘ', slug: 'diplomacy' },
-        { name: 'আফ্রিকা ও অন্যান্য', slug: 'afrika' },
-        { name: 'লাতিন আমেরিকা', slug: 'latin-america' }
-      ],
-      economy: [
-        { name: 'শেয়ার বাজার ও স্টক', slug: 'sheyerbajar' },
-        { name: 'ব্যাংক ও আর্থিক খাত', slug: 'bank' },
-        { name: 'শিল্প ও বাণিজ্য', slug: 'shilpo' },
-        { name: 'অর্থনীতি ও প্রবৃদ্ধি', slug: 'orthoniti' },
-        { name: 'বিশ্ববাণিজ্য', slug: 'bishwobanijjo' },
-        { name: 'বাজেট ও রাজস্ব', slug: 'budget' },
-        { name: 'আপনার টাকা ও সঞ্চয়', slug: 'apnar-taka' },
-        { name: 'উদ্যোক্তা ও স্টার্টআপ', slug: 'uddyokta' },
-        { name: 'কর্পোরেট সংবাদ', slug: 'corporate-songbad' }
-      ],
-      sports: [
-        { name: 'ক্রিকেট', slug: 'cricket' },
-        { name: 'ফুটবল', slug: 'football' },
-        { name: 'বিশ্বকাপ ফুটবল', slug: 'worldcup-football' },
-        { name: 'বিপিএল ও ফ্র্যাঞ্চাইজি লীগ', slug: 'leagues' },
-        { name: 'টেনিস ও ব্যাডমিন্টন', slug: 'tennis' },
-        { name: 'অন্যান্য খেলা', slug: 'onno-khela' },
-        { name: 'সাক্ষাৎকার ও বিশ্লেষণ', slug: 'sports-interview' },
-        { name: 'ফটো ফিচার', slug: 'sports-photos' }
-      ],
-      entertainment: [
-        { name: 'ঢালিউড ও বাংলা চলচ্চিত্র', slug: 'dhallywood' },
-        { name: 'নাটক ও ধারাবাহিক', slug: 'natok' },
-        { name: 'গান ও সঙ্গীত', slug: 'music' },
-        { name: 'ওটিটি ও ওয়েব সিরিজ', slug: 'ott' },
-        { name: 'টেলিভিশন ও সম্প্রচার', slug: 'television' },
-        { name: 'বলিউড', slug: 'bollywood' },
-        { name: 'হলিউড', slug: 'hollywood' },
-        { name: 'টলিউড', slug: 'tollywood' },
-        { name: 'তারকা ও সেলিব্রিটি গসিপ', slug: 'celebrity' }
-      ],
-      technology: [
-        { name: 'স্মার্টফোন ও গ্যাজেট', slug: 'gadgets' },
-        { name: 'কৃত্রিম বুদ্ধিমত্তা (AI)', slug: 'ai' },
-        { name: 'তথ্যপ্রযুক্তি ও উদ্ভাবন', slug: 'tips' },
-        { name: 'বিজ্ঞান ও গবেষণা', slug: 'biggan' },
-        { name: 'সাইবার নিরাপত্তা ও সোশ্যাল মিডিয়া', slug: 'cybersecurity' },
-        { name: 'ফ্রিল্যান্সিং ও টেক ক্যারিয়ার', slug: 'freelancing' },
-        { name: 'স্টার্টআপ ইকোসিস্টেম', slug: 'startups' }
-      ],
-      education: [
-        { name: 'বিশ্ববিদ্যালয় ও ভর্তি', slug: 'admission' },
-        { name: 'পরীক্ষা ও ফলাফল', slug: 'exams' },
-        { name: 'বৃত্তি ও স্কলারশিপ', slug: 'scholarships' },
-        { name: 'ক্যাম্পাস লাইফ', slug: 'campus' },
-        { name: 'স্কুল ও কলেজ', slug: 'schools' },
-        { name: 'উচ্চশিক্ষা ও বিদেশযাত্রা', slug: 'higher-study' }
-      ],
-      jobs: [
-        { name: 'সরকারি চাকরি (বিসিএস/ব্যাংক)', slug: 'govt-jobs' },
-        { name: 'বেসরকারি ও কর্পোরেট নিয়োগ', slug: 'private-jobs' },
-        { name: 'সাপ্তাহিক চাকরির খবর', slug: 'circular' },
-        { name: 'ক্যারিয়ার পরামর্শ ও গাইডলাইন', slug: 'career-tips' },
-        { name: 'সফলতার গল্প ও সাক্ষাৎকার', slug: 'success-stories' }
-      ],
-      lifestyle: [
-        { name: 'স্বাস্থ্য ও সুস্থতা', slug: 'health' },
-        { name: 'ভ্রমণ ও পর্যটন', slug: 'travel' },
-        { name: 'ফ্যাশন ও লাইফস্টাইল', slug: 'fashion' },
-        { name: 'রূপচর্চা ও বিউটি টিপস', slug: 'grooming' },
-        { name: 'রসনা ও রেসিপি', slug: 'recipes' },
-        { name: 'সম্পর্ক ও পরিবার', slug: 'relationship' },
-        { name: 'গৃহসজ্জা ও বাগান', slug: 'home-decor' }
-      ],
-      opinion: [
-        { name: 'সম্পাদকীয়', slug: 'editorial' },
-        { name: 'উপ-সম্পাদকীয় ও কলাম', slug: 'columns' },
-        { name: 'বিশেষ সাক্ষাৎকার', slug: 'interviews' },
-        { name: 'পাঠকের চিঠি ও মতামত', slug: 'letters' }
-      ],
-      photo: [
-        { name: 'ফটোস্টোরি', slug: 'photo-story' },
-        { name: 'আলোচিত ছবি', slug: 'trending-photos' },
-        { name: 'প্রকৃতি ও ভ্রমণ ফটো', slug: 'nature-photos' },
-        { name: 'দৈনন্দিন জীবন ফ্রেম', slug: 'daily-life-photos' }
-      ],
-      diaspora: [
-        { name: 'মধ্যপ্রাচ্য প্রবাস', slug: 'middle-east-diaspora' },
-        { name: 'ইউরোপ প্রবাস', slug: 'europe-diaspora' },
-        { name: 'যুক্তরাষ্ট্র ও কানাডা প্রবাস', slug: 'usa-diaspora' },
-        { name: 'প্রবাসীদের সাফল্য গাথা', slug: 'success-stories' }
-      ],
-      agriculture: [
-        { name: 'কৃষি ও কৃষক', slug: 'krishi-o-krishok' },
-        { name: 'প্রকৃতি ও পরিবেশ', slug: 'prokriti-o-poribesh' },
-        { name: 'প্রাণিজগৎ ও ডেইরি', slug: 'pranijogot' },
-        { name: 'জলবায়ু পরিবর্তন ও দুর্যোগ', slug: 'climate-change' }
-      ],
-      religion: [
-        { name: 'ইসলাম ও জীবন', slug: 'islam' },
-        { name: 'হিন্দুধর্ম', slug: 'hinduism' },
-        { name: 'বৌদ্ধ ও খ্রিষ্টধর্ম', slug: 'other-religions' },
-        { name: 'বাণী ও আধ্যাত্মিকতা', slug: 'bani-chinta' }
-      ],
-      literature: [
-        { name: 'সাহিত্য ও শিল্প', slug: 'sahitya' },
-        { name: 'কবিতা', slug: 'kobita' },
-        { name: 'বই আলোচনা ও রিভিউ', slug: 'boi-alochona' },
-        { name: 'ছোটগল্প ও উপন্যাস', slug: 'chotogolpo' }
-      ],
-      interview: [
-        { name: 'রাজনৈতিক ব্যক্তিত্ব', slug: 'political-personality' },
-        { name: 'সাংস্কৃতিক ব্যক্তিত্ব', slug: 'cultural-personality' },
-        { name: 'কর্পোরেট ও অর্থনীতি ব্যক্তিত্ব', slug: 'corporate-personality' },
-        { name: 'বিশেষ সাক্ষাৎকার', slug: 'bishesh-shakshatkar' }
-      ],
-      'women-children': [
-        { name: 'শিশু সুরক্ষা ও অধিকার', slug: 'child-rights' },
-        { name: 'নারী নেতৃত্ব ও উদ্যোক্তা', slug: 'women-leadership' },
-        { name: 'প্যারেন্টিং ও শিশু যত্ন', slug: 'parenting' },
-        { name: 'কন্যাশিশু', slug: 'girl-child' }
-      ],
-      exclusive: [
-        { name: 'বিশেষ অনুসন্ধানী প্রতিবেদন', slug: 'special-report' },
-        { name: 'অনুসন্ধান', slug: 'investigative' },
-        { name: 'ইতিহাস ও ঐতিহ্য', slug: 'history-heritage' }
-      ],
-      latest: [
-        { name: 'আজকের খবর', slug: 'ajker-khobor' },
-        { name: 'প্রধান খবর', slug: 'prodhan-khobor' },
-        { name: 'ব্রেকিং নিউজ', slug: 'breaking-news' }
-      ]
-    };
-
-    const presetList = presets[canonKey] || presets['bangladesh'] || [];
-    const combined = [...dynamicSubs];
-    presetList.forEach(p => {
-      if (!combined.some(c => (c.slug && c.slug === p.slug) || (c.name && c.name === p.name))) {
-        combined.push(p);
-      }
-    });
-    return combined;
+    ).filter(s => s && s.name);
   };
 
   // Handle URL News Extractor
@@ -1028,9 +858,13 @@ const BlockEditorTab = ({
                   onChange={(e) => setSubcategory(e.target.value)}
                   className="w-full px-3 py-2 border rounded-xl text-xs bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="">-- উপ-বিভাগ নির্বাচন করুন (ঐচ্ছিক) --</option>
+                  <option value="">
+                    {getAvailableSubcategories().length > 0 
+                      ? '-- উপ-বিভাগ নির্বাচন করুন (ঐচ্ছিক) --' 
+                      : '-- এই ক্যাটাগরিতে কোনো সাব-ক্যাটাগরি নেই (ঐচ্ছিক) --'}
+                  </option>
                   {getAvailableSubcategories().map((sub, idx) => (
-                    <option key={idx} value={sub.name}>
+                    <option key={sub._id || sub.slug || idx} value={sub.name}>
                       {sub.name}
                     </option>
                   ))}
