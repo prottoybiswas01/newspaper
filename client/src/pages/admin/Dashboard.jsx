@@ -11,6 +11,7 @@ import StoryHubTab from './StoryHubTab';
 import AuditLogsTab from './AuditLogsTab';
 import BlockEditorTab from './BlockEditorTab';
 import PagesManagerTab from './PagesManagerTab';
+import PhotoStoryTab from './PhotoStoryTab';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, 
   CartesianGrid, Tooltip, BarChart, Bar 
@@ -19,7 +20,7 @@ import {
   BarChart3, FileText, Image as ImageIcon, Tags, 
   MessageSquare, Megaphone, Users, ShieldAlert, 
   ChevronRight, LogOut, Globe, Plus, Trash2, Edit3, Check, X,
-  Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers, BookOpen
+  Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers, BookOpen, Camera
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -33,6 +34,7 @@ const Dashboard = () => {
     { id: 'overview', name: 'Overview Analytics', icon: BarChart3, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager', 'Analyst'] },
     { id: 'articlesList', name: 'Manage Articles', icon: FileText, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'editor', name: 'Write Article (CMS)', icon: Plus, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
+    { id: 'photoStory', name: 'ফটো স্টোরি (Photo Story)', icon: Camera, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'storyHub', name: 'Story Hubs (Live)', icon: Layers, roles: ['Super Admin', 'Admin', 'Editor'] },
     { id: 'media', name: 'Media Library', icon: ImageIcon, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'taxonomy', name: 'Categories & Tags', icon: Tags, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
@@ -926,9 +928,9 @@ const Dashboard = () => {
       {/* Sidebar navigation */}
       <aside className="w-full lg:w-64 bg-slate-900 text-slate-400 dark:bg-slate-950 shrink-0 border-r border-slate-800 flex flex-col">
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2 text-white font-black text-lg">
-            <Globe className="h-5 w-5 text-blue-500" />
-            <span>দৈনিক দর্পণ</span>
+          <Link to="/" className="flex items-center space-x-2 text-white font-black text-base">
+            <img src="/logo.png" alt="বেঙ্গল টাইমস" className="h-6 w-auto object-contain bg-white/10 rounded px-1" />
+            <span>বেঙ্গল টাইমস</span>
           </Link>
           <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-900 text-blue-300">
             CMS
@@ -1552,6 +1554,11 @@ const Dashboard = () => {
               </div>
             )}
           </div>
+        )}
+
+        {/* TAB: PHOTO STORY (BEAT / CONTENT CATEGORY) */}
+        {activeTab === 'photoStory' && (
+          <PhotoStoryTab />
         )}
 
         {/* TAB: STORY HUB MANAGER */}

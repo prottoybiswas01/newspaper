@@ -8,7 +8,8 @@ import { api } from '../utils/api';
 
 const DEFAULT_FOOTER_SETTINGS = {
   aboutText: 'সর্বশেষ ও নিরপেক্ষ সংবাদ পরিবেশনে আমরা অঙ্গীকারবদ্ধ। দেশের প্রতিটি প্রান্তে ঘটে যাওয়া ঘটনার সত্যতা নিশ্চিত করে আমরা আপনাদের সামনে তুলে ধরি।',
-  publisherEditor: 'আবিদ মনসুর',
+  founderChiefEditor: 'মোস্তফা মাহফুজ',
+  publisherEditor: 'মোস্তফা মাহফুজ',
   chiefEditor: 'সাব্বির আহমেদ',
   socialLinks: [
     { platform: 'facebook', url: 'https://facebook.com', active: true },
@@ -151,8 +152,8 @@ const Footer = () => {
             <p className="text-sm text-neutral-400 leading-relaxed max-w-md">
               {footerData.aboutText || DEFAULT_FOOTER_SETTINGS.aboutText}
             </p>
-            <div className="text-xs text-neutral-500 space-y-1 pt-1 border-t border-neutral-800/80">
-              <p>প্রকাশক ও সম্পাদক: <span className="text-neutral-300 font-semibold">{footerData.publisherEditor || 'আবিদ মনসুর'}</span></p>
+            <div className="text-xs text-neutral-500 space-y-1.5 pt-1 border-t border-neutral-800/80">
+              <p>প্রতিষ্ঠাতা ও প্রধান সম্পাদক: <span className="text-neutral-200 font-bold">{footerData.founderChiefEditor || 'মোস্তফা মাহফুজ'}</span></p>
               <p>প্রধান বার্তা সম্পাদক: <span className="text-neutral-300 font-semibold">{footerData.chiefEditor || 'সাব্বির আহমেদ'}</span></p>
             </div>
             

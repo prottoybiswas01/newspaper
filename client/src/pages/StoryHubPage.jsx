@@ -52,7 +52,7 @@ const StoryHubPage = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Helmet>
-        <title>{hub.title} | বিশেষ স্টোরি হাব | দৈনিক দর্পণ</title>
+        <title>{hub.title} | বিশেষ স্টোরি হাব | বেঙ্গল টাইমস</title>
         <meta name="description" content={hub.summary} />
       </Helmet>
 

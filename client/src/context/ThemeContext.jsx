@@ -4,9 +4,13 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
+    // Night Vision / Dark Mode is OFF by default
     const saved = localStorage.getItem('theme');
-    if (saved) return saved;
-    return 'light'; // Default to white/light screen mode
+    if (saved === 'dark') {
+      localStorage.setItem('theme', 'light');
+      return 'light';
+    }
+    return saved || 'light';
   });
 
   useEffect(() => {

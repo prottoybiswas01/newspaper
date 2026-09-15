@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
-import { Calendar, Eye } from 'lucide-react';
+import { Calendar, Eye, Camera } from 'lucide-react';
 const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
 
 const imgSrc = (art) => {
@@ -78,6 +78,9 @@ const CategoryNews = () => {
           url = `/articles?limit=30&sort=latest`;
         } else if (categorySlug === 'photo') {
           url = `/articles?category=${encodeURIComponent('ছবি')}&limit=30`;
+          if (activeSubSlug) {
+            url += `&subcategory=${encodeURIComponent(activeSubSlug === 'photo-story' ? 'photo-story' : (subName || activeSubSlug))}`;
+          }
         } else {
           url += `&category=${encodeURIComponent(catName || categorySlug)}`;
           if (activeSubSlug) {
@@ -173,16 +176,24 @@ const CategoryNews = () => {
                 return (
                   <div key={art._id} className="group bg-white dark:bg-[#121212] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-xs hover:shadow-lg transition-all duration-300">
                     <Link to={`/article/${art.slug}`}>
-                      {img && (
-                        <img 
-                          src={img} 
-                          alt={art.title} 
-                          loading="lazy"
-                          decoding="async"
-                          className="w-full h-44 object-cover" 
-                          onError={e => { e.target.style.display = 'none'; }}
-                        />
-                      )}
+                      <div className="relative overflow-hidden bg-gray-100 dark:bg-neutral-800">
+                        {img && (
+                          <img 
+                            src={img} 
+                            alt={art.title} 
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                            onError={e => { e.target.style.display = 'none'; }}
+                          />
+                        )}
+                        {(art.category === 'ছবি' || art.subcategory === 'photo-story' || (art.galleryImages && art.galleryImages.length > 0)) && (
+                          <div className="absolute top-2 left-2 bg-red-600/90 backdrop-blur-xs text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-md flex items-center space-x-1">
+                            <Camera className="h-3.5 w-3.5" />
+                            <span>{art.galleryImages?.length ? `${art.galleryImages.length} ছবি` : 'ফটো স্টোরি'}</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="p-4 space-y-2">
                         <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug">
                           {art.title}

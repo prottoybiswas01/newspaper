@@ -175,6 +175,7 @@ const Home = () => {
     activeStoryHub: null,
     layoutSections: []
   });
+  const [photoStories, setPhotoStories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -190,7 +191,27 @@ const Home = () => {
         setLoading(false);
       }
     };
+
+    const fetchPhotoStories = async () => {
+      try {
+        const res = await api.get('/articles?limit=30');
+        if (res.success && Array.isArray(res.articles)) {
+          const stories = res.articles.filter(a => 
+            a.category === 'ছবি' || 
+            a.category === 'photo' || 
+            a.subcategory === 'photo-story' || 
+            a.subcategory === 'ফটোস্টোরি' ||
+            a.multimediaType === 'gallery'
+          );
+          setPhotoStories(stories.slice(0, 5));
+        }
+      } catch (err) {
+        // Silently ignore
+      }
+    };
+
     fetchHomepage();
+    fetchPhotoStories();
   }, []);
 
   const { leadArticle, topArticles, mostRead, multimediaArticles, activeStoryHub, layoutSections } = data;
@@ -351,6 +372,109 @@ const Home = () => {
                 </div>
               </Link>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ─── PROMINENT PHOTO STORY SECTION (ফটো স্টোরি ও চিত্রসংবাদ) ─── */}
+      {photoStories && photoStories.length > 0 && (
+        <section className="bg-gradient-to-br from-neutral-900 via-neutral-950 to-black text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-neutral-850">
+          <div className="flex flex-wrap items-center justify-between mb-6 pb-4 border-b border-neutral-800 gap-3">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 bg-red-600 rounded-2xl text-white shadow-lg shadow-red-600/30">
+                <Camera className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2.5">
+                  <span>ফটো স্টোরি</span>
+                  <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-red-600 text-white tracking-wider uppercase">
+                    Photo Story
+                  </span>
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">ক্যামেরার লেন্সে দেশ ও বিশ্ব, দেখুন বিশেষ ছবির গল্প</p>
+              </div>
+            </div>
+            <Link 
+              to="/category/photo/photo-story" 
+              className="text-xs font-bold text-red-400 hover:text-red-300 hover:underline flex items-center gap-1 transition-colors"
+            >
+              সব ফটোস্টোরি দেখুন <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Lead Big Photo Story (Left 7 Cols) */}
+            {photoStories[0] && (
+              <div className="lg:col-span-7">
+                <Link
+                  to={`/article/${photoStories[0].slug}`}
+                  className="group block relative h-72 sm:h-96 lg:h-[420px] rounded-2xl overflow-hidden border border-neutral-800 hover:border-red-500/50 shadow-xl transition-all duration-300"
+                >
+                  <img
+                    src={imgSrc(photoStories[0])}
+                    alt={photoStories[0].title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+                  
+                  {/* Badges */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    <span className="bg-red-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full tracking-wider shadow-md flex items-center gap-1">
+                      <Camera className="h-3.5 w-3.5" />
+                      <span>{photoStories[0].galleryImages?.length || 1}টি ছবি</span>
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-0 inset-x-0 p-6 space-y-2">
+                    <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-red-400 transition-colors leading-tight">
+                      {photoStories[0].title}
+                    </h2>
+                    {photoStories[0].subtitle && (
+                      <p className="text-xs text-neutral-300 line-clamp-2 leading-relaxed">
+                        {photoStories[0].subtitle}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-2 border-t border-white/10">
+                      <span>ছবি: {photoStories[0].source || photoStories[0].author || 'বেঙ্গল টাইমস'}</span>
+                      <span>{timeAgo(photoStories[0].publishDate || photoStories[0].createdAt, language)}</span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            )}
+
+            {/* Secondary Photo Stories (Right 5 Cols Grid) */}
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+              {photoStories.slice(1, 4).map((story) => (
+                <Link
+                  key={story._id}
+                  to={`/article/${story.slug}`}
+                  className="group flex gap-4 bg-neutral-900/90 rounded-2xl p-3.5 border border-neutral-800 hover:border-red-500/40 hover:bg-neutral-900 transition-all duration-300"
+                >
+                  <div className="relative w-28 sm:w-32 h-20 sm:h-24 rounded-xl overflow-hidden shrink-0 bg-neutral-800">
+                    <img
+                      src={imgSrc(story)}
+                      alt={story.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                      <Camera className="h-2.5 w-2.5 text-red-400" />
+                      <span>{story.galleryImages?.length || 1}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
+                    <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-red-400 transition-colors leading-snug line-clamp-2">
+                      {story.title}
+                    </h4>
+                    <div className="flex items-center justify-between text-[10px] text-neutral-400 mt-2">
+                      <span className="truncate max-w-[100px]">{story.source || 'বেঙ্গল টাইমস'}</span>
+                      <span>{timeAgo(story.publishDate || story.createdAt, language)}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
       )}

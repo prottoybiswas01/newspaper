@@ -37,6 +37,7 @@ const MAIN_NAV_ITEMS = [
   { name: 'সর্বশেষ', slug: 'latest', path: '/' },
   { name: 'বাংলাদেশ', slug: 'bangladesh', path: '/category/bangladesh' },
   { name: 'রাজনীতি', slug: 'politics', path: '/category/politics' },
+  { name: 'ছবি', slug: 'photo', path: '/category/photo' },
   { name: 'বিশ্ব', slug: 'international', path: '/category/international' },
   { name: 'বাণিজ্য', slug: 'economy', path: '/category/economy' },
   { name: 'খেলা', slug: 'sports', path: '/category/sports' },

@@ -886,13 +886,25 @@ const PagesManagerTab = () => {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  প্রতিষ্ঠাতা ও প্রধান সম্পাদক
+                </label>
+                <input
+                  type="text"
+                  value={footerSettings.founderChiefEditor || 'মোস্তফা মাহফুজ'}
+                  onChange={(e) => setFooterSettings(prev => ({ ...prev, founderChiefEditor: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 font-bold"
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   প্রকাশক ও সম্পাদক
                 </label>
                 <input
                   type="text"
-                  value={footerSettings.publisherEditor || ''}
+                  value={footerSettings.publisherEditor || 'মোস্তফা মাহফুজ'}
                   onChange={(e) => setFooterSettings(prev => ({ ...prev, publisherEditor: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
                 />
@@ -904,7 +916,7 @@ const PagesManagerTab = () => {
                 </label>
                 <input
                   type="text"
-                  value={footerSettings.chiefEditor || ''}
+                  value={footerSettings.chiefEditor || 'সাব্বির আহমেদ'}
                   onChange={(e) => setFooterSettings(prev => ({ ...prev, chiefEditor: e.target.value }))}
                   className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-white focus:outline-none focus:border-red-500"
                 />

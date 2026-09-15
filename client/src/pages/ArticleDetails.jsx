@@ -13,7 +13,7 @@ import TrustBox from '../components/TrustBox';
 import { 
   Calendar, Eye, Heart, Share2, Printer, 
   RotateCcw, Clock, User, MessageSquare, Tags, Facebook, Twitter, 
-  Bookmark, BookmarkCheck, ChevronRight, ArrowLeft, Radio, Flag 
+  Bookmark, BookmarkCheck, ChevronRight, ArrowLeft, Radio, Flag, Camera 
 } from 'lucide-react';
 
 const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
@@ -280,7 +280,7 @@ const ArticleDetails = () => {
     }],
     "publisher": {
       "@type": "NewsMediaOrganization",
-      "name": "দৈনিক দর্পণ",
+      "name": "বেঙ্গল টাইমস",
       "url": window.location.origin
     }
   };
@@ -300,7 +300,7 @@ const ArticleDetails = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print-container">
       <Helmet>
-        <title>{seoTitle} | দৈনিক দর্পণ</title>
+        <title>{seoTitle} | বেঙ্গল টাইমস</title>
         <meta name="description" content={seoDesc} />
         {seoKeywords && <meta name="keywords" content={seoKeywords} />}
         <link rel="canonical" href={canonicalUrl} />
@@ -521,6 +521,60 @@ const ArticleDetails = () => {
             </div>
           )}
 
+          {/* Dedicated Photo Story Album / Gallery Display */}
+          {displayArticle.galleryImages && displayArticle.galleryImages.length > 0 && (
+            <section className="my-8 space-y-6">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-red-600">
+                <div className="flex items-center space-x-2.5">
+                  <span className="p-2 bg-red-100 dark:bg-red-950/60 text-red-600 rounded-lg">
+                    <Camera className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h3 className="text-xl font-black text-gray-950 dark:text-white leading-none">ফটো স্টোরি অ্যালবাম</h3>
+                    <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1">ক্যামেরার চোখে বিশেষ মুহূর্তের ফ্রেম</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black bg-red-600 text-white px-3 py-1.5 rounded-full shadow-xs">
+                  {displayArticle.galleryImages.length}টি বিশেষ ছবি
+                </span>
+              </div>
+
+              <div className="space-y-8">
+                {displayArticle.galleryImages.map((imgItem, idx) => (
+                  <figure key={idx} className="bg-white dark:bg-[#151515] rounded-2xl overflow-hidden border border-gray-200/90 dark:border-neutral-800 shadow-sm transition-all hover:shadow-md">
+                    <div className="relative bg-neutral-900 flex items-center justify-center">
+                      <img 
+                        src={imgItem.url} 
+                        alt={imgItem.caption || `${displayArticle.title} - ছবি ${idx + 1}`}
+                        className="w-full max-h-[640px] object-contain"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md text-white text-xs font-black px-3.5 py-1.5 rounded-full border border-white/20 shadow-lg">
+                        ছবি {idx + 1} / {displayArticle.galleryImages.length}
+                      </div>
+                    </div>
+                    {(imgItem.caption || imgItem.credit) && (
+                      <figcaption className="p-4 sm:p-5 space-y-2 bg-gradient-to-b from-transparent to-gray-50/50 dark:to-neutral-900/30">
+                        {imgItem.caption && (
+                          <p className="text-base text-gray-900 dark:text-neutral-100 font-medium leading-relaxed">
+                            {imgItem.caption}
+                          </p>
+                        )}
+                        {imgItem.credit && (
+                          <div className="flex items-center text-xs font-bold text-gray-500 dark:text-neutral-400 pt-1">
+                            <span className="text-red-600 font-bold mr-1.5">📷 ছবি:</span>
+                            <span>{imgItem.credit}</span>
+                          </div>
+                        )}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
+
 
           {/* AI Summary Box ("সংক্ষেপে পড়ুন") */}
           <AISummaryBox 
@@ -575,7 +629,7 @@ const ArticleDetails = () => {
           <div className="my-8 p-4 rounded-xl bg-gray-50 dark:bg-[#121212] border border-gray-200 dark:border-neutral-800 flex items-center justify-between text-xs text-gray-500 dark:text-neutral-400 no-print shadow-xs">
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-              <span className="font-medium">সর্বস্বত্ব সংরক্ষিত © দৈনিক দর্পণ ডিজিটাল নিউজ সংস্করণ</span>
+              <span className="font-medium">সর্বস্বত্ব সংরক্ষিত © বেঙ্গল টাইমস ডিজিটাল নিউজ সংস্করণ</span>
             </div>
             <span className="font-bold text-gray-700 dark:text-neutral-300">অনলাইন ডেস্ক</span>
           </div>

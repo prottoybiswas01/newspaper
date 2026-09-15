@@ -80,7 +80,7 @@ const CustomPage = ({ forcedSlug }) => {
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] text-neutral-800 dark:text-neutral-200 py-8 px-4 sm:px-6 lg:px-8">
       {page && (
         <Helmet>
-          <title>{page.seoTitle || `${page.title} - দৈনিক দর্পণ`}</title>
+          <title>{page.seoTitle || `${page.title} - বেঙ্গল টাইমস`}</title>
           <meta name="description" content={page.seoDescription || page.subtitle || page.title} />
         </Helmet>
       )}
@@ -182,7 +182,7 @@ const CustomPage = ({ forcedSlug }) => {
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40 mb-2">
-                        দৈনিক দর্পণ অফিশিয়াল
+                        বেঙ্গল টাইমস অফিশিয়াল
                       </span>
                       <h1 className="text-2xl sm:text-4xl font-black text-neutral-900 dark:text-white tracking-tight leading-tight">
                         {page.title}
@@ -236,7 +236,7 @@ const CustomPage = ({ forcedSlug }) => {
 
                 {/* Footer disclaimer */}
                 <div className="mt-12 pt-6 border-t border-neutral-200 dark:border-neutral-800 text-xs text-neutral-400 leading-relaxed flex items-center justify-between flex-wrap gap-4">
-                  <p>© {new Date().getFullYear()} দৈনিক দর্পণ। সর্বস্বত্ব সংরক্ষিত।</p>
+                  <p>© {new Date().getFullYear()} বেঙ্গল টাইমস। সর্বস্বত্ব সংরক্ষিত।</p>
                   <p className="italic">কর্তৃপক্ষের লিখিত অনুমতি ব্যতীত কোনো অংশ পুনরুৎপাদন নিষিদ্ধ।</p>
                 </div>
 

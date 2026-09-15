@@ -66,7 +66,7 @@ const ReporterProfile = () => {
             ডিজিটাল বিভাগ
           </span>
           <h1 className="text-2xl font-black text-gray-950 dark:text-white">অনলাইন ডেস্ক</h1>
-          <p className="text-sm text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">দৈনিক দর্পণ ডিজিটাল নিউজরুম ও সম্পাদকীয় আর্কাইভ। সকল বিশেষ প্রতিবেদন ও সংবাদের সমাহার।</p>
+          <p className="text-sm text-gray-600 dark:text-neutral-400 max-w-2xl leading-relaxed">বেঙ্গল টাইমস ডিজিটাল নিউজরুম ও সম্পাদকীয় আর্কাইভ। সকল বিশেষ প্রতিবেদন ও সংবাদের সমাহার।</p>
         </div>
         
         {/* Total stats */}
