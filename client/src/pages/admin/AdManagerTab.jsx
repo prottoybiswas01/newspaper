@@ -22,6 +22,8 @@ const CREATIVE_TYPES = [
 ];
 
 const PLACEMENTS_LIST = [
+  { id: 'all', label: 'সার্বজনীন রোটেশন (All Placements - পুরো পোর্টালে ঘুরবে)' },
+  { id: 'feed', label: 'নিউজ ফিড ও ক্যাটাগরি মধ্যবর্তী (Feed & Category Interstitial)' },
   { id: 'header', label: 'Header Top (হেডার ৯৭০x৯০)' },
   { id: 'article-inline-1', label: 'Article Inline 1 (আর্টিকেল প্যারা ৩)' },
   { id: 'article-inline-2', label: 'Article Inline 2 (আর্টিকেল প্যারা ৭)' },

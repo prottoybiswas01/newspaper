@@ -222,7 +222,7 @@ const Home = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
       {/* Top Header Banner Advertisement */}
-      <AdPlacement placement="header" />
+      <AdPlacement slotId="home_header" placement="header" />
 
       {/* ─── SECTION 1: LEAD STORY & TOP SPOTLIGHT ─── */}
       <section>
@@ -292,7 +292,7 @@ const Home = () => {
             </div>
 
             {/* Sidebar Ad Placement */}
-            <AdPlacement placement="sidebar" />
+            <AdPlacement slotId="home_sidebar" placement="sidebar" />
 
             {/* Poll Widget */}
             <PollWidget />
@@ -306,7 +306,7 @@ const Home = () => {
       </section>
 
       {/* Middle Banner Advertisement */}
-      <AdPlacement placement="homepage-mid" />
+      <AdPlacement slotId="home_mid" placement="homepage-mid" />
 
       {/* ─── SECTION 3: MULTIMEDIA & VIDEO CENTER ─── */}
       {multimediaArticles && multimediaArticles.length > 0 && (
@@ -479,34 +479,47 @@ const Home = () => {
       {layoutSections && layoutSections.length > 0 && (
         <div className="space-y-10">
           {layoutSections.map((section, idx) => (
-            <section key={idx} className="bg-white dark:bg-[#121212] rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-xs">
-              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100 dark:border-neutral-800">
-                <div className="flex items-center space-x-2">
-                  <span className="w-1.5 h-5 bg-red-600 rounded-full" />
-                  <h3 className="text-base sm:text-lg font-black text-gray-950 dark:text-white">
-                    {section.category}
-                  </h3>
+            <React.Fragment key={section.category || idx}>
+              <section className="bg-white dark:bg-[#121212] rounded-2xl border border-gray-200 dark:border-neutral-800 p-6 shadow-xs">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-100 dark:border-neutral-800">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-1.5 h-5 bg-red-600 rounded-full" />
+                    <h3 className="text-base sm:text-lg font-black text-gray-950 dark:text-white">
+                      {section.category}
+                    </h3>
+                  </div>
+                  <Link
+                    to={`/category/${encodeURIComponent(section.category)}`}
+                    className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1"
+                  >
+                    আরও সংবাদ <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
                 </div>
-                <Link
-                  to={`/category/${encodeURIComponent(section.category)}`}
-                  className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1"
-                >
-                  আরও সংবাদ <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {section.articles.map((art) => (
-                  <SecondaryCard key={art._id} art={art} lang={language} />
-                ))}
-              </div>
-            </section>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {section.articles.map((art) => (
+                    <SecondaryCard key={art._id} art={art} lang={language} />
+                  ))}
+                </div>
+              </section>
+
+              {/* Feed & Interstitial Ad between category blocks */}
+              {idx + 1 < layoutSections.length && (
+                <div className="my-6">
+                  <AdPlacement 
+                    slotId={`home_feed_cat_${idx}`} 
+                    placement="feed" 
+                    category={section.category} 
+                  />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
 
       {/* Floating Sticky Bottom Bar Ad */}
-      <AdPlacement placement="sticky" />
+      <AdPlacement slotId="home_sticky" placement="sticky" />
     </div>
   );
 };

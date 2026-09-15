@@ -44,7 +44,7 @@ const BlockArticleRenderer = ({
           <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
           {adSettings.autoPlacement !== false && (
             <div className="my-6 not-prose">
-              <AdPlacement placement="article-inline-1" category={category} articleId={articleId} />
+              <AdPlacement slotId={`art_inline_single_${articleId}`} placement="article-inline-1" category={category} articleId={articleId} />
             </div>
           )}
         </div>
@@ -67,13 +67,19 @@ const BlockArticleRenderer = ({
       >
         {paragraphs.map((p, idx) => {
           const isAdSlot = adPositions.has(idx);
+          const currentSlotIndex = isAdSlot ? adCount++ : 0;
 
           return (
             <React.Fragment key={idx}>
               <div dangerouslySetInnerHTML={{ __html: p.endsWith('</p>') ? p : (p + '</p>') }} />
               {isAdSlot && adSettings.autoPlacement !== false && (
                 <div className="my-6 not-prose">
-                  <AdPlacement placement={`article-inline-${adCount++}`} category={category} articleId={articleId} />
+                  <AdPlacement 
+                    slotId={`art_inline_${articleId}_${currentSlotIndex}`} 
+                    placement={`article-inline-${currentSlotIndex}`} 
+                    category={category} 
+                    articleId={articleId} 
+                  />
                 </div>
               )}
             </React.Fragment>
@@ -315,7 +321,7 @@ const BlockArticleRenderer = ({
             const placementSlot = block.metadata?.placement || `article-inline-${autoAdCounter++}`;
             blockContent = (
               <div className="my-6 not-prose">
-                <AdPlacement placement={placementSlot} category={category} articleId={articleId} />
+                <AdPlacement slotId={`art_block_ad_${block.id || index}`} placement={placementSlot} category={category} articleId={articleId} />
               </div>
             );
             break;
@@ -339,7 +345,7 @@ const BlockArticleRenderer = ({
             {blockContent}
             {shouldInjectAutoAd && (
               <div className="my-6 not-prose">
-                <AdPlacement placement={autoSlotName} category={category} articleId={articleId} />
+                <AdPlacement slotId={`art_auto_inline_${articleId}_${index}`} placement={autoSlotName} category={category} articleId={articleId} />
                 {(() => { autoAdCounter++; return null; })()}
               </div>
             )}

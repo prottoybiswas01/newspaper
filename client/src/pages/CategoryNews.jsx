@@ -103,7 +103,7 @@ const CategoryNews = () => {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Top Header Banner Advertisement */}
-      <AdPlacement placement="header" category={categorySlug} />
+      <AdPlacement slotId={`cat_header_${categorySlug}`} placement="header" category={categorySlug} />
 
       {/* Breadcrumbs */}
       <div className="text-xs text-gray-400 dark:text-neutral-500 font-bold mb-4 uppercase tracking-wider flex items-center space-x-1.5">
@@ -171,43 +171,56 @@ const CategoryNews = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {articles.map((art) => {
+              {articles.map((art, index) => {
                 const img = imgSrc(art);
                 return (
-                  <div key={art._id} className="group bg-white dark:bg-[#121212] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-xs hover:shadow-lg transition-all duration-300">
-                    <Link to={`/article/${art.slug}`}>
-                      <div className="relative overflow-hidden bg-gray-100 dark:bg-neutral-800">
-                        {img && (
-                          <img 
-                            src={img} 
-                            alt={art.title} 
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
-                            onError={e => { e.target.style.display = 'none'; }}
-                          />
-                        )}
-                        {(art.category === 'ছবি' || art.subcategory === 'photo-story' || (art.galleryImages && art.galleryImages.length > 0)) && (
-                          <div className="absolute top-2 left-2 bg-red-600/90 backdrop-blur-xs text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-md flex items-center space-x-1">
-                            <Camera className="h-3.5 w-3.5" />
-                            <span>{art.galleryImages?.length ? `${art.galleryImages.length} ছবি` : 'ফটো স্টোরি'}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug">
-                          {art.title}
-                        </h3>
-                        <p className="text-xs text-gray-600 dark:text-neutral-400 line-clamp-2">
-                          {art.summary}
-                        </p>
-                        <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500 font-semibold pt-2 border-t border-gray-100 dark:border-neutral-800 mt-2">
-                          <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
-                          <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
+                  <React.Fragment key={art._id}>
+                    <div className="group bg-white dark:bg-[#121212] rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-xs hover:shadow-lg transition-all duration-300">
+                      <Link to={`/article/${art.slug}`}>
+                        <div className="relative overflow-hidden bg-gray-100 dark:bg-neutral-800">
+                          {img && (
+                            <img 
+                              src={img} 
+                              alt={art.title} 
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" 
+                              onError={e => { e.target.style.display = 'none'; }}
+                            />
+                          )}
+                          {(art.category === 'ছবি' || art.subcategory === 'photo-story' || (art.galleryImages && art.galleryImages.length > 0)) && (
+                            <div className="absolute top-2 left-2 bg-red-600/90 backdrop-blur-xs text-white text-[11px] font-black px-2.5 py-1 rounded-md shadow-md flex items-center space-x-1">
+                              <Camera className="h-3.5 w-3.5" />
+                              <span>{art.galleryImages?.length ? `${art.galleryImages.length} ছবি` : 'ফটো স্টোরি'}</span>
+                            </div>
+                          )}
                         </div>
+                        <div className="p-4 space-y-2">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors leading-snug">
+                            {art.title}
+                          </h3>
+                          <p className="text-xs text-gray-600 dark:text-neutral-400 line-clamp-2">
+                            {art.summary}
+                          </p>
+                          <div className="flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500 font-semibold pt-2 border-t border-gray-100 dark:border-neutral-800 mt-2">
+                            <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(art.publishDate || art.createdAt).toLocaleDateString('bn-BD')}</span>
+                            <span className="flex items-center"><Eye className="h-3 w-3 mr-1" /> {art.views || 0}</span>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+
+                    {/* Feed Ad inserted after 4th item */}
+                    {index === 3 && (
+                      <div className="col-span-1 md:col-span-2 my-2">
+                        <AdPlacement 
+                          slotId={`cat_feed_inline_${categorySlug}`} 
+                          placement="feed" 
+                          category={categorySlug} 
+                        />
                       </div>
-                    </Link>
-                  </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>
@@ -216,7 +229,7 @@ const CategoryNews = () => {
 
         {/* Sidebar Column */}
         <div className="lg:col-span-4 space-y-6">
-          <AdPlacement placement="sidebar" />
+          <AdPlacement slotId={`cat_sidebar_${categorySlug}`} placement="sidebar" />
         </div>
 
       </div>

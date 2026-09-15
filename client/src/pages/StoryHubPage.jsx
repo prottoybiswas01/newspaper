@@ -208,7 +208,7 @@ const StoryHubPage = () => {
           )}
 
           {/* Sidebar Advertisement */}
-          <AdPlacement placement="sidebar" />
+          <AdPlacement slotId="storyhub_sidebar" placement="sidebar" />
         </div>
       </div>
     </div>

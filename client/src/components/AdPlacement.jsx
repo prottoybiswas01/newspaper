@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { api } from '../utils/api';
+import { adCoordinator } from '../utils/adCoordinator';
 import { ExternalLink, X, Megaphone, Sparkles } from 'lucide-react';
 
 const API_HOST = import.meta.env.VITE_API_HOST || (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000');
@@ -11,30 +12,8 @@ const parseImageUrl = (url) => {
   return `${API_HOST}${url}`;
 };
 
-// Check local daily frequency cap per ad creative
-const isFrequencyCapExceeded = (adId, cap = 8) => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const key = `ad_freq_${adId}_${today}`;
-    const count = parseInt(localStorage.getItem(key) || '0', 10);
-    return count >= cap;
-  } catch (e) {
-    return false;
-  }
-};
-
-const recordLocalImpression = (adId) => {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const key = `ad_freq_${adId}_${today}`;
-    const count = parseInt(localStorage.getItem(key) || '0', 10);
-    localStorage.setItem(key, (count + 1).toString());
-  } catch (e) {
-    // Ignore storage errors
-  }
-};
-
 const AdPlacement = ({ 
+  slotId = '',
   placement = 'header', 
   category = '', 
   articleId = '',
@@ -45,6 +24,7 @@ const AdPlacement = ({
   const [loading, setLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const impressionRecorded = useRef(false);
+  const generatedSlotId = useRef(slotId || `${placement}_${category}_${Math.random().toString(36).substring(2, 7)}`);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,20 +33,18 @@ const AdPlacement = ({
       setLoading(true);
       setImgError(false);
       try {
-        const device = window.innerWidth < 768 ? 'Mobile' : (window.innerWidth < 1024 ? 'Tablet' : 'Desktop');
-        const catParam = category ? `&category=${encodeURIComponent(category)}` : '';
-        const artParam = articleId ? `&articleId=${encodeURIComponent(articleId)}` : '';
+        const fetchedAd = await adCoordinator.requestAd({
+          slotId: generatedSlotId.current,
+          placement,
+          category,
+          articleId
+        });
 
-        const res = await api.get(`/ads/serve?placement=${placement}${catParam}${artParam}&device=${device}`);
-
-        if (isMounted && res.success && res.ad) {
-          const fetchedAd = res.ad;
+        if (isMounted) {
           setAd(fetchedAd);
-
-          // Record impression telemetry
-          if (!impressionRecorded.current && fetchedAd._id) {
+          if (fetchedAd && fetchedAd._id && !impressionRecorded.current) {
             impressionRecorded.current = true;
-            api.post(`/ads/${fetchedAd._id}/impression`).catch(() => null);
+            adCoordinator.recordImpression(fetchedAd._id);
           }
         }
       } catch (err) {
@@ -85,7 +63,7 @@ const AdPlacement = ({
 
   const handleAdClick = () => {
     if (ad && ad._id) {
-      api.post(`/ads/${ad._id}/click`).catch(() => null);
+      adCoordinator.recordClick(ad._id);
     }
   };
 
@@ -98,11 +76,14 @@ const AdPlacement = ({
     sidebar: 'w-full max-w-[300px] sm:max-w-[340px] min-h-[250px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
     'sidebar-right': 'w-full max-w-[300px] sm:max-w-[340px] min-h-[250px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
     'sidebar-left': 'w-full max-w-[300px] sm:max-w-[340px] min-h-[250px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'sidebar-sticky': 'w-full max-w-[300px] sm:max-w-[340px] min-h-[250px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    'sidebar-bottom': 'w-full max-w-[300px] sm:max-w-[340px] min-h-[250px] my-4 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
     'article-inline-1': 'w-full max-w-3xl my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs',
     'article-inline-2': 'w-full max-w-3xl my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs',
     'article-inline-3': 'w-full max-w-3xl my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs',
     article: 'w-full max-w-3xl my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs',
     'homepage-mid': 'w-full max-w-[970px] h-[75px] sm:h-[90px] my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
+    feed: 'w-full max-w-[970px] h-[75px] sm:h-[90px] my-6 mx-auto rounded-xl border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-xs flex justify-center items-center',
     sticky: 'fixed bottom-0 left-0 right-0 z-40 bg-neutral-900/95 backdrop-blur-md text-white py-2.5 px-4 border-t border-neutral-800 shadow-2xl flex items-center justify-center',
     'sticky-bottom': 'fixed bottom-0 left-0 right-0 z-40 bg-neutral-900/95 backdrop-blur-md text-white py-2.5 px-4 border-t border-neutral-800 shadow-2xl flex items-center justify-center',
     popup: 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4'

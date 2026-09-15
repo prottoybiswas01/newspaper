@@ -23,7 +23,10 @@ const AdSchema = {
       'popup', 
       'homepage-mid', 
       'footer',
-      'feed'
+      'feed',
+      'sidebar-sticky',
+      'sidebar-bottom',
+      'all'
     ], 
     required: true 
   },

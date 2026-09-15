@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   serveAd,
+  serveBatchAds,
   getAdsByPlacement,
   recordImpression,
   recordClick,
@@ -15,6 +16,7 @@ const { protect, authorize } = require('../middleware/auth');
 
 // Public Delivery & Tracking endpoints
 router.get('/serve', serveAd);
+router.post('/serve-batch', serveBatchAds);
 router.get('/', getAdsByPlacement);
 router.post('/:id/impression', recordImpression);
 router.post('/:id/click', recordClick);

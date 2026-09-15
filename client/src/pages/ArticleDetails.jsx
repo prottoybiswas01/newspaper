@@ -328,7 +328,7 @@ const ArticleDetails = () => {
       </Helmet>
 
       {/* Top Header Banner Ad */}
-      <AdPlacement placement="header" category={displayArticle.category} articleId={displayArticle._id} />
+      <AdPlacement slotId="art_header" placement="header" category={displayArticle.category} articleId={displayArticle._id} />
 
       {/* Breadcrumb Navigation */}
       <div className="flex items-center space-x-2 text-xs text-gray-500 dark:text-neutral-400 mb-4 no-print">
@@ -733,7 +733,7 @@ const ArticleDetails = () => {
         {/* Right Sidebar (Related stories, Most read, Sidebar ad) */}
         <aside className="space-y-6 no-print">
           {/* Sidebar Advertisement */}
-          <AdPlacement placement="sidebar" category={displayArticle.category} />
+          <AdPlacement slotId="art_sidebar_top" placement="sidebar" category={displayArticle.category} />
 
           {/* Most Read (সর্বাধিক পঠিত) */}
           {mostRead && mostRead.length > 0 && (
@@ -801,13 +801,13 @@ const ArticleDetails = () => {
 
           {/* Sticky Lower Sidebar Ad */}
           <div className="sticky top-24">
-            <AdPlacement placement="sidebar" category={displayArticle.category} />
+            <AdPlacement slotId="art_sidebar_bottom" placement="sidebar-bottom" category={displayArticle.category} />
           </div>
         </aside>
       </div>
 
       {/* Floating Sticky Bottom Bar Ad */}
-      <AdPlacement placement="sticky" />
+      <AdPlacement slotId="art_sticky_bottom" placement="sticky" />
     </div>
   );
 };

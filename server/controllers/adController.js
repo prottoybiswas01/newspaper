@@ -2,7 +2,82 @@ const mongoose = require('mongoose');
 const Ad = require('../models/Ad');
 const AuditLog = require('../models/AuditLog');
 
-// @desc    Smart Ad Delivery Engine with Targeting, Priority & Fallback
+// Helper to map placement aliases for maximum compatibility and rotation
+const getPlacementAliases = (placement) => {
+  if (!placement) return ['all'];
+  let aliases = [placement, 'all'];
+
+  if (placement.startsWith('article-inline') || placement === 'in-article') {
+    aliases = ['article-inline-1', 'article-inline-2', 'article-inline-3', 'article-inline', 'in-article', 'article', 'feed', 'all'];
+  } else if (placement.startsWith('header')) {
+    aliases = ['header', 'header-top', 'banner', 'all'];
+  } else if (placement.startsWith('sidebar')) {
+    aliases = ['sidebar', 'sidebar-top', 'sidebar-sticky', 'sidebar-bottom', 'all'];
+  } else if (placement.startsWith('sticky')) {
+    aliases = ['sticky', 'sticky-bottom', 'sticky-footer', 'all'];
+  } else if (placement.startsWith('feed') || placement.startsWith('homepage-mid')) {
+    aliases = ['feed', 'homepage-mid', 'article-inline-1', 'banner', 'header', 'all'];
+  }
+
+  return [...new Set(aliases)];
+};
+
+// Filter ads by date, device, category, article, and excludeList
+const filterAds = (ads, { now, device, category, articleId, excludeList = [] }) => {
+  return ads.filter(ad => {
+    // Exclude ads already rendered on this page view
+    if (excludeList.includes(String(ad._id))) return false;
+
+    // Date schedule check
+    if (ad.startDate && new Date(ad.startDate) > now) return false;
+    if (ad.endDate && new Date(ad.endDate) < now) return false;
+
+    // Device targeting
+    if (Array.isArray(ad.targetDevices) && ad.targetDevices.length > 0 && device) {
+      const devMatched = ad.targetDevices.some(d => d.toLowerCase() === device.toLowerCase());
+      if (!devMatched) return false;
+    }
+
+    // Category targeting
+    if (Array.isArray(ad.targetCategories) && ad.targetCategories.length > 0 && category) {
+      const catMatched = ad.targetCategories.some(c =>
+        c.toLowerCase() === category.toLowerCase() ||
+        category.toLowerCase().includes(c.toLowerCase()) ||
+        c.toLowerCase().includes(category.toLowerCase())
+      );
+      if (!catMatched) return false;
+    }
+
+    // Specific article targeting
+    if (Array.isArray(ad.targetArticles) && ad.targetArticles.length > 0 && articleId) {
+      const artMatched = ad.targetArticles.some(a => a === String(articleId));
+      if (!artMatched) return false;
+    }
+
+    return true;
+  });
+};
+
+// Fair Rotation & Dynamic Shuffling Algorithm:
+// Prioritizes priority, balances impression count across campaigns, and applies randomized jitter on refreshes
+const selectDynamicAd = (candidates) => {
+  if (!candidates || candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  const scored = candidates.map(ad => {
+    const priority = typeof ad.priority === 'number' ? ad.priority : 5;
+    const impressions = typeof ad.impressions === 'number' ? ad.impressions : 0;
+    // Jitter ensures fresh distribution and ordering on each refresh
+    const jitter = Math.random() * 2500;
+    const score = (priority * 5000) - (impressions * 10) + jitter;
+    return { ad, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].ad;
+};
+
+// @desc    Smart Ad Delivery Engine with Targeting, Priority, Rotation & Strict Deduplication
 // @route   GET /api/ads/serve
 const serveAd = async (req, res) => {
   try {
@@ -14,63 +89,20 @@ const serveAd = async (req, res) => {
 
     const now = new Date();
     const excludeList = excludeIds ? excludeIds.split(',').filter(Boolean) : [];
+    const placementQuery = getPlacementAliases(placement);
 
-    // Build placement aliases
-    let placementQuery = [placement];
-    if (placement.startsWith('article-inline') || placement === 'in-article') {
-      placementQuery = ['article-inline-1', 'article-inline-2', 'article-inline-3', 'article-inline', 'in-article'];
-    } else if (placement.startsWith('header')) {
-      placementQuery = ['header', 'header-top'];
-    } else if (placement.startsWith('sidebar')) {
-      placementQuery = ['sidebar', 'sidebar-top', 'sidebar-sticky', 'sidebar-bottom'];
-    } else if (placement.startsWith('sticky')) {
-      placementQuery = ['sticky', 'sticky-bottom', 'sticky-footer'];
-    }
-
-    // Query active ads for placement
-    const ads = await Ad.find({
-      placement: { $in: placementQuery },
+    // Fetch all active ads from DB
+    const allActiveAds = await Ad.find({
       active: true,
       status: 'active'
     });
 
-    // Filter by dates, device, category, article
-    const eligibleAds = ads.filter(ad => {
-      // Exclude already rendered IDs if specified
-      if (excludeList.includes(String(ad._id))) return false;
-
-      // Date check
-      if (ad.startDate && new Date(ad.startDate) > now) return false;
-      if (ad.endDate && new Date(ad.endDate) < now) return false;
-
-      // Device targeting
-      if (Array.isArray(ad.targetDevices) && ad.targetDevices.length > 0) {
-        const devMatched = ad.targetDevices.some(d => d.toLowerCase() === device.toLowerCase());
-        if (!devMatched) return false;
-      }
-
-      // Category targeting (if specified on ad, current category must match)
-      if (Array.isArray(ad.targetCategories) && ad.targetCategories.length > 0 && category) {
-        const catMatched = ad.targetCategories.some(c =>
-          c.toLowerCase() === category.toLowerCase() ||
-          category.toLowerCase().includes(c.toLowerCase())
-        );
-        if (!catMatched) return false;
-      }
-
-      // Specific article targeting
-      if (Array.isArray(ad.targetArticles) && ad.targetArticles.length > 0 && articleId) {
-        const artMatched = ad.targetArticles.some(a => a === String(articleId));
-        if (!artMatched) return false;
-      }
-
-      return true;
-    });
+    // 1. Primary Candidates: Matching placement aliases & not in excludeList
+    const placementCandidates = allActiveAds.filter(ad => placementQuery.includes(ad.placement));
+    const eligibleAds = filterAds(placementCandidates, { now, device, category, articleId, excludeList });
 
     if (eligibleAds.length > 0) {
-      // Pick randomly from all eligible active ads so every page load / paragraph gets fresh rotation
-      const chosenAd = eligibleAds[Math.floor(Math.random() * eligibleAds.length)];
-
+      const chosenAd = selectDynamicAd(eligibleAds);
       return res.json({
         success: true,
         ad: chosenAd,
@@ -78,7 +110,18 @@ const serveAd = async (req, res) => {
       });
     }
 
-    // Fallback: Check if user created a designated house ad in the database for this placement
+    // 2. Secondary Pool: If all matching ads are already used on this page, pull an unused active ad
+    const unusedBroadAds = filterAds(allActiveAds, { now, device, category, articleId, excludeList });
+    if (unusedBroadAds.length > 0) {
+      const chosenAd = selectDynamicAd(unusedBroadAds);
+      return res.json({
+        success: true,
+        ad: chosenAd,
+        isFallback: false
+      });
+    }
+
+    // 3. Fallback: House ad
     const houseAd = await Ad.findOne({
       placement: { $in: placementQuery },
       active: true,
@@ -93,13 +136,88 @@ const serveAd = async (req, res) => {
       });
     }
 
-    // No ad configured for this slot
+    // 4. If all ads are exhausted on this page and no house ad exists
     return res.json({
       success: true,
       ad: null
     });
   } catch (error) {
     console.error('serveAd error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Batch Ad Serving Engine for Entire Page (guarantees zero duplicates across slots)
+// @route   POST /api/ads/serve-batch
+const serveBatchAds = async (req, res) => {
+  try {
+    const { slots = [], device = 'Desktop', category = '', articleId = '', excludeIds = [] } = req.body;
+
+    if (!Array.isArray(slots) || slots.length === 0) {
+      return res.status(400).json({ success: false, message: 'Slots array is required' });
+    }
+
+    const now = new Date();
+    const usedIds = new Set(Array.isArray(excludeIds) ? excludeIds : (excludeIds ? String(excludeIds).split(',') : []));
+
+    // Fetch all active ads once
+    const allActiveAds = await Ad.find({
+      active: true,
+      status: 'active'
+    });
+
+    const results = {};
+
+    for (const slot of slots) {
+      const slotId = slot.slotId || slot.id || slot.placement;
+      const placement = slot.placement || 'header';
+      const slotCat = slot.category || category;
+      const slotArtId = slot.articleId || articleId;
+      const placementQuery = getPlacementAliases(placement);
+
+      const currentExcludeList = Array.from(usedIds);
+
+      // Primary candidates for this slot
+      const placementCandidates = allActiveAds.filter(ad => placementQuery.includes(ad.placement));
+      let eligible = filterAds(placementCandidates, {
+        now,
+        device,
+        category: slotCat,
+        articleId: slotArtId,
+        excludeList: currentExcludeList
+      });
+
+      let chosen = null;
+      if (eligible.length > 0) {
+        chosen = selectDynamicAd(eligible);
+      } else {
+        // Broad pool of unused active ads
+        const broadEligible = filterAds(allActiveAds, {
+          now,
+          device,
+          category: slotCat,
+          articleId: slotArtId,
+          excludeList: currentExcludeList
+        });
+        if (broadEligible.length > 0) {
+          chosen = selectDynamicAd(broadEligible);
+        }
+      }
+
+      if (chosen) {
+        usedIds.add(String(chosen._id));
+        results[slotId] = chosen;
+      } else {
+        results[slotId] = null;
+      }
+    }
+
+    res.json({
+      success: true,
+      ads: results
+    });
+  } catch (error) {
+    console.error('serveBatchAds error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -404,6 +522,7 @@ const deleteAd = async (req, res) => {
 
 module.exports = {
   serveAd,
+  serveBatchAds,
   getAdsByPlacement,
   recordImpression,
   recordClick,
