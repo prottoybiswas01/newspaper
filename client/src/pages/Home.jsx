@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { api } from '../utils/api';
 import AdPlacement from '../components/AdPlacement';
 import PollWidget from '../components/PollWidget';
-import StoryHubBanner from '../components/StoryHubBanner';
 import LocalNewsWidget from '../components/LocalNewsWidget';
 import { useLanguage } from '../context/LanguageContext';
 import { 
@@ -224,9 +223,6 @@ const Home = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
       {/* Top Header Banner Advertisement */}
       <AdPlacement placement="header" />
-
-      {/* Active Major Developing Story Hub Banner */}
-      {activeStoryHub && <StoryHubBanner hub={activeStoryHub} />}
 
       {/* ─── SECTION 1: LEAD STORY & TOP SPOTLIGHT ─── */}
       <section>

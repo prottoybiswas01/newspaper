@@ -119,7 +119,7 @@ const Header = () => {
             <img 
               src="/logo.png" 
               alt="Bengal Times" 
-              className="h-10 sm:h-12 md:h-14 max-w-[280px] sm:max-w-[340px] w-auto object-contain shrink-0 transition-transform duration-200 group-hover:scale-[1.02]" 
+              className="h-7 sm:h-8 md:h-9 max-w-[180px] sm:max-w-[220px] w-auto object-contain shrink-0 transition-transform duration-200 group-hover:opacity-90" 
             />
           </Link>
         </div>
