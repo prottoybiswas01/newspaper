@@ -1,13 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Newspaper, Send, Check, Facebook, Twitter, Instagram, Youtube, Linkedin, Share2, Mail, Phone, MapPin } from 'lucide-react';
+import { 
+  Send, Check, Facebook, Twitter, Instagram, Youtube, Linkedin, 
+  Share2, Mail, Phone, MapPin, ExternalLink, Globe, MessageCircle
+} from 'lucide-react';
 import { api } from '../utils/api';
 
+const DEFAULT_FOOTER_SETTINGS = {
+  aboutText: 'সর্বশেষ ও নিরপেক্ষ সংবাদ পরিবেশনে আমরা অঙ্গীকারবদ্ধ। দেশের প্রতিটি প্রান্তে ঘটে যাওয়া ঘটনার সত্যতা নিশ্চিত করে আমরা আপনাদের সামনে তুলে ধরি।',
+  publisherEditor: 'আবিদ মনসুর',
+  chiefEditor: 'সাব্বির আহমেদ',
+  socialLinks: [
+    { platform: 'facebook', url: 'https://facebook.com', active: true },
+    { platform: 'twitter', url: 'https://twitter.com', active: true },
+    { platform: 'instagram', url: 'https://instagram.com', active: true },
+    { platform: 'youtube', url: 'https://youtube.com', active: true },
+    { platform: 'linkedin', url: 'https://linkedin.com', active: true }
+  ],
+  contact: {
+    phone: '+৮৮০ ১৭৪৯৯৬৫২৪০',
+    email: 'info@darpannews.com',
+    address: 'বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ',
+    mapUrl: 'https://maps.google.com/?q=Nikunja,Dhaka'
+  },
+  importantLinks: [
+    { label: 'আমাদের সম্পর্কে', url: '/about-us' },
+    { label: 'শর্তাবলী (Terms)', url: '/terms' },
+    { label: 'গোপনীয়তা নীতি', url: '/privacy' },
+    { label: 'সংবিধান ও অভিযোগ', url: '/complaints' },
+    { label: 'নীতিমালা', url: '/policy' },
+    { label: 'বিজ্ঞাপন', url: '/advertisement' },
+    { label: 'যোগাযোগ', url: '/contact' },
+    { label: 'সংবাদ আর্কাইভ', url: '/archive' }
+  ],
+  bottomLinks: [
+    { label: 'আমাদের সম্পর্কে', url: '/about-us' },
+    { label: 'শর্তাবলী', url: '/terms' },
+    { label: 'গোপনীয়তা নীতি', url: '/privacy' },
+    { label: 'সংবিধান ও অভিযোগ', url: '/complaints' },
+    { label: 'নীতিমালা', url: '/policy' },
+    { label: 'বিজ্ঞাপন', url: '/advertisement' },
+    { label: 'যোগাযোগ', url: '/contact' }
+  ],
+  copyrightText: '© স্বত্ব বেঙ্গল টাইমস ২০২৫-২০২৬ | সর্বস্বত্ব সংরক্ষিত।'
+};
+
+const getSocialIcon = (platform) => {
+  const p = (platform || '').toLowerCase();
+  if (p.includes('face')) return <Facebook className="h-4 w-4" />;
+  if (p.includes('twit') || p.includes('x')) return <Twitter className="h-4 w-4" />;
+  if (p.includes('insta')) return <Instagram className="h-4 w-4" />;
+  if (p.includes('you')) return <Youtube className="h-4 w-4" />;
+  if (p.includes('link')) return <Linkedin className="h-4 w-4" />;
+  if (p.includes('whats') || p.includes('chat')) return <MessageCircle className="h-4 w-4" />;
+  return <Globe className="h-4 w-4" />;
+};
+
 const Footer = () => {
+  const [footerData, setFooterData] = useState(DEFAULT_FOOTER_SETTINGS);
   const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Fetch dynamic footer settings from backend
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await api.get('/settings/footer_settings');
+        if (res.success && res.value) {
+          setFooterData({
+            ...DEFAULT_FOOTER_SETTINGS,
+            ...res.value,
+            contact: {
+              ...DEFAULT_FOOTER_SETTINGS.contact,
+              ...(res.value.contact || {})
+            }
+          });
+        }
+      } catch (err) {
+        // Fallback gracefully to default
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -29,62 +105,34 @@ const Footer = () => {
     }
   };
 
+  const socialLinks = footerData.socialLinks || DEFAULT_FOOTER_SETTINGS.socialLinks;
+  const contact = footerData.contact || DEFAULT_FOOTER_SETTINGS.contact;
+  const importantLinks = footerData.importantLinks || DEFAULT_FOOTER_SETTINGS.importantLinks;
+  const bottomLinks = footerData.bottomLinks || DEFAULT_FOOTER_SETTINGS.bottomLinks;
+
   return (
     <footer className="bg-[#111111] text-neutral-300 dark:bg-[#050505] mt-14 border-t border-neutral-800 pt-10 pb-8 no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Social Media Bar (PDF Page 4: যুক্ত হবে -> Social Media Icons) */}
+        {/* Social Media Bar */}
         <div className="flex flex-wrap items-center justify-between pb-8 mb-10 border-b border-neutral-800 gap-4">
           <div className="flex items-center space-x-2 text-white font-bold text-sm">
             <Share2 className="h-4 w-4 text-red-600" />
             <span>আমাদের সাথে যুক্ত থাকুন :</span>
           </div>
           <div className="flex items-center space-x-3">
-            <a 
-              href="https://facebook.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-[#1877F2] text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
-              title="Facebook"
-            >
-              <Facebook className="h-4 w-4" />
-            </a>
-            <a 
-              href="https://twitter.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-black text-white flex items-center justify-center transition-all duration-200 hover:scale-105 border border-neutral-700"
-              title="X (Twitter)"
-            >
-              <Twitter className="h-4 w-4" />
-            </a>
-            <a 
-              href="https://instagram.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-red-500 hover:to-purple-600 text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
-              title="Instagram"
-            >
-              <Instagram className="h-4 w-4" />
-            </a>
-            <a 
-              href="https://youtube.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-[#FF0000] text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
-              title="YouTube"
-            >
-              <Youtube className="h-4 w-4" />
-            </a>
-            <a 
-              href="https://linkedin.com" 
-              target="_blank" 
-              rel="noreferrer" 
-              className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-[#0A66C2] text-white flex items-center justify-center transition-all duration-200 hover:scale-105"
-              title="LinkedIn"
-            >
-              <Linkedin className="h-4 w-4" />
-            </a>
+            {socialLinks.filter(s => s.active !== false).map((item, idx) => (
+              <a 
+                key={idx}
+                href={item.url} 
+                target="_blank" 
+                rel="noreferrer" 
+                className="w-9 h-9 rounded-full bg-neutral-800 hover:bg-red-600 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 border border-neutral-700/60"
+                title={item.platform}
+              >
+                {getSocialIcon(item.platform)}
+              </a>
+            ))}
           </div>
         </div>
 
@@ -93,16 +141,19 @@ const Footer = () => {
           
           {/* Brand Info & Newsletter (Left 5/12) */}
           <div className="lg:col-span-5 space-y-4">
-            <Link to="/" className="inline-flex items-center space-x-2 text-2xl font-black text-white">
-              <Newspaper className="h-7 w-7 text-red-600" />
-              <span>দৈনিক দর্পণ</span>
+            <Link to="/" className="inline-flex items-center space-x-3 text-2xl font-black text-white">
+              <img 
+                src="/logo.png" 
+                alt="Bengal Times" 
+                className="h-10 sm:h-11 w-auto object-contain shrink-0" 
+              />
             </Link>
             <p className="text-sm text-neutral-400 leading-relaxed max-w-md">
-              সর্বশেষ ও নিরপেক্ষ সংবাদ পরিবেশনে আমরা অঙ্গীকারবদ্ধ। দেশের প্রতিটি প্রান্তে ঘটে যাওয়া ঘটনার সত্যতা নিশ্চিত করে আমরা আপনাদের সামনে তুলে ধরি।
+              {footerData.aboutText || DEFAULT_FOOTER_SETTINGS.aboutText}
             </p>
             <div className="text-xs text-neutral-500 space-y-1 pt-1 border-t border-neutral-800/80">
-              <p>প্রকাশক ও সম্পাদক: <span className="text-neutral-300 font-semibold">আবিদ মনসুর</span></p>
-              <p>প্রধান বার্তা সম্পাদক: <span className="text-neutral-300 font-semibold">সাব্বির আহমেদ</span></p>
+              <p>প্রকাশক ও সম্পাদক: <span className="text-neutral-300 font-semibold">{footerData.publisherEditor || 'আবিদ মনসুর'}</span></p>
+              <p>প্রধান বার্তা সম্পাদক: <span className="text-neutral-300 font-semibold">{footerData.chiefEditor || 'সাব্বির আহমেদ'}</span></p>
             </div>
             
             {/* Newsletter Subscription Box */}
@@ -165,14 +216,13 @@ const Footer = () => {
               গুরুত্বপূর্ণ লিংক
             </h4>
             <ul className="space-y-2 text-xs">
-              <li><Link to="/about-us" className="hover:text-white hover:underline transition-colors">আমাদের সম্পর্কে</Link></li>
-              <li><Link to="/terms" className="hover:text-white hover:underline transition-colors">শর্তাবলী (Terms)</Link></li>
-              <li><Link to="/privacy" className="hover:text-white hover:underline transition-colors">গোপনীয়তা নীতি</Link></li>
-              <li><Link to="/complaints" className="hover:text-white hover:underline transition-colors">সংবিধান ও অভিযোগ</Link></li>
-              <li><Link to="/policy" className="hover:text-white hover:underline transition-colors">নীতিমালা</Link></li>
-              <li><Link to="/advertisement" className="hover:text-white hover:underline transition-colors">বিজ্ঞাপন</Link></li>
-              <li><Link to="/contact" className="hover:text-white hover:underline transition-colors">যোগাযোগ</Link></li>
-              <li><Link to="/archive" className="hover:text-white hover:underline transition-colors">সংবাদ আর্কাইভ</Link></li>
+              {importantLinks.map((link, idx) => (
+                <li key={idx}>
+                  <Link to={link.url} className="hover:text-white hover:underline transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -186,21 +236,34 @@ const Footer = () => {
                 <Phone className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-neutral-200">নিউজ রুম / বার্তা কক্ষ:</p>
-                  <p>+৮৮০ ১৭৪৯৯৬৫২৪০</p>
+                  <p>{contact.phone || '+৮৮০ ১৭৪৯৯৬৫২৪০'}</p>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-neutral-200">ইমেইল:</p>
-                  <p>info@darpannews.com</p>
+                  <p>{contact.email || 'info@darpannews.com'}</p>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold text-neutral-200">ঠিকানা:</p>
-                  <p>বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ</p>
+                  {contact.mapUrl ? (
+                    <a
+                      href={contact.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-red-400 hover:underline transition-colors group flex items-start gap-1"
+                      title="গুগল ম্যাপে লোকেশন দেখুন"
+                    >
+                      <span>{contact.address || 'বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ'}</span>
+                      <ExternalLink className="h-3 w-3 inline text-red-500 shrink-0 mt-0.5 group-hover:scale-110" />
+                    </a>
+                  ) : (
+                    <p>{contact.address || 'বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ, ঢাকা ১২২৯, বাংলাদেশ'}</p>
+                  )}
                 </div>
               </li>
             </ul>
@@ -210,21 +273,16 @@ const Footer = () => {
 
         {/* Bottom Copyright Line */}
         <div className="border-t border-neutral-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-500 gap-3">
-          <p>© স্বত্ব দৈনিক দর্পণ ২০২৫-২০২৬ | সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>{footerData.copyrightText || '© স্বত্ব বেঙ্গল টাইমস ২০২৫-২০২৬ | সর্বস্বত্ব সংরক্ষিত।'}</p>
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
-            <Link to="/about-us" className="hover:text-neutral-300">আমাদের সম্পর্কে</Link>
-            <span>•</span>
-            <Link to="/terms" className="hover:text-neutral-300">শর্তাবলী</Link>
-            <span>•</span>
-            <Link to="/privacy" className="hover:text-neutral-300">গোপনীয়তা নীতি</Link>
-            <span>•</span>
-            <Link to="/complaints" className="hover:text-neutral-300">সংবিধান ও অভিযোগ</Link>
-            <span>•</span>
-            <Link to="/policy" className="hover:text-neutral-300">নীতিমালা</Link>
-            <span>•</span>
-            <Link to="/advertisement" className="hover:text-neutral-300">বিজ্ঞাপন</Link>
-            <span>•</span>
-            <Link to="/contact" className="hover:text-neutral-300">যোগাযোগ</Link>
+            {bottomLinks.map((link, idx) => (
+              <React.Fragment key={idx}>
+                {idx > 0 && <span>•</span>}
+                <Link to={link.url} className="hover:text-neutral-300">
+                  {link.label}
+                </Link>
+              </React.Fragment>
+            ))}
           </div>
         </div>
 

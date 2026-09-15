@@ -63,11 +63,11 @@ const Login = () => {
         
         {/* Brand logo header */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center p-3 rounded-full bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 mb-4">
-            <Newspaper className="h-10 w-10 stroke-[2.5]" />
+          <div className="mb-4 flex justify-center">
+            <img src="/logo.png" alt="Bengal Times" className="h-12 w-auto object-contain" />
           </div>
           <h2 className="text-2xl font-black text-gray-950 dark:text-white">
-            {isLoginMode ? 'দৈনিক দর্পণ অ্যাকাউন্টে লগইন' : 'নতুন অ্যাকাউন্ট তৈরি করুন'}
+            {isLoginMode ? 'বেঙ্গল টাইমস অ্যাকাউন্টে লগইন' : 'নতুন অ্যাকাউন্ট তৈরি করুন'}
           </h2>
           <p className="mt-2 text-xs text-gray-500 dark:text-neutral-400">
             {isLoginMode ? 'প্যানেল অ্যাক্সেস করতে আপনার পরিচয় দিন' : 'আমাদের নিউজ পরিবারের অংশ হোন'}

@@ -1,15 +1,15 @@
-const mongoose = require('mongoose');
+const createModel = require('./modelHelper');
 
-const settingSchema = new mongoose.Schema({
+const settingSchema = {
   key: { 
     type: String, 
     required: true, 
     unique: true 
   },
   value: { 
-    type: mongoose.Schema.Types.Mixed, 
+    type: Object, 
     required: true 
   }
-}, { timestamps: true });
+};
 
-module.exports = mongoose.model('Setting', settingSchema);
+module.exports = createModel('Setting', settingSchema);

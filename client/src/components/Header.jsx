@@ -115,10 +115,11 @@ const Header = () => {
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center space-x-3">
           <Link to="/" className="flex items-center space-x-2 text-2xl font-black tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
-            <Newspaper className="h-7 w-7 sm:h-8 sm:w-8 stroke-[2.5] text-red-600 shrink-0" />
-            <span className="font-sans text-gray-950 dark:text-white tracking-tight">
-              {language === 'bn' ? 'দৈনিক দর্পণ' : 'Daily Darpan'}
-            </span>
+            <img 
+              src="/logo.png" 
+              alt="Bengal Times" 
+              className="h-9 sm:h-11 w-auto object-contain shrink-0" 
+            />
           </Link>
         </div>
 
