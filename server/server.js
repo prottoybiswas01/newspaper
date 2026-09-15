@@ -19,6 +19,7 @@ const settingRoutes = require('./routes/settingRoutes');
 const autoFetchedRoutes = require('./routes/autoFetchedRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const storyHubRoutes = require('./routes/storyHubRoutes');
+const pageRoutes = require('./routes/pageRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -70,6 +71,7 @@ app.use('/api/settings', settingRoutes);
 app.use('/api/auto-fetched', autoFetchedRoutes);
 app.use('/api/audit-logs', auditRoutes);
 app.use('/api/story-hubs', storyHubRoutes);
+app.use('/api/pages', pageRoutes);
 
 // Dynamic robots.txt route (Protects admin & private APIs from crawling)
 app.get('/robots.txt', (req, res) => {

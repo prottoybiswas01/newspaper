@@ -75,3 +75,112 @@
     padding: 0 !important;
   }
 }
+
+/* Rich Page Content & Tables */
+.page-content table,
+.page-editor-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.dark .page-content table,
+.dark .page-editor-content table {
+  border-color: #334155;
+}
+
+.page-content th,
+.page-editor-content th {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  font-weight: 700;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.dark .page-content th,
+.dark .page-editor-content th {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+.page-content td,
+.page-editor-content td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.dark .page-content td,
+.dark .page-editor-content td {
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.page-content tr:nth-child(even),
+.page-editor-content tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.dark .page-content tr:nth-child(even),
+.dark .page-editor-content tr:nth-child(even) {
+  background-color: rgba(30, 41, 59, 0.4);
+}
+
+.page-content h1, .page-editor-content h1 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.page-content h2, .page-editor-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+
+.page-content h3, .page-editor-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.page-content p, .page-editor-content p {
+  margin-bottom: 1.1rem;
+  line-height: 1.8;
+}
+
+.page-content ul, .page-editor-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-content ol, .page-editor-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.page-content blockquote, .page-editor-content blockquote {
+  border-left: 4px solid #ef4444;
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1.5rem 0;
+  color: #64748b;
+}
+
+.dark .page-content blockquote, .dark .page-editor-content blockquote {
+  color: #94a3b8;
+}

@@ -22,6 +22,7 @@ import Archive from './pages/Archive';
 import MediaCenter from './pages/MediaCenter';
 import UserProfile from './pages/UserProfile';
 import StoryHubPage from './pages/StoryHubPage';
+import CustomPage from './pages/CustomPage';
 import Login from './pages/Login';
 import Dashboard from './pages/admin/Dashboard';
 
@@ -143,6 +144,72 @@ function App() {
                         element={
                           <ErrorBoundary isSection={true} sectionName="ইউজার প্রোফাইল">
                             <UserProfile />
+                          </ErrorBoundary>
+                        } 
+                      />
+
+                      {/* Official Information & Footer Pages Partition */}
+                      <Route 
+                        path="/terms" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="ব্যবহারের শর্তাবলী">
+                            <CustomPage forcedSlug="terms" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/privacy" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="গোপনীয়তা নীতি">
+                            <CustomPage forcedSlug="privacy" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/complaints" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="সংবিধান ও অভিযোগ">
+                            <CustomPage forcedSlug="complaints" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/contact" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="যোগাযোগ">
+                            <CustomPage forcedSlug="contact" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/about-us" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="আমাদের সম্পর্কে">
+                            <CustomPage forcedSlug="about-us" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/advertisement" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="বিজ্ঞাপন">
+                            <CustomPage forcedSlug="advertisement" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/policy" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="নীতিমালা">
+                            <CustomPage forcedSlug="policy" />
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/page/:slug" 
+                        element={
+                          <ErrorBoundary isSection={true} sectionName="তথ্য পেজ">
+                            <CustomPage />
                           </ErrorBoundary>
                         } 
                       />

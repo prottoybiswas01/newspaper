@@ -165,12 +165,14 @@ const Footer = () => {
               গুরুত্বপূর্ণ লিংক
             </h4>
             <ul className="space-y-2 text-xs">
-              <li><Link to="/about-us" className="hover:text-white hover:underline transition-colors">আমাদের কথা (About Us)</Link></li>
-              <li><Link to="/terms" className="hover:text-white hover:underline transition-colors">ব্যবহারের শর্তাবলী</Link></li>
+              <li><Link to="/about-us" className="hover:text-white hover:underline transition-colors">আমাদের সম্পর্কে</Link></li>
+              <li><Link to="/terms" className="hover:text-white hover:underline transition-colors">শর্তাবলী (Terms)</Link></li>
               <li><Link to="/privacy" className="hover:text-white hover:underline transition-colors">গোপনীয়তা নীতি</Link></li>
+              <li><Link to="/complaints" className="hover:text-white hover:underline transition-colors">সংবিধান ও অভিযোগ</Link></li>
+              <li><Link to="/policy" className="hover:text-white hover:underline transition-colors">নীতিমালা</Link></li>
               <li><Link to="/advertisement" className="hover:text-white hover:underline transition-colors">বিজ্ঞাপন</Link></li>
-              <li><Link to="/archive" className="hover:text-white hover:underline transition-colors">আর্কাইভ</Link></li>
               <li><Link to="/contact" className="hover:text-white hover:underline transition-colors">যোগাযোগ</Link></li>
+              <li><Link to="/archive" className="hover:text-white hover:underline transition-colors">সংবাদ আর্কাইভ</Link></li>
             </ul>
           </div>
 
@@ -209,10 +211,18 @@ const Footer = () => {
         {/* Bottom Copyright Line */}
         <div className="border-t border-neutral-800 pt-6 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-500 gap-3">
           <p>© স্বত্ব দৈনিক দর্পণ ২০২৫-২০২৬ | সর্বস্বত্ব সংরক্ষিত।</p>
-          <div className="flex space-x-4">
-            <Link to="/privacy" className="hover:text-neutral-300">গোপনীয়তা নীতি</Link>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-3 gap-y-1">
+            <Link to="/about-us" className="hover:text-neutral-300">আমাদের সম্পর্কে</Link>
             <span>•</span>
             <Link to="/terms" className="hover:text-neutral-300">শর্তাবলী</Link>
+            <span>•</span>
+            <Link to="/privacy" className="hover:text-neutral-300">গোপনীয়তা নীতি</Link>
+            <span>•</span>
+            <Link to="/complaints" className="hover:text-neutral-300">সংবিধান ও অভিযোগ</Link>
+            <span>•</span>
+            <Link to="/policy" className="hover:text-neutral-300">নীতিমালা</Link>
+            <span>•</span>
+            <Link to="/advertisement" className="hover:text-neutral-300">বিজ্ঞাপন</Link>
             <span>•</span>
             <Link to="/contact" className="hover:text-neutral-300">যোগাযোগ</Link>
           </div>

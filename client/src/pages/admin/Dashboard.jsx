@@ -10,6 +10,7 @@ import AdManagerTab from './AdManagerTab';
 import StoryHubTab from './StoryHubTab';
 import AuditLogsTab from './AuditLogsTab';
 import BlockEditorTab from './BlockEditorTab';
+import PagesManagerTab from './PagesManagerTab';
 import { 
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, 
   CartesianGrid, Tooltip, BarChart, Bar 
@@ -18,7 +19,7 @@ import {
   BarChart3, FileText, Image as ImageIcon, Tags, 
   MessageSquare, Megaphone, Users, ShieldAlert, 
   ChevronRight, LogOut, Globe, Plus, Trash2, Edit3, Check, X,
-  Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers
+  Calendar, Eye, HelpCircle, Save, Settings, Cpu, Layers, BookOpen
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -36,6 +37,7 @@ const Dashboard = () => {
     { id: 'media', name: 'Media Library', icon: ImageIcon, roles: ['Super Admin', 'Admin', 'Editor', 'Reporter'] },
     { id: 'taxonomy', name: 'Categories & Tags', icon: Tags, roles: ['Super Admin', 'Admin', 'Editor', 'SEO Manager'] },
     { id: 'comments', name: 'Moderate Comments', icon: MessageSquare, roles: ['Super Admin', 'Admin', 'Editor', 'Moderator'] },
+    { id: 'pages', name: 'ফুটার ও তথ্য পেজ', icon: BookOpen, roles: ['Super Admin', 'Admin'] },
     { id: 'ads', name: 'Ad Engine & Manager', icon: Megaphone, roles: ['Super Admin', 'Admin', 'Ad Manager'] },
     { id: 'roles', name: 'Role Management', icon: Users, roles: ['Super Admin', 'Admin'] },
     { id: 'audit', name: 'Audit Logs', icon: ShieldAlert, roles: ['Super Admin', 'Admin', 'Analyst'] },
@@ -1555,6 +1557,11 @@ const Dashboard = () => {
         {/* TAB: STORY HUB MANAGER */}
         {activeTab === 'storyHub' && (
           <StoryHubTab />
+        )}
+
+        {/* TAB: FOOTER & INFORMATION PAGES MANAGER */}
+        {activeTab === 'pages' && hasPermission(['Admin', 'Super Admin']) && (
+          <PagesManagerTab />
         )}
 
         {/* TAB: AD PLACEMENTS & FIRST-PARTY AD ENGINE */}

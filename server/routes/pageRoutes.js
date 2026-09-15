@@ -1,0 +1,316 @@
+const express = require('express');
+const router = express.Router();
+const Page = require('../models/Page');
+const { protect, authorize } = require('../middleware/auth');
+
+// Default initial pages content in Bengali
+const DEFAULT_PAGES = [
+  {
+    slug: 'terms',
+    title: 'ব্যবহারের শর্তাবলী',
+    subtitle: 'দৈনিক দর্পণ নিউজ পোর্টাল ব্যবহারের নিয়মনীতি ও শর্তাদি',
+    content: `<h2>১. সাধারণ নীতিমালা</h2>
+<p>দৈনিক দর্পণ ওয়েবসাইটে আপনাকে স্বাগতম। এই ওয়েবসাইটটি পরিদর্শন ও ব্যবহার করার মাধ্যমে আপনি নিম্নলিখিত শর্তাবলী মেনে নিতে সম্মত হচ্ছেন। আপনি যদি এই শর্তাবলীতে একমত না হন, তবে অনুগ্রহ করে সাইটটি ব্যবহার করা থেকে বিরত থাকুন।</p>
+<h2>২. মেধা সম্পদ ও কপিরাইট</h2>
+<p>এই পোর্টালে প্রকাশিত সকল সংবাদ, নিবন্ধ, ছবি, ভিডিও, গ্রাফিক্স এবং অন্যান্য সামগ্রী দৈনিক দর্পণ-এর নিজস্ব সম্পত্তি অথবা লাইসেন্সপ্রাপ্ত। কর্তৃপক্ষের লিখিত অনুমতি ব্যতীত কোনো কন্টেন্ট বাণিজ্যিক বা অননুমোদিত উদ্দেশ্যে পুনরুৎপাদন, বিতরণ বা পরিবর্তন করা আইনত দণ্ডনীয়।</p>
+<h2>৩. ব্যবহারকারীর আচরণ ও মন্তব্য</h2>
+<p>আমাদের পাঠকরা তাদের গঠনমূলক মতামত প্রকাশের সুযোগ পাবেন। তবে কোনো প্রকার উসকানিমূলক, মানহানিকর, ধর্মীয় অনুভূতিতে আঘাত হানে এমন অথবা অশালীন মন্তব্য প্রকাশ সম্পূর্ণরূপে নিষিদ্ধ। দৈনিক দর্পণ যেকোনো মন্তব্য মুছে ফেলার বা পরিমার্জনের অধিকার সংরক্ষণ করে।</p>
+<h2>৪. দায়মুক্তি (Disclaimer)</h2>
+<p>আমরা তথ্যের সর্বোচ্চ নির্ভুলতা বজায় রাখতে সচেষ্ট। তবে যেকোনো তথ্যের অসাবধানতাবশত ভুলের ক্ষেত্রে দৈনিক দর্পণ তাৎক্ষণিক সংশোধনী প্রচার করবে।</p>`,
+    seoTitle: 'ব্যবহারের শর্তাবলী - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ নিউজ পোর্টাল ব্যবহারের সাধারণ নিয়মাবলী ও শর্তাদি।'
+  },
+  {
+    slug: 'privacy',
+    title: 'গোপনীয়তা নীতি',
+    subtitle: 'আপনার তথ্যের নিরাপত্তা ও ব্যক্তিগত গোপনীয়তা রক্ষা আমাদের অঙ্গীকার',
+    content: `<h2>১. তথ্য সংগ্রহ</h2>
+<p>দৈনিক দর্পণ পাঠকদের ব্যক্তিগত গোপনীয়তাকে সর্বোচ্চ সম্মান জানায়। আপনি যখন আমাদের নিউজলেটারে সাবস্ক্রাইব করেন বা মন্তব্য করেন, তখন আমরা আপনার নাম ও ইমেইল ঠিকানা সংগ্রহ করতে পারি।</p>
+<h2>২. কুকিজ (Cookies) ব্যবহার</h2>
+<p>আমাদের ওয়েবসাইটের কার্যকারিতা উন্নত করতে এবং পাঠকদের অভিজ্ঞতা সমৃদ্ধ করতে কুকিজ ব্যবহার করা হয়। আপনি আপনার ব্রাউজার সেটিংস থেকে কুকিজ নিয়ন্ত্রণ করতে পারবেন।</p>
+<h2>৩. তথ্যের সুরক্ষা ও গোপনীয়তা</h2>
+<p>আমরা আপনার ব্যক্তিগত তথ্য কোনো তৃতীয় পক্ষের কাছে বিক্রি, ভাড়া বা অননুমোদিতভাবে হস্তান্তর করি না। কঠোর নিরাপত্তা ব্যবস্থার মাধ্যমে আপনার তথ্য সুরক্ষিত রাখা হয়।</p>
+<h2>৪. নীতিমালা পরিবর্তন</h2>
+<p>দৈনিক দর্পণ যেকোনো সময় এই গোপনীয়তা নীতিতে পরিমার্জন আনতে পারে। পরিমার্জিত নীতি এই পেজে প্রকাশের সঙ্গে সঙ্গে তা কার্যকর হবে।</p>`,
+    seoTitle: 'গোপনীয়তা নীতি - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ পাঠকদের তথ্যের সুরক্ষা ও গোপনীয়তা রক্ষার অঙ্গীকার।'
+  },
+  {
+    slug: 'complaints',
+    title: 'সংবিধান ও অভিযোগ',
+    subtitle: 'সাংবাদিকতার নীতিমালা, কোড অব এথিক্স এবং অভিযোগ নিষ্পত্তি সেল',
+    content: `<h2>১. নৈতিক সংবিধান ও নীতিমালা</h2>
+<p>দৈনিক দর্পণ বস্তুনিষ্ঠ, নিরপেক্ষ ও স্বাধীন সাংবাদিকতায় বিশ্বাসী। আমরা বাংলাদেশ প্রেস কাউন্সিল-এর আচরণবিধি এবং আন্তর্জাতিক সাংবাদিকতার সার্বজনীন মানদণ্ড অক্ষরে অক্ষরে মেনে চলি।</p>
+<h2>২. সংবাদ সংশোধনী নীতি</h2>
+<p>কোনো প্রতিবেদনে তথ্যের অসঙ্গতি থাকলে আমরা তা গুরুত্ব সহকারে পর্যালোচনা করি এবং সত্য উদ্ঘাটিত হলে দ্রুত সংশোধন করে পাঠকদের সামনে তুলে ধরি।</p>
+<h2>৩. অভিযোগ জানানোর প্রক্রিয়া</h2>
+<p>আমাদের প্রকাশিত কোনো সংবাদ, তথ্য বা ছবির বিষয়ে আপনার কোনো অভিযোগ বা আপত্তি থাকলে আপনি সরাসরি আমাদের অভিযোগ সেলে লিখিতভাবে জানাতে পারেন।</p>
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+  <thead>
+    <tr style="background-color: #f1f5f9;">
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">বিভাগ</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">যোগাযোগের মাধ্যম</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">নিষ্পত্তির সময়সীমা</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">সংবাদ সংক্রান্ত অভিযোগ</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">complaints@darpannews.com</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">২৪ - ৪৮ ঘণ্টা</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">কপিরাইট ও মেধা সম্পদ</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">legal@darpannews.com</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">৭২ ঘণ্টা</td>
+    </tr>
+  </tbody>
+</table>
+<p>অভিযোগ পাওয়ার পর আমাদের অনুসন্ধান কমিটি বিষয়টি যাচাই-বাছাই করে দ্রুত কার্যকর ব্যবস্থা গ্রহণ করবে।</p>`,
+    seoTitle: 'সংবিধান ও অভিযোগ - দৈনিক দর্পণ',
+    seoDescription: 'সাংবাদিকতার নীতিমালা ও অভিযোগ নিষ্পত্তি সেল - দৈনিক দর্পণ।'
+  },
+  {
+    slug: 'contact',
+    title: 'যোগাযোগ',
+    subtitle: 'আমাদের নিউজ রুম ও প্রধান কার্যালয়ের যোগাযোগের ঠিকানা',
+    content: `<h2>প্রধান কার্যালয় ও বার্তা কক্ষ</h2>
+<p>যেকোনো সংবাদ, পরামর্শ বা জরুরি প্রয়োজনে সরাসরি আমাদের সাথে যোগাযোগ করুন। আমাদের টিম সার্বক্ষণিক সহায়তার জন্য প্রস্তুত রয়েছে।</p>
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+  <thead>
+    <tr style="background-color: #f1f5f9;">
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">শাখা / বিভাগ</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">ফোন নম্বর</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">ইমেইল ঠিকানা</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">বার্তা কক্ষ (Newsroom)</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">+৮৮০ ১৭৪৯৯৬৫২৪০</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">news@darpannews.com</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">সাধারণ জিজ্ঞাসা ও তথ্য</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">+৮৮০ ১৭০০০০০০০০</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">info@darpannews.com</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">বিজ্ঞাপন ও বিপণন</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">+৮৮০ ১৭৮৮৮৮৮৮৮৮</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">ads@darpannews.com</td>
+    </tr>
+  </tbody>
+</table>
+<h2>অফিসের ঠিকানা</h2>
+<p><strong>দৈনিক দর্পণ লিমিটেড</strong><br>বাড়ি ১১, রোড ৩/বি, নিকুঞ্জ-২, খিলক্ষেত, ঢাকা ১২২৯, বাংলাদেশ।</p>`,
+    seoTitle: 'যোগাযোগ করুন - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ বার্তা কক্ষ, বিজ্ঞাপন ও প্রধান কার্যালয়ের যোগাযোগের মাধ্যম।'
+  },
+  {
+    slug: 'about-us',
+    title: 'আমাদের সম্পর্কে',
+    subtitle: 'দৈনিক দর্পণ - সত্য ও সাহসের প্রতিবিম্ব',
+    content: `<h2>আমাদের পরিচয় ও লক্ষ্য</h2>
+<p>দৈনিক দর্পণ বাংলাদেশের অন্যতম শীর্ষস্থানীয় অনলাইন সংবাদপত্র। সত্য, বস্তুনিষ্ঠতা এবং নিরপেক্ষতার মূলমন্ত্র নিয়ে আমরা প্রতিটি সংবাদের গভীরে গিয়ে জনগণের কাছে সত্য উপস্থাপন করতে দায়বদ্ধ।</p>
+<h2>আমাদের দৃষ্টিভঙ্গি</h2>
+<p>গণতন্ত্রের বিকাশ, মুক্ত চিন্তা, মানবাধিকার রক্ষা এবং দুর্নীতিমুক্ত বাংলাদেশ গড়ার প্রত্যয়ে আমাদের সাংবাদিকরা নিরলসভাবে কাজ করে চলেছেন। তথ্যপ্রযুক্তির যুগে সংবাদ দ্রুত ও নির্ভুলভাবে পৌঁছে দিতে আমরা আধুনিক প্রযুক্তির সমন্বয় ঘটিয়েছি।</p>
+<h2>সম্পাদনা পরিষদ</h2>
+<p><strong>প্রকাশক ও সম্পাদক:</strong> আবিদ মনসুর<br><strong>প্রধান বার্তা সম্পাদক:</strong> সাব্বির আহমেদ<br><strong>নির্বাহী সম্পাদক:</strong> কামরুল হাসান</p>`,
+    seoTitle: 'আমাদের সম্পর্কে - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ অনলাইন সংবাদপত্রের লক্ষ্য, আদর্শ ও সম্পাদনা পরিষদ।'
+  },
+  {
+    slug: 'advertisement',
+    title: 'বিজ্ঞাপন ও দরপত্র',
+    subtitle: 'আপনার ব্যবসা প্রসারে দৈনিক দর্পণ হতে পারে সর্বোত্তম প্রচার মাধ্যম',
+    content: `<h2>বিজ্ঞাপনের সুযোগ ও সুবিধা</h2>
+<p>প্রতিদিন লাখো পাঠকের কাছে আপনার পণ্য ও সেবা তুলে ধরতে দৈনিক দর্পণ অফার করছে আকর্ষণীয় বিজ্ঞাপন স্লট। আমাদের ওয়েবসাইটটি শতভাগ রেসপন্সিভ এবং আধুনিক বিজ্ঞাপন ইঞ্জিন দ্বারা পরিচালিত।</p>
+<h2>বিজ্ঞাপন স্লট ও ফরম্যাট</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+  <thead>
+    <tr style="background-color: #f1f5f9;">
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">বিজ্ঞাপনের অবস্থান</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">আকার (সাইজ)</th>
+      <th style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">যোগাযোগ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">টপ হেডার ব্যানার</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">728x90 বা 970x90 px</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">ads@darpannews.com</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">নিউজ বডি ব্যানার</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">300x250 বা 600x120 px</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">ads@darpannews.com</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">সাইডবার স্টিকি</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">300x600 px</td>
+      <td style="border: 1px solid #cbd5e1; padding: 10px;">ads@darpannews.com</td>
+    </tr>
+  </tbody>
+</table>
+<p>বিজ্ঞাপনের রেট কার্ড এবং বিশেষ ছাড়ের জন্য আমাদের বাণিজ্যিক বিভাগে যোগাযোগ করুন: <strong>+৮৮০ ১৭৮৮৮৮৮৮৮৮</strong></p>`,
+    seoTitle: 'বিজ্ঞাপন - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ সংবাদপত্রে ডিজিটাল বিজ্ঞাপনের সুযোগ ও দরপত্র।'
+  },
+  {
+    slug: 'policy',
+    title: 'নীতিমালা',
+    subtitle: 'সম্পাদকীয় স্বাধীনতা ও তথ্য যাচাইয়ের আদর্শ নির্দেশিকা',
+    content: `<h2>১. সম্পাদকীয় স্বাধীনতা</h2>
+<p>দৈনিক দর্পণ যেকোনো রাজনৈতিক, অর্থনৈতিক বা কর্পোরেট প্রভাব থেকে মুক্ত। আমাদের সংবাদ প্রকাশের একমাত্র মানদণ্ড জনস্বার্থ এবং সত্যতা।</p>
+<h2>২. তথ্য যাচাই ও ফ্যাক্ট-চেকিং</h2>
+<p>আমরা যেকোনো সংবেদনশীল বা স্পর্শকাতর খবর প্রকাশের পূর্বে একাধিক নির্ভরযোগ্য সূত্র থেকে তথ্য যাচাই করি। সামাজিক যোগাযোগমাধ্যমের অসত্যায়িত তথ্যের ওপর ভিত্তি করে কোনো খবর প্রচার করা হয় না।</p>
+<h2>৩. সংবেদনশীল ঘটনার কাভারেজ</h2>
+<p>অপরাধ, নারী ও শিশু নির্যাতন, দুর্ঘটনা ও বিপর্যয়ের সংবাদ প্রকাশের ক্ষেত্রে আমরা ভিকটিমদের সুরক্ষা ও সামাজিক মূল্যবোধকে অগ্রাধিকার দিয়ে সংবাদ পরিবেশন করি।</p>
+<h2>৪. কৃত্রিম বুদ্ধিমত্তা ও প্রযুক্তির ব্যবহার</h2>
+<p>প্রযুক্তির সাহায্য নিলেও সম্পাদকীয় প্রতিটি সিদ্ধান্ত অভিজ্ঞ সাংবাদিকদের সরাসরি তত্ত্বাবধানে নেওয়া হয়। কোনো বিভ্রান্তিকর বা বিকৃত তথ্য প্রচারের সুযোগ নেই।</p>`,
+    seoTitle: 'সম্পাদকীয় নীতিমালা - দৈনিক দর্পণ',
+    seoDescription: 'দৈনিক দর্পণ-এর সম্পাদকীয় স্বাধীনতা, তথ্য যাচাই ও নৈতিক নির্দেশিকা।'
+  }
+];
+
+// Helper: Seed default pages if not exist
+async function seedDefaultPagesIfNeeded() {
+  try {
+    for (const item of DEFAULT_PAGES) {
+      const existing = await Page.findOne({ slug: item.slug });
+      if (!existing) {
+        await Page.create({
+          ...item,
+          isPublished: true,
+          lastUpdatedBy: 'System Pre-seed'
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Error seeding default pages:', err.message);
+  }
+}
+
+// Automatically seed on initial route load
+seedDefaultPagesIfNeeded();
+
+// ─── 1. PUBLIC: GET ALL PAGES LIST ───
+router.get('/', async (req, res) => {
+  try {
+    await seedDefaultPagesIfNeeded();
+    const pages = await Page.find({}).select('slug title subtitle isPublished updatedAt createdAt lastUpdatedBy').sort({ createdAt: 1 });
+    res.json({ success: true, pages });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── 2. PUBLIC: GET SINGLE PAGE BY SLUG ───
+router.get('/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug.toLowerCase().trim();
+    let page = await Page.findOne({ slug });
+
+    if (!page) {
+      // Check if it's one of default pages, seed it immediately
+      const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
+      if (defaultPage) {
+        page = await Page.create({
+          ...defaultPage,
+          isPublished: true,
+          lastUpdatedBy: 'System Seed'
+        });
+      } else {
+        return res.status(404).json({ success: false, message: 'পৃষ্ঠাটি পাওয়া যায়নি।' });
+      }
+    }
+
+    res.json({ success: true, page });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── 3. ADMIN: CREATE NEW PAGE ───
+router.post('/', protect, authorize('Super Admin', 'Admin'), async (req, res) => {
+  try {
+    const { title, slug, subtitle, content, seoTitle, seoDescription, isPublished } = req.body;
+    
+    if (!title || !slug) {
+      return res.status(400).json({ success: false, message: 'শিরোনাম এবং স্লাগ আবশ্যক।' });
+    }
+
+    const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9-_]/g, '-');
+    const existing = await Page.findOne({ slug: cleanSlug });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'এই স্লাগ দিয়ে ইতোমধ্যেই একটি পেজ রয়েছে।' });
+    }
+
+    const newPage = await Page.create({
+      title,
+      slug: cleanSlug,
+      subtitle: subtitle || '',
+      content: content || '',
+      seoTitle: seoTitle || title,
+      seoDescription: seoDescription || subtitle || '',
+      isPublished: isPublished !== false,
+      lastUpdatedBy: req.user.name || 'Admin'
+    });
+
+    res.status(201).json({ success: true, page: newPage, message: 'নতুন পেজ সফলভাবে তৈরি হয়েছে।' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── 4. ADMIN: UPDATE PAGE ───
+router.put('/:slug', protect, authorize('Super Admin', 'Admin'), async (req, res) => {
+  try {
+    const slug = req.params.slug.toLowerCase().trim();
+    const { title, subtitle, content, seoTitle, seoDescription, isPublished } = req.body;
+
+    let page = await Page.findOne({ slug });
+    if (!page) {
+      const defaultPage = DEFAULT_PAGES.find(p => p.slug === slug);
+      if (defaultPage) {
+        page = await Page.create({
+          ...defaultPage,
+          isPublished: true,
+          lastUpdatedBy: req.user.name || 'Admin'
+        });
+      } else {
+        return res.status(404).json({ success: false, message: 'পেজটি পাওয়া যায়নি।' });
+      }
+    }
+
+    if (title !== undefined) page.title = title;
+    if (subtitle !== undefined) page.subtitle = subtitle;
+    if (content !== undefined) page.content = content;
+    if (seoTitle !== undefined) page.seoTitle = seoTitle;
+    if (seoDescription !== undefined) page.seoDescription = seoDescription;
+    if (isPublished !== undefined) page.isPublished = isPublished;
+    page.lastUpdatedBy = req.user.name || 'Admin';
+
+    await page.save();
+    res.json({ success: true, page, message: 'পেজের তথ্য সফলভাবে আপডেট হয়েছে।' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ─── 5. ADMIN: DELETE PAGE (Super Admin only) ───
+router.delete('/:slug', protect, authorize('Super Admin'), async (req, res) => {
+  try {
+    const slug = req.params.slug.toLowerCase().trim();
+    const result = await Page.findOneAndDelete({ slug });
+    if (!result) {
+      return res.status(404).json({ success: false, message: 'পেজটি পাওয়া যায়নি।' });
+    }
+    res.json({ success: true, message: 'পেজটি সফলভাবে মুছে ফেলা হয়েছে।' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+module.exports = router;
