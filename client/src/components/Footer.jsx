@@ -144,7 +144,7 @@ const Footer = () => {
           <div className="lg:col-span-5 space-y-4">
             <Link to="/" className="inline-flex items-center space-x-3 text-2xl font-black text-white">
               <img 
-                src="/logo.png" 
+                src="/footer-logo.png" 
                 alt="Bengal Times" 
                 className="h-10 sm:h-11 w-auto object-contain shrink-0" 
               />
